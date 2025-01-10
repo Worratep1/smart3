@@ -72,3 +72,4 @@ COPY public.marrystatus (marry_id, marry_describe) FROM stdin;
 2	สมรส
 3	หย่า/หม้าย
 4	แยกกันอยู่"# smart-wacth2" 
+"# smart3" 
