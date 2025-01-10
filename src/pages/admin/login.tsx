@@ -39,7 +39,12 @@ const Login = () => {
             console.log("Username:", username);
             console.log("Password:", password);
             
-            await login(username, password);
+            if (username === 'admin' && password === 'admin123') {
+                console.log('Login successful');
+                await login(username, password);
+            } else {
+                throw new Error('Invalid username or password');
+            }
             //  logout();
             
             setPending(false);
