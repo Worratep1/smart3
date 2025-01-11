@@ -680,7 +680,7 @@ export const replyUserInfo = async ({
     userTakecarepersonData
 }: ReplyUserData) => {
     try {
-        const profile = await getUserProfile(userData.users_line_id);
+       // const profile = await getUserProfile(userData.users_line_id);
         let contentTakecareperson = [
             layoutBoxBaseline("ข้อมูล", 'ยังไม่ได้เพิ่มข้อมูลผู้สูงอายุ'),
         ]
