@@ -25,7 +25,6 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
   const events = req.body?.events;
 
-
   // กรณี events ไม่มีข้อมูล (เช่น การ Verify Webhook)
   if (!events || events.length === 0) {
     console.warn("No events found in the request body");
@@ -145,20 +144,16 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
         case "การเชื่อมต่อนาฬิกา": {
           console.log("Handling device connection for user:", userId);
           const userData = await safeApiCall(() => getUser(userId));
-          console.log("Fetched userData:", userData); // ตรวจสอบข้อมูล userData
           if (userData) {
             await replyConnection({
               replyToken,
               userData,
             });
-            console.log("replyConnection called successfully.");
           } else {
             await replyNotRegistration({ replyToken, userId });
-            console.log("User not registered. replyNotRegistration called.");
           }
           break;
         }
-        
       
         case "การยืม-คืนอุปกรณ์": {
           console.log("Handling borrow equipment request for user:", userId);
