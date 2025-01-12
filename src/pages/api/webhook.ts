@@ -163,7 +163,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
             console.error("Error occurred while handling device connection:", error);
         
             // ตอบกลับข้อความ Error ให้ผู้ใช้
-            await replyToken({
+            await replyMessage({
               replyToken,
               message: "เกิดข้อผิดพลาดในการเชื่อมต่ออุปกรณ์ กรุณาลองใหม่อีกครั้ง",
             });
