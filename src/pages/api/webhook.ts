@@ -14,6 +14,7 @@ import {
 } from "@/utils/apiLineReply";
 import { getUser, getTakecareperson, getSafezone, getLocation } from "@/lib/listAPI";
 
+
 // Webhook handler
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST") {
@@ -142,18 +143,34 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
         }
       
         case "การเชื่อมต่อนาฬิกา": {
-          console.log("Handling device connection for user:", userId);
-          const userData = await safeApiCall(() => getUser(userId));
-          if (userData) {
-            await replyConnection({
+          try {
+            console.log("Handling device connection for user:", userId);
+        
+            // เรียก API อย่างปลอดภัย
+            const userData = await safeApiCall(() => getUser(userId));
+            if (userData) {
+              console.log("User data found:", userData); // Log ข้อมูลที่สำเร็จ
+              await replyConnection({
+                replyToken,
+                userData,
+              });
+            } else {
+              console.warn("User not registered, userId:", userId); // Log สำหรับเคสไม่มีผู้ใช้
+              await replyNotRegistration({ replyToken, userId });
+            }
+          } catch (error) {
+            // Log ข้อผิดพลาด
+            console.error("Error occurred while handling device connection:", error);
+        
+            // ตอบกลับข้อความ Error ให้ผู้ใช้
+            await replyToken({
               replyToken,
-              userData,
+              message: "เกิดข้อผิดพลาดในการเชื่อมต่ออุปกรณ์ กรุณาลองใหม่อีกครั้ง",
             });
-          } else {
-            await replyNotRegistration({ replyToken, userId });
           }
           break;
         }
+        
       
         case "การยืม-คืนอุปกรณ์": {
           console.log("Handling borrow equipment request for user:", userId);
