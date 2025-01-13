@@ -702,7 +702,7 @@ export const replyUserInfo = async ({
 
         const requestData = {
             replyToken,
-            userTakecarepersonData,
+            contentTakecareperson,
             messages: [
                 {
                     type    : "flex",
@@ -767,7 +767,7 @@ export const replyUserInfo = async ({
                                     type: "box",
                                     layout: "vertical",
                                     margin: "xxl",
-                                    spacing: "sm",    //ยังเเก้ไม่เสร็จ ${userTakecarepersonData.takecare_fname} ${userTakecarepersonData.takecare_sname}
+                                    spacing: "sm",    //ยังเเก้ไม่เสร็จ
                                     contents: [
                                         layoutBoxBaseline("ชื่อ-สกุล", `${userTakecarepersonData.takecare_fname} ${userTakecarepersonData.takecare_sname}`, 4, 5),
                                         // layoutBoxBaseline("ที่อยู่", `${userData.users_number || '-'} หมู่ ${userData.users_moo || '-'}`, 4, 5),
