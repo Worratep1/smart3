@@ -129,45 +129,19 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       
         case "ดูข้อมูลผู้ใช้งาน": {
           console.log("Fetching user info for:", userId);
-      
-          // ดึงข้อมูลผู้ใช้งาน
           const userData = await safeApiCall(() => getUser(userId));
           if (userData) {
-              console.log("User data fetched:", userData);
-      
-              // ดึงข้อมูลผู้สูงอายุ
-              const takecarepersonData = await safeApiCall(() => getTakecareperson(userData.users_id));
-              console.log("Takecareperson data fetched:", takecarepersonData);
-      
-              // ตรวจสอบเงื่อนไขข้อมูล
-              if (!takecarepersonData) {
-                  console.warn("No takecareperson data found for user:", userId);
-                  await replyMessage({
-                      replyToken,
-                      message: "ยังไม่มีข้อมูลผู้สูงอายุในระบบ กรุณาเพิ่มข้อมูลก่อน",
-                  });
-              } else {
-                  // ตอบกลับข้อมูลผู้ใช้งาน
-                  await replyUserInfo({
-                      replyToken,
-                      userData,
-                      userTakecarepersonData: takecarepersonData,
-                  });
-              }
+            await replyUserInfo({ replyToken, userData });
           } else {
-              console.warn("No user data found for:", userId);
-              await replyMessage({
-                  replyToken,
-                  message: "ไม่พบข้อมูลผู้ใช้งานในระบบ",
-              });
+            await replyMessage({
+              replyToken,
+              message: "ไม่พบข้อมูลผู้ใช้งานในระบบ",
+            });
           }
           break;
-      }
-      
-      
-      
+        }
 
-
+      
         
       
         case "การเชื่อมต่อนาฬิกา": {
