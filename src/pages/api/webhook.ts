@@ -46,7 +46,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       const userMessage = message.text.trim();
       console.log(`Received message: "${userMessage}" from user: ${userId}`);
 
-
+      
       // Handle คำสั่งต่าง ๆ
       switch (userMessage) {
         case "ดูตำแหน่งปัจจุบัน": {
@@ -144,21 +144,6 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       
         case "การเชื่อมต่อนาฬิกา": {
           console.log("Handling device connection for user:", userId);
-          const userData = await safeApiCall(() => getUser(userId));
-          if (userData) {
-            await replyConnection({
-              replyToken,
-              userData,
-              
-            });
-          } else {
-            await replyNotRegistration({ replyToken, userId });
-          }
-          break;
-        }
-      
-          case "การเชื่อมต่อนาฬิกา": {
-          console.log("Handling device connection for user:", userId);
           try {
               // ดึงข้อมูลผู้ใช้งาน
               const userData = await safeApiCall(() => getUser(userId));
@@ -206,7 +191,17 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
           }
           break;
       }
-      
+
+        case "การยืม-คืนอุปกรณ์": {
+          console.log("Handling borrow equipment request for user:", userId);
+          const userData = await safeApiCall(() => getUser(userId));
+          if (userData) {
+            await replyMenuBorrowequipment({ replyToken, userData });
+          } else {
+            await replyNotRegistration({ replyToken, userId });
+          }
+          break;
+        }
       
         case "แจ้งเตือน": {
           console.log("Handling notification request");
