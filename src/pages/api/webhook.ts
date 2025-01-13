@@ -131,7 +131,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
           console.log("Fetching user info for:", userId);
           const userData = await safeApiCall(() => getUser(userId));
           if (userData) {
-            await replyUserInfo({ replyToken, userData });
+            await replyUserInfo({ replyToken, userData});
           } else {
             await replyMessage({
               replyToken,

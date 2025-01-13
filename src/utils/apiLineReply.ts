@@ -680,10 +680,9 @@ export const replyUserInfo = async ({
     userData,
     userTakecarepersonData
 
-    
 }: ReplyUserData) => {
     try {
-        const profile = await getUserProfile(userTakecarepersonData.users_line_id);
+        // const profile = await getUserProfile(userTakecarepersonData.users_line_id);
         let contentTakecareperson = [
             layoutBoxBaseline("ข้อมูล", 'ยังไม่ได้เพิ่มข้อมูลผู้สูงอายุ'),
         ]
@@ -774,7 +773,7 @@ export const replyUserInfo = async ({
                                     margin: "xxl",
                                     spacing: "sm",    //ยังเเก้ไม่เสร็จ ยังไม่ได้เพิ่มข้อมูลผู้สูงอายุ
                                     contents: [
-                                        layoutBoxBaseline("ชื่อ", `${userTakecarepersonData.takecare_fname} ${userTakecarepersonData.takecare_sname}`)
+                                        layoutBoxBaseline("ชื่อ-สกุล", `${userData.users_fname} ${userData.users_sname}`, 4, 5),
                                         // layoutBoxBaseline("ที่อยู่", `${userData.users_number || '-'} หมู่ ${userData.users_moo || '-'}`, 4, 5),
                                         // layoutBoxBaseline("ถนน", `${userData.users_road || '-'}`, 4, 5),
                                         // layoutBoxBaseline("ตำบล", `${userData.users_tubon || '-'}`, 4, 5),
