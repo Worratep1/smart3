@@ -770,7 +770,6 @@ export const replyUserInfo = async ({
                                     spacing: "sm",
                                     contents: [
                                         layoutBoxBaseline("ชื่อ-สกุล", `${userTakecarepersonData.takecare_fname} ${userTakecarepersonData.takecare_sname}`, 4, 5),
-                                        layoutBoxBaseline("วันเดือนปีเกิด", `${moment(userTakecarepersonData.takecare_birthday).format('DD/MM/YYYY')}`, 4, 5),
                                         layoutBoxBaseline("ที่อยู่", `${userTakecarepersonData.takecare_number || '-'} หมู่ ${userTakecarepersonData.takecare_moo || '-'}`, 4, 5),
                                         layoutBoxBaseline("ถนน", `${userTakecarepersonData.takecare_road || '-'}`, 4, 5),
                                         layoutBoxBaseline("ตำบล", `${userTakecarepersonData.takecare_tubon || '-'}`, 4, 5),
