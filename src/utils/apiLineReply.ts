@@ -740,13 +740,13 @@ export const replyUserInfo = async ({
                                     spacing: "sm",
                                     contents: [
                                         layoutBoxBaseline("ชื่อ-สกุล", `${userData.users_fname} ${userData.users_sname}`, 4, 5),
-                                        layoutBoxBaseline("ที่อยู่", `${userData.users_number || '-'} หมู่ ${userData.users_moo || '-'}`, 4, 5),
-                                        layoutBoxBaseline("ถนน", `${userData.users_road || '-'}`, 4, 5),
-                                        layoutBoxBaseline("ตำบล", `${userData.users_tubon || '-'}`, 4, 5),
-                                        layoutBoxBaseline("อำเภอ", `${userData.users_amphur || '-'}`, 4, 5),
-                                        layoutBoxBaseline("จังหวัด", `${userData.users_province || '-'}`, 4, 5),
-                                        layoutBoxBaseline("รหัสไปรษณีย์", `${userData.users_postcode || '-'}`, 4, 5),
-                                        layoutBoxBaseline("เบอร์โทร", `${userData.users_tel1 || '-'}`, 4, 5),
+                                        // layoutBoxBaseline("ที่อยู่", `${userData.users_number || '-'} หมู่ ${userData.users_moo || '-'}`, 4, 5),
+                                        // layoutBoxBaseline("ถนน", `${userData.users_road || '-'}`, 4, 5),
+                                        // layoutBoxBaseline("ตำบล", `${userData.users_tubon || '-'}`, 4, 5),
+                                        // layoutBoxBaseline("อำเภอ", `${userData.users_amphur || '-'}`, 4, 5),
+                                        // layoutBoxBaseline("จังหวัด", `${userData.users_province || '-'}`, 4, 5),
+                                        // layoutBoxBaseline("รหัสไปรษณีย์", `${userData.users_postcode || '-'}`, 4, 5),
+                                        // layoutBoxBaseline("เบอร์โทร", `${userData.users_tel1 || '-'}`, 4, 5),
                                     ]
 
                                 },
@@ -762,14 +762,13 @@ export const replyUserInfo = async ({
                                     wrap  : true,
                                     margin: "sm"
                                 },
-                                
                                 {
                                     type: "box",
                                     layout: "vertical",
                                     margin: "xxl",
-                                    spacing: "sm",
+                                    spacing: "sm",    //ยังเเก้ไม่เสร็จ
                                     contents: [
-                                        layoutBoxBaseline("ชื่อ-สกุล", `${userData.users_fname} ${userData.users_sname}`, 4, 5),
+                                        layoutBoxBaseline("ชื่อ-สกุล", `$${userTakecarepersonData.takecare_fname}${userTakecarepersonData.takecare_sname}`, 4, 5),
                                         layoutBoxBaseline("ที่อยู่", `${userData.users_number || '-'} หมู่ ${userData.users_moo || '-'}`, 4, 5),
                                         layoutBoxBaseline("ถนน", `${userData.users_road || '-'}`, 4, 5),
                                         layoutBoxBaseline("ตำบล", `${userData.users_tubon || '-'}`, 4, 5),
