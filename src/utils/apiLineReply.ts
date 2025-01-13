@@ -598,6 +598,7 @@ export const replyLocation = async ({
         }
     }
 }
+
 export const replySetting = async ({
     replyToken,
     userData,
@@ -678,6 +679,8 @@ export const replyUserInfo = async ({
     replyToken,
     userData,
     userTakecarepersonData
+
+    
 }: ReplyUserData) => {
     try {
        // const profile = await getUserProfile(userData.users_line_id);
@@ -702,7 +705,7 @@ export const replyUserInfo = async ({
 
         const requestData = {
             replyToken,
-            contentTakecareperson,
+            
             messages: [
                 {
                     type    : "flex",
@@ -763,13 +766,15 @@ export const replyUserInfo = async ({
                                     wrap  : true,
                                     margin: "sm"
                                 },
+                                
                                 {
+                                    
                                     type: "box",
                                     layout: "vertical",
                                     margin: "xxl",
-                                    spacing: "sm",    //ยังเเก้ไม่เสร็จ
+                                    spacing: "sm",    //ยังเเก้ไม่เสร็จ ยังไม่ได้เพิ่มข้อมูลผู้สูงอายุ
                                     contents: [
-                                        layoutBoxBaseline("ชื่อ-สกุล", `${userTakecarepersonData.takecare_fname} ${userTakecarepersonData.takecare_sname}`, 4, 5),
+                                        layoutBoxBaseline("ชื่อ", `${userTakecarepersonData.takecare_fname} ${userTakecarepersonData.takecare_sname}`)
                                         // layoutBoxBaseline("ที่อยู่", `${userData.users_number || '-'} หมู่ ${userData.users_moo || '-'}`, 4, 5),
                                         // layoutBoxBaseline("ถนน", `${userData.users_road || '-'}`, 4, 5),
                                         // layoutBoxBaseline("ตำบล", `${userData.users_tubon || '-'}`, 4, 5),

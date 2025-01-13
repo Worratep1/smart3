@@ -120,7 +120,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
           console.log("Handling registration request for user:", userId);
           const userData = await safeApiCall(() => getUser(userId));
           if (userData) {
-            await replyUserInfo({ replyToken, userData });
+            await replyUserInfo({replyToken, userData });
           } else {
             await replyRegistration({ replyToken, userId });
           }
