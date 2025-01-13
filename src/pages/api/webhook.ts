@@ -130,19 +130,24 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
         case "ดูข้อมูลผู้ใช้งาน": {
           console.log("Fetching user info for:", userId);
           const userData = await safeApiCall(() => getUser(userId));
-          
           if (userData) {
-            const takecareperson = await safeApiCall(() =>getTakecareperson(userData.users_id) );
-            await replyUserInfo({ replyToken, userData,userTakecarepersonData:takecareperson,});
-
+              const takecarepersonData = await safeApiCall(() => getTakecareperson(userData.users_id));
+              if (!takecarepersonData) {
+                  console.warn("No takecareperson data found for user:", userId);
+              } else {
+                  console.log("Takecareperson data:", takecarepersonData);
+              }
+              await replyUserInfo({ replyToken, userData, userTakecarepersonData: takecarepersonData });
           } else {
-            await replyMessage({
-              replyToken,
-              message: "ไม่พบข้อมูลผู้ใช้งานในระบบ",
-            });
+              await replyMessage({
+                  replyToken,
+                  message: "ไม่พบข้อมูลผู้ใช้งานในระบบ",
+              });
           }
           break;
-        }
+      }
+      
+      
 
 
         

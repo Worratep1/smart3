@@ -679,18 +679,12 @@ export const replyUserInfo = async ({
     replyToken,
     userData,
     userTakecarepersonData
-
 }: ReplyUserData) => {
     try {
-        if (!userTakecarepersonData) {
-            console.log("No takecareperson data available");
-        } else {
-            console.log("Takecareperson Data:", userTakecarepersonData);
-        }
-        const profile = await getUserProfile(userTakecarepersonData.users_line_id);
         let contentTakecareperson = [
             layoutBoxBaseline("ข้อมูล", 'ยังไม่ได้เพิ่มข้อมูลผู้สูงอายุ'),
-        ]
+        ];
+        
         if(userTakecarepersonData){
             contentTakecareperson = [
                 layoutBoxBaseline("ชื่อ-สกุล", `${userTakecarepersonData.takecare_fname} ${userTakecarepersonData.takecare_sname}`, 4, 5),
@@ -776,9 +770,8 @@ export const replyUserInfo = async ({
                                     layout: "vertical",
                                     margin: "xxl",
                                     spacing: "sm",    //ยังเเก้ไม่เสร็จ ยังไม่ได้เพิ่มข้อมูลผู้สูงอายุ
-                                    contents: [
-                                        layoutBoxBaseline("ชื่อ-สกุล", `${userTakecarepersonData.takecare_fname} ${userTakecarepersonData.takecare_sname}`, 4, 5)
-
+                                    contents: [ contentTakecareperson,
+                                       
                                         // layoutBoxBaseline("ชื่อ-สกุล", `${userData.users_fname} ${userData.users_sname}`, 4, 5),
                                         // layoutBoxBaseline("ที่อยู่", `${userData.users_number || '-'} หมู่ ${userData.users_moo || '-'}`, 4, 5),
                                         // layoutBoxBaseline("ถนน", `${userData.users_road || '-'}`, 4, 5),
