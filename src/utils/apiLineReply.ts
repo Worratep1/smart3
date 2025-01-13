@@ -682,9 +682,8 @@ export const replyUserInfo = async ({
     try {
        // const profile = await getUserProfile(userData.users_line_id);
         let contentTakecareperson = [
-            layoutBoxBaseline("ข้อมูล", 'ยังไม่ได้เพิ่มข้อมูลผู้สูงอายุ'),
+            layoutBoxBaseline("ข้อมูล", ''),
         ]
-   
         if(userTakecarepersonData){
             contentTakecareperson = [
                 layoutBoxBaseline("ชื่อ-สกุล", `${userTakecarepersonData.takecare_fname} ${userTakecarepersonData.takecare_sname}`, 4, 5),
@@ -770,7 +769,7 @@ export const replyUserInfo = async ({
                                     margin: "xxl",
                                     spacing: "sm",
                                     contents: [
-                                        ...contentTakecareperson
+                                        
                                     ]
 
                                 },
