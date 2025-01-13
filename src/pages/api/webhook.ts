@@ -130,6 +130,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
         case "ดูข้อมูลผู้ใช้งาน": {
           console.log("Fetching user info for:", userId);
           const userData = await safeApiCall(() => getUser(userId));
+          const takecareperson = await safeApiCall(() =>getTakecareperson(userId));
           if (userData) {
             await replyUserInfo({ replyToken, userData});
           } else {
@@ -144,6 +145,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
         case "การเชื่อมต่อนาฬิกา": {
           console.log("Handling device connection for user:", userId);
           const userData = await safeApiCall(() => getUser(userId));
+          
           if (userData) {
             await replyConnection({
               replyToken,
