@@ -681,11 +681,12 @@ export const replyUserInfo = async ({
     userTakecarepersonData
 }: ReplyUserData) => {
     try {
+        // กำหนดข้อมูลผู้สูงอายุ
         let contentTakecareperson = [
             layoutBoxBaseline("ข้อมูล", 'ยังไม่ได้เพิ่มข้อมูลผู้สูงอายุ'),
         ];
-        
-        if(userTakecarepersonData){
+
+        if (userTakecarepersonData) {
             contentTakecareperson = [
                 layoutBoxBaseline("ชื่อ-สกุล", `${userTakecarepersonData.takecare_fname} ${userTakecarepersonData.takecare_sname}`, 4, 5),
                 layoutBoxBaseline("วันเดือนปีเกิด", `${moment(userTakecarepersonData.takecare_birthday).format('DD/MM/YYYY')}`, 4, 5),
@@ -698,42 +699,42 @@ export const replyUserInfo = async ({
                 layoutBoxBaseline("เบอร์โทร", `${userTakecarepersonData.takecare_tel1 || '-'}`, 4, 5),
                 layoutBoxBaseline("โรคประจำตัว", `${userTakecarepersonData.takecare_disease || '-'}`, 4, 5),
                 layoutBoxBaseline("ยาที่ใช้ประจำ", `${userTakecarepersonData.takecare_drug || '-'}`, 4, 5),
-            ]
+            ];
         }
 
+        // สร้างข้อความตอบกลับ
         const requestData = {
             replyToken,
             messages: [
                 {
-                    type    : "flex",
-                    altText : "ข้อมูลผู้ใช้งาน",
+                    type: "flex",
+                    altText: "ข้อมูลผู้ใช้งาน",
                     contents: {
                         type: "bubble",
                         body: {
-                            type    : "box",
-                            layout  : "vertical",
+                            type: "box",
+                            layout: "vertical",
                             contents: [
                                 {
-                                    type  : "text",
-                                    text  : "ข้อมูลผู้ใช้งาน",
-                                    color : "#FFB400",
-                                    size  : "xl",
+                                    type: "text",
+                                    text: "ข้อมูลผู้ใช้งาน",
+                                    color: "#FFB400",
+                                    size: "xl",
                                     weight: "bold",
-                                    wrap  : true
+                                    wrap: true,
                                 },
                                 {
-                                    type  : "separator",
-                                    margin: "xxl"
+                                    type: "separator",
+                                    margin: "xxl",
                                 },
                                 {
-                                    type  : "text",
-                                    text  : `ข้อมูลผู้ดูแล`,
-                                    size  : "md",
-                                    color : "#555555",
-                                    wrap  : true,
-                                    margin: "sm"
+                                    type: "text",
+                                    text: `ข้อมูลผู้ดูแล`,
+                                    size: "md",
+                                    color: "#555555",
+                                    wrap: true,
+                                    margin: "sm",
                                 },
-                                
                                 {
                                     type: "box",
                                     layout: "vertical",
@@ -748,89 +749,67 @@ export const replyUserInfo = async ({
                                         layoutBoxBaseline("จังหวัด", `${userData.users_province || '-'}`, 4, 5),
                                         layoutBoxBaseline("รหัสไปรษณีย์", `${userData.users_postcode || '-'}`, 4, 5),
                                         layoutBoxBaseline("เบอร์โทร", `${userData.users_tel1 || '-'}`, 4, 5),
-                                    ]
-
+                                    ],
                                 },
                                 {
-                                    type  : "separator",
-                                    margin: "xxl"
+                                    type: "separator",
+                                    margin: "xxl",
                                 },
                                 {
-                                    type  : "text",
-                                    text  : `ข้อมูลผู้สูงอายุ`,
-                                    size  : "md",
-                                    color : "#555555",
-                                    wrap  : true,
-                                    margin: "sm"
+                                    type: "text",
+                                    text: `ข้อมูลผู้สูงอายุ`,
+                                    size: "md",
+                                    color: "#555555",
+                                    wrap: true,
+                                    margin: "sm",
                                 },
-                                
                                 {
-                                    
                                     type: "box",
                                     layout: "vertical",
                                     margin: "xxl",
-                                    spacing: "sm",    //ยังเเก้ไม่เสร็จ ยังไม่ได้เพิ่มข้อมูลผู้สูงอายุ
-                                    contents: [ 
-                                        layoutBoxBaseline("ชื่อ-สกุล", `${userTakecarepersonData.takecare_fname} ${userTakecarepersonData.takecare_sname}`, 4, 5),
-                                        // layoutBoxBaseline("ชื่อ-สกุล", `${userData.users_fname} ${userData.users_sname}`, 4, 5),
-                                        // layoutBoxBaseline("ที่อยู่", `${userData.users_number || '-'} หมู่ ${userData.users_moo || '-'}`, 4, 5),
-                                        // layoutBoxBaseline("ถนน", `${userData.users_road || '-'}`, 4, 5),
-                                        // layoutBoxBaseline("ตำบล", `${userData.users_tubon || '-'}`, 4, 5),
-                                        // layoutBoxBaseline("อำเภอ", `${userData.users_amphur || '-'}`, 4, 5),
-                                        // layoutBoxBaseline("จังหวัด", `${userData.users_province || '-'}`, 4, 5),
-                                        // layoutBoxBaseline("รหัสไปรษณีย์", `${userData.users_postcode || '-'}`, 4, 5),
-                                        // layoutBoxBaseline("เบอร์โทร", `${userData.users_tel1 || '-'}`, 4, 5),
-                                        
-                                        // layoutBoxBaseline("ชื่อ-สกุล", `${userTakecarepersonData.takecare_fname} ${userTakecarepersonData.takecare_sname}`, 4, 5)
-                                        // layoutBoxBaseline("ที่อยู่", `${userData.users_number || '-'} หมู่ ${userData.users_moo || '-'}`, 4, 5),
-                                        // layoutBoxBaseline("ถนน", `${userData.users_road || '-'}`, 4, 5),
-                                        // layoutBoxBaseline("ตำบล", `${userData.users_tubon || '-'}`, 4, 5),
-                                        // layoutBoxBaseline("อำเภอ", `${userData.users_amphur || '-'}`, 4, 5),
-                                        // layoutBoxBaseline("จังหวัด", `${userData.users_province || '-'}`, 4, 5),
-                                        // layoutBoxBaseline("รหัสไปรษณีย์", `${userData.users_postcode || '-'}`, 4, 5),
-                                        // layoutBoxBaseline("เบอร์โทร", `${userData.users_tel1 || '-'}`, 4, 5),
-                                    ]
-
+                                    spacing: "sm",
+                                    contents: contentTakecareperson,
                                 },
                                 {
-                                    type  : "button",
-                                    style : "primary",
+                                    type: "button",
+                                    style: "primary",
                                     height: "sm",
                                     margin: "xxl",
                                     action: {
-                                        type : "uri",
+                                        type: "uri",
                                         label: "ตั้งค่าข้อมูลผู้ดูแล",
-                                        uri  : `${WEB_API}/userinfo/cuserinfo?auToken=${userData.users_line_id}`
+                                        uri: `${WEB_API}/userinfo/cuserinfo?auToken=${userData.users_line_id}`,
                                     },
-                                   
                                 },
                                 {
-                                    type  : "button",
-                                    style : "primary",
+                                    type: "button",
+                                    style: "primary",
                                     height: "sm",
                                     margin: "xxl",
-                                    color : "#4477CE",
+                                    color: "#4477CE",
                                     action: {
-                                        type : "uri",
+                                        type: "uri",
                                         label: "ตั้งค่าข้อมูลผู้สูงอายุ",
-                                        uri  : userTakecarepersonData ? `${WEB_API}/userinfo/puserinfo?auToken=${userData.users_line_id}` : `${WEB_API}/elderly_registration?auToken=${userData.users_line_id}`
-                                    }
-                                }
-                                
-                            ]
-                        }
-                    }
-                }
+                                        uri: userTakecarepersonData
+                                            ? `${WEB_API}/userinfo/puserinfo?auToken=${userData.users_line_id}`
+                                            : `${WEB_API}/elderly_registration?auToken=${userData.users_line_id}`,
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                },
             ],
         };
 
-       await axios.post(LINE_MESSAGING_API, requestData, { headers:LINE_HEADER });
+        // ส่งข้อความไปยัง LINE API
+        await axios.post(LINE_MESSAGING_API, requestData, { headers: LINE_HEADER });
     } catch (error) {
         if (error instanceof Error) {
-            console.log(error.message);
+            console.error("Error in replyUserInfo:", error.message);
         }
     }
-}
+};
 
 export const replyUserData = async ({
     replyToken,
