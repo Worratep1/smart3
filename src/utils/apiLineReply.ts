@@ -818,7 +818,7 @@ export const replyUserData = async ({
 }: ReplyUserData) => {
     try {
         const profile = await getUserProfile(userData.users_line_id);
-        const requestData = {
+        const requestData = { 
             replyToken,
             messages: [
                 {

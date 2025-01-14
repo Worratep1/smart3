@@ -1,5 +1,6 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import {
+  replyUserData,
   replyMessage,
   replyRegistration,
   replyMenuBorrowequipment,
@@ -115,33 +116,80 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
           }
           break;
         }
+
       
         case "ลงทะเบียน": {
           console.log("Handling registration request for user:", userId);
-          const userData = await safeApiCall(() => getUser(userId));
-          if (userData) {
-            await replyUserInfo({replyToken, userData });
-          } else {
-            await replyRegistration({ replyToken, userId });
-          }
-          break;
-        }
+          try {
+              // ดึงข้อมูลผู้ใช้งาน
+              const userData = await safeApiCall(() => getUser(userId));
       
-        case "ดูข้อมูลผู้ใช้งาน": {
-          console.log("Fetching user info for:", userId);
-          const userData = await safeApiCall(() => getUser(userId));
-          const userTakecarepersonData = await safeApiCall(() =>getTakecareperson(userId)); // เพิ่มส่วนนี้
-          if (userData) {
-              await replyUserInfo({ replyToken, userData, userTakecarepersonData }); // ส่งข้อมูลผู้สูงอายุด้วย
-          } else {
+              if (userData) {
+                  console.log("User already registered:", userData);
+      
+                  // แสดงข้อมูลผู้ดูแล และเมนู "ลงทะเบียนผู้สูงอายุ"
+                  await replyUserData({ replyToken, userData });
+              } else {
+                  console.log("User not registered yet.");
+      
+                  // เรียกฟังก์ชันเพื่อเริ่มกระบวนการลงทะเบียนใหม่
+                  await replyRegistration({ replyToken, userId });
+              }
+          } catch (error) {
+              console.error("Error occurred during registration handling:", error);
+      
+              // แจ้งข้อผิดพลาดให้ผู้ใช้ทราบ
               await replyMessage({
                   replyToken,
-                  message: "ไม่พบข้อมูลผู้ใช้งานในระบบ",
+                  message: "เกิดข้อผิดพลาดในการลงทะเบียน กรุณาลองใหม่อีกครั้ง",
               });
           }
           break;
       }
       
+
+      case "ดูข้อมูลผู้ใช้งาน": {
+        console.log("Handling user info request for user:", userId);
+        try {
+            // ดึงข้อมูลผู้ใช้งาน
+            const userData = await safeApiCall(() => getUser(userId));
+    
+            if (userData) {
+                console.log("Fetched user data:", userData);
+    
+                // เข้ารหัส users_id
+                const encodedUserId = encodeURIComponent(userData.users_id);
+    
+                // ดึงข้อมูลผู้สูงอายุ (Takecare person)
+                const userTakecarepersonData = await safeApiCall(() =>
+                    getTakecareperson(encodedUserId)
+                );
+    
+                // เรียกใช้ replyUserInfo เพื่อตอบกลับข้อมูล
+                await replyUserInfo({
+                    replyToken,
+                    userData,
+                    userTakecarepersonData: userTakecarepersonData?.takecare_id ? userTakecarepersonData : null, // ส่งข้อมูลผู้สูงอายุถ้ามี
+                });
+            } else {
+                console.error("User data not found.");
+                // กรณีไม่พบข้อมูลผู้ใช้งาน
+                await replyMessage({
+                    replyToken,
+                    message: "ไม่พบข้อมูลผู้ใช้งานในระบบ กรุณาลงทะเบียนก่อน",
+                });
+            }
+        } catch (error) {
+            console.error("Error occurred while fetching user info:", error);
+            // กรณีเกิดข้อผิดพลาด
+            await replyMessage({
+                replyToken,
+                message: "เกิดข้อผิดพลาดในการดึงข้อมูล กรุณาลองใหม่อีกครั้ง",
+            });
+        }
+        break;
+    }
+    
       
         
       
