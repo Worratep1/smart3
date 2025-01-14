@@ -685,7 +685,7 @@ export const replyUserInfo = async ({
             layoutBoxBaseline("ข้อมูล", 'ยังไม่ได้เพิ่มข้อมูลผู้สูงอายุ'),
         ]
    
-        if(userTakecarepersonData){
+        if (userTakecarepersonData) {
             contentTakecareperson = [
                 layoutBoxBaseline("ชื่อ-สกุล", `${userTakecarepersonData.takecare_fname} ${userTakecarepersonData.takecare_sname}`, 4, 5),
                 layoutBoxBaseline("วันเดือนปีเกิด", `${moment(userTakecarepersonData.takecare_birthday).format('DD/MM/YYYY')}`, 4, 5),
@@ -769,11 +769,9 @@ export const replyUserInfo = async ({
                                     layout: "vertical",
                                     margin: "xxl",
                                     spacing: "sm",
-                                    contents: [
-                                        ...contentTakecareperson
-                                    ]
-
-                                },
+                                    contents: contentTakecareperson // ลบ array ซ้อน array
+                                }
+                                ,
                                 {
                                     type  : "button",
                                     style : "primary",
