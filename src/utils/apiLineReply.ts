@@ -770,7 +770,7 @@ export const replyUserInfo = async ({
                                     margin: "xxl",
                                     spacing: "sm",
                                     contents: [
-                                        contentTakecareperson 
+                                        contentTakecareperson,
                                     ]
                                 },
                                 {
