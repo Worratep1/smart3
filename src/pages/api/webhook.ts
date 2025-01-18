@@ -165,23 +165,12 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
                     getTakecareperson(encodedUserId)
                 );
     
-                if (userTakecarepersonData?.takecare_id) {
-                    console.log("Fetched takecareperson data:", userTakecarepersonData);
-    
-                    // เรียกใช้ replyUserInfo เพื่อตอบกลับข้อมูล
-                    await replyUserInfo({
-                        replyToken,
-                        userData,
-                        userTakecarepersonData,
-                    });
-                } else {
-                    console.error("Takecare person data not found.");
-                    // กรณีไม่พบข้อมูลผู้สูงอายุ
-                    await replyMessage({
-                        replyToken,
-                        message: "ยังไม่ได้เพิ่มข้อมูลผู้สูงอายุ กรุณาเพิ่มข้อมูลก่อน",
-                    });
-                }
+                // เรียกใช้ replyUserInfo เพื่อตอบกลับข้อมูล
+                await replyUserInfo({
+                    replyToken,
+                    userData,
+                    userTakecarepersonData: userTakecarepersonData?.takecare_id ? userTakecarepersonData : null, // ส่งข้อมูลผู้สูงอายุถ้ามี
+                });
             } else {
                 console.error("User data not found.");
                 // กรณีไม่พบข้อมูลผู้ใช้งาน
@@ -200,7 +189,8 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
         }
         break;
     }
-
+    
+      
         
       
         case "การเชื่อมต่อนาฬิกา": {
