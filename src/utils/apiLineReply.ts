@@ -769,10 +769,10 @@ export const replyUserInfo = async ({
                                     layout: "vertical",
                                     margin: "xxl",
                                     spacing: "sm",
-                                    contents: [
-                                        contentTakecareperson,
-                                    ]
-                                },
+                                    contents:[contentTakecareperson,]  // ลบ array ซ้อน array
+                                }
+                                ,
+                                
                                 {
                                     type  : "button",
                                     style : "primary",
