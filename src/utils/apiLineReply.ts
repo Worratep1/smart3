@@ -772,6 +772,7 @@ export const replyUserInfo = async ({
                                     contents: contentTakecareperson // ลบ array ซ้อน array
                                 }
                                 ,
+                                
                                 {
                                     type  : "button",
                                     style : "primary",
