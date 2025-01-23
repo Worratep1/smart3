@@ -54,7 +54,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
           const userData = await safeApiCall(() => getUser(userId));
           if (userData) {
             const encodedUserId = encodeURIComponent(userData.users_id);
-            const takecareperson = await safeApiCall(() =>
+            const takecareperson = await safeApiCall(() => 
               getTakecareperson(encodedUserId)
             );
             if (takecareperson?.takecare_id) {
