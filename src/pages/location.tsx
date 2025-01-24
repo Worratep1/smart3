@@ -17,6 +17,7 @@ interface DataUserState {
     isLogin: boolean;
     userData: any | null
     takecareData: any | null
+    
 }
 
 const Location = () => {
