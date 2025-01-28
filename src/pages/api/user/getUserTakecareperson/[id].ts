@@ -15,6 +15,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
                 if (!isNaN(userId)) {
                     const user = await prisma.takecareperson.findFirst({
                         where: {
+                            
                             users_id: userId,
                             takecare_status: 1,
                         },

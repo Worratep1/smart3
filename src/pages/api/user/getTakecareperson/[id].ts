@@ -15,7 +15,10 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
                 if (!isNaN(takecarepersonId)) {
                     const response = await prisma.takecareperson.findFirst({
                         where: {
-                            takecare_id: takecarepersonId,
+                            OR:[
+                                 {takecare_id:takecarepersonId},
+                                 {users_id:takecarepersonId}
+                            ],
                             takecare_status: 1,
                         },
                         include: { // ถ้าไม่ใส่ include จะไม่เอาข้อมูลจากตารางอื่นมาด้วย
