@@ -117,7 +117,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
           break;
         }
 
-      
+  
         case "ลงทะเบียน": {
           console.log("Handling registration request for user:", userId);
           try {
@@ -190,9 +190,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
         break;
     }
 
-      
-        
-      
+    
         case "การเชื่อมต่อนาฬิกา": {
           console.log("Handling device connection for user:", userId);
           try {
@@ -237,10 +235,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
           break;
       }
       
-      
-
-
-
+    
         case "การยืม-คืนอุปกรณ์": {
           console.log("Handling borrow equipment request for user:", userId);
           const userData = await safeApiCall(() => getUser(userId));
