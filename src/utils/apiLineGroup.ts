@@ -18,6 +18,7 @@ interface ReplyNotification {
         users_sname         : string;
         users_tel1          : string;
         users_line_id       : string;
+        
     };
     resTakecareperson: {
         takecare_fname: string;
@@ -39,7 +40,7 @@ interface ReplyNoti {
 }
 export const getUserProfile = async (userId: string) => {
     try {
-        const response = await axios.get(`${LINE_PROFILE_API}/${userId}`, { headers: LINE_HEADER });
+        const response = await axios.get(`${LINE_PROFILE_API}/${userId}`,{ headers: LINE_HEADER });
         return response.data;
     } catch (error) {
         if (error instanceof Error) {
@@ -47,7 +48,6 @@ export const getUserProfile = async (userId: string) => {
         }
     }
 }
-
 const layoutBoxBaseline = (label: string, text: string, flex1 = 2, flex2 = 5) => {
     return {
         type: "box",

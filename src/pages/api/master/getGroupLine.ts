@@ -22,11 +22,11 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
                 }
             })
 
-            return res.status(200).json({ message: 'success', id: createGroupLine.group_id })
+            return res.status(200).json({ message: 'success', id: createGroupLine.group_id})
         } catch (error) {
             return res.status(400).json({ message: 'error', data: error })
         }
-
+        
     }else if(req.method === 'GET'){
         try {
             const group_line_id = req.query.group_line_id

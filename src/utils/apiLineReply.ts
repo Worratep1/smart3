@@ -820,6 +820,7 @@ export const replyUserData = async ({
     replyToken,
     userData
 }: ReplyUserData) => {
+
     try {
         const profile = await getUserProfile(userData.users_line_id);
         const requestData = { 
@@ -904,7 +905,6 @@ export const replyNotification = async ({
     message
 }: ReplyNotification) => {
     try {
-
         const requestData = {
             to:replyToken,
             messages: [
@@ -983,10 +983,10 @@ export const replyNotificationPostback = async ({
     takecarepersonId,
     type,
     message,
-    replyToken
+    replyToken,
+    
 }: ReplyNotificationPostback ) => {
     try {
-
         const requestData = {
             to:replyToken,
             messages: [
@@ -1057,10 +1057,10 @@ export const replyNotificationPostback = async ({
                                         data : `userLineId=${replyToken}&takecarepersonId=${takecarepersonId}&type=${type}`,
                                     }
                                 },
-                                {
+                                { 
                                     type  : "text",
                                     text  : " ",
-                                    wrap : true,
+                                    wrap  : true,
                                     lineSpacing: "5px",
                                     margin: "md",
                                     contents:[

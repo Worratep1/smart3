@@ -226,12 +226,12 @@ const Location = () => {
                                     <Circle
                                         center={{ lat: origin.lat, lng: origin.lng }}
                                         radius={range1}
-                                        options={{ fillColor: "#F2BE22", strokeColor: "#F2BE22", fillOpacity: 0.2 }}
+                                        options={{ fillColor: "#F2BE22", strokeColor: "#F2BE22", fillOpacity: 0.2 }}      //วงกลมสีเหลือง
                                     />
                                     <Circle
                                         center={{ lat: origin.lat, lng: origin.lng }}
                                         radius={range2}
-                                        options={{ fillColor: "#F24C3D", strokeColor: "#F24C3D", fillOpacity: 0.1 }}
+                                        options={{ fillColor: "#F24C3D", strokeColor: "#F24C3D", fillOpacity: 0.1 }}   //วงกลมสีแดง
                                     />
                                 </>
                             </Marker>
