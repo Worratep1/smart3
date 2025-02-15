@@ -31,8 +31,8 @@ const ReturnOf = () => {
           const formattedData = response.data.data.map((item: any) => ({
             listName: item.borrow_equipment,
             numberCard: item.borrow_equipment_number,
-            startDate: item.borrow_date || "",  // ต้องแก้ให้ตรงกับข้อมูลจริง
-            endDate: item.borrow_return || ""   // ต้องแก้ให้ตรงกับข้อมูลจริง
+            startDate: item.borrow_date || "15/02/2025",  // ต้องแก้ให้ตรงกับข้อมูลจริง
+            endDate: item.borrow_return || "20/02/2025"   // ต้องแก้ให้ตรงกับข้อมูลจริง
           }))
           setListItem(formattedData)
         }
