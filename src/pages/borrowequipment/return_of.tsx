@@ -34,7 +34,7 @@ const ReturnOf = () => {
 
     const fetchBorrowedItems = async (userId: string) => {
         try {
-            const response = await axios.get(`${process.env.WEB_DOMAIN}/api/borrowequipment/getByUser/${userId}`);
+            const response = await axios.get(`${process.env.WEB_DOMAIN}/api/user/getUser${userId}`);
             if (response.data?.borrowedItems) {
                 setListItem(response.data.borrowedItems);
             } else {
