@@ -73,7 +73,7 @@ const ReturnOf = () => {
 
   //     } catch (error) {
 
-  //     } เทส1 เทส2
+  //     }
   // }
   const removeListener = (index: number) => {
     const newList = listItem.filter((item, i) => i !== index)
