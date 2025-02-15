@@ -105,7 +105,7 @@ model location {
   locat_longitude   String         @default("0") @db.VarChar(255)
   locat_status      Int            @default(1)
   locat_distance    Int            @default(0)
-  locat_battery     Int            @default(0)
+  locat_battery     Int            @default(0) 
   locat_noti_time   DateTime?
   locat_noti_status Int?
   takecare_id_ref   takecareperson @relation(fields: [takecare_id], references: [takecare_id])

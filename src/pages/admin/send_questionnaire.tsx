@@ -322,9 +322,7 @@ const SendQuestionnaire = () => {
                         </Table>
                     </Modal.Body>
                     <Modal.Footer>
-                        <Button variant="secondary" onClick={() => handleClose()}>
-                            ปิด
-                        </Button>
+                        <Button variant="secondary" onClick={() => handleClose()}> ปิด</Button>
                     </Modal.Footer>
                 </Modal>
 
