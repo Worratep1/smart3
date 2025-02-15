@@ -93,7 +93,7 @@ const ReturnOf = () => {
               listItem.length > 0 && listItem.map((item, index) => (
                 <Toast key={index} onClose={() => removeListener(index)} className="mb-2">
                   <Toast.Header>
-                    <strong className="me-auto"></strong>
+                    <strong className="me-auto">{item.listName}</strong>
                   </Toast.Header>
                   <Toast.Body>
                     {item.numberCard}
