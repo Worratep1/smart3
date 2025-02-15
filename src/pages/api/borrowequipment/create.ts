@@ -13,7 +13,10 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
         try {
             if (req.body) {
                 const body = req.body
-                if (body.borrow_date && body.borrow_return && body.borrow_user_id && body.borrow_address && body.borrow_tel && body.borrow_objective && body.borrow_name && body.borrow_list) {
+                if (body.borrow_date && body.borrow_return 
+                    && body.borrow_user_id && body.borrow_address 
+                    && body.borrow_tel && body.borrow_objective
+                     && body.borrow_name && body.borrow_list) {
                     const borrowequipment = await prisma.borrowequipment.create({
                         data: {
                             borrow_date          : new Date(body.borrow_date),
