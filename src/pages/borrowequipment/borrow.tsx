@@ -43,15 +43,18 @@ const Borrow = () => {
         fetchUserData();
     }, []);
 
-    const fetchAvailableEquipment = async () => {
+      // ดึงข้อมูลอุปกรณ์ที่สามารถยืมได้
+      const fetchAvailableEquipment = async () => {
         try {
-            const response = await axios.get('/api/equipment/available');
-            setAvailableEquipment(response.data.data);
+            const response = await axios.get(`/api/borrowequipment/getAvailableEquipment`);
+            if (response.data?.data) {
+                setAvailableEquipment(response.data.data);
+            }
         } catch (error) {
+            console.error("Error fetching available equipment:", error);
             setAlert({ show: true, message: 'ไม่สามารถโหลดรายการอุปกรณ์ได้' });
         }
     };
-
     const fetchUserData = async () => {
         try {
             const response = await axios.get('/api/user/getUser');
