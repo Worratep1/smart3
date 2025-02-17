@@ -1,6 +1,6 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react'
-import axios from 'axios'
-import { useRouter } from 'next/router'
+import React, { useState, useRef, useEffect, useCallback } from 'react';
+import axios from 'axios';
+import { useRouter } from 'next/router';
 
 import Container from 'react-bootstrap/Container';
 import Form from 'react-bootstrap/Form';
@@ -8,15 +8,21 @@ import Table from 'react-bootstrap/Table';
 import Col from 'react-bootstrap/Col';
 import Toast from 'react-bootstrap/Toast';
 
-import InputLabel from '@/components/Form/InputLabel'
-import TextareaLabel from '@/components/Form/TextareaLabel'
-import ModalAlert from '@/components/Modals/ModalAlert'
-import ModalActions from '@/components/Modals/ModalActions'
+import InputLabel from '@/components/Form/InputLabel';
+import TextareaLabel from '@/components/Form/TextareaLabel';
+import ModalAlert from '@/components/Modals/ModalAlert';
+import ModalActions from '@/components/Modals/ModalActions';
 import ButtonState from '@/components/Button/ButtonState';
 import ButtonAdd from '@/components/Button/ButtonAdd';
 import DatePickerX from '@/components/DatePicker/DatePickerX';
 
-import styles from '@/styles/page.module.css'
+import styles from '@/styles/page.module.css';
+
+interface EquipmentType {
+    equipment_id: number;
+    equipment_name: string;
+    equipment_code: string;
+}
 
 interface ListItemType {
     listName: string;
@@ -25,46 +31,41 @@ interface ListItemType {
 
 const Borrow = () => {
     const router = useRouter();
-    const inputRef = useRef<HTMLFormElement>(null)
+    const inputRef = useRef<HTMLFormElement>(null);
 
-    const [validated, setValidated]           = useState(false);
+    const [validated, setValidated] = useState(false);
     const [validatedModal, setValidatedModal] = useState(false);
-    const [alert, setAlert]                   = useState({ show: false, message: '' });
-    const [isLoading, setLoading]             = useState(false);
-    const [startDate, setStartDate]           = useState<Date | null>(new Date());
-    const [endDate, setEndDate]               = useState<Date | null>(new Date());
-    const [modalSave, setModalSave]           = useState(false);
+    const [alert, setAlert] = useState({ show: false, message: '' });
+    const [isLoading, setLoading] = useState(false);
+    const [startDate, setStartDate] = useState<Date | null>(new Date());
+    const [endDate, setEndDate] = useState<Date | null>(new Date());
+    const [modalSave, setModalSave] = useState(false);
 
     const [listItem, setListItem] = useState<ListItemType[]>([]);
-    const [user, setUser]         = useState<UserDataProps | null>(null);
+    const [user, setUser] = useState<UserDataProps | null>(null);
+    
+    // เก็บรายการอุปกรณ์ที่ว่าง
+    const [availableEquipment, setAvailableEquipment] = useState<EquipmentType[]>([]);
+    
+    // เก็บอุปกรณ์ที่เลือก
+    const [selectedEquipment, setSelectedEquipment] = useState<EquipmentType | null>(null);
 
     useEffect(() => {
-        const auToken = router.query.auToken
-        console.log("🚀 ~ useEffect ~ auToken:", auToken)
-        if (auToken) {
-            onGetUserData(auToken as string)
-        }
-    }, [router])
+        fetchAvailableEquipment();
+    }, []);
 
-   
-    const onGetUserData = async (auToken: string) => {
+    // โหลดข้อมูลอุปกรณ์ที่สามารถยืมได้
+    const fetchAvailableEquipment = async () => {
         try {
-            const responseUser = await axios.get(`${process.env.WEB_DOMAIN}/api/user/getUser/${auToken}`);
-            if(responseUser.data?.data){
-                console.log('responseUser.data.data', responseUser.data.data)
-                setUser(responseUser.data.data)
-            }else{
-                alertModal()
+            const response = await axios.get(`${process.env.WEB_DOMAIN}/api/borrowequipment/getAvailableEquipment`);
+            if (response.data?.data) {
+                setAvailableEquipment(response.data.data);
             }
         } catch (error) {
-            console.log("🚀 ~ file: registration.tsx:66 ~ onGetUserData ~ error:", error)
-            setAlert({ show: true, message: 'ระบบไม่สามารถดึงข้อมูลของท่านได้ กรุณาลองใหม่อีกครั้ง' })
+            console.error("Error fetching available equipment:", error);
+            setAlert({ show: true, message: 'ไม่สามารถโหลดรายการอุปกรณ์ได้' });
         }
-    }
-
-    const alertModal = () => {
-        setAlert({ show: true, message: 'ระบบไม่สามารถดึงข้อมูลของท่านได้ กรุณาลองใหม่อีกครั้ง' })
-    }
+    };
 
     const handleSubmit = useCallback(async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -81,15 +82,18 @@ const Borrow = () => {
         try {
             if (listItem.length && user && startDate && endDate) {
                 const data = {
-                    borrow_date     : startDate,
-                    borrow_return   : endDate,
-                    borrow_status   : 1,
-                    borrow_user_id  : user.users_id,
-                    borrow_address  : form['borrow_address'].value,
-                    borrow_tel      : form['borrow_tel'].value,
+                    borrow_date: startDate,
+                    borrow_return: endDate,
+                    borrow_status: 1,
+                    borrow_user_id: user.users_id,
+                    borrow_address: form['borrow_address'].value,
+                    borrow_tel: form['borrow_tel'].value,
                     borrow_objective: form['borrow_objective'].value,
-                    borrow_name     : form['borrow_name'].value,
-                    borrow_list     : listItem
+                    borrow_name: form['borrow_name'].value,
+                    borrow_list: listItem.map(item => ({
+                        equipment_name: item.listName,
+                        equipment_code: item.numberCard
+                    }))
                 };
     
                 await axios.post(`${process.env.WEB_DOMAIN}/api/borrowequipment/create`, data);
@@ -98,7 +102,7 @@ const Borrow = () => {
                 setAlert({ show: true, message: 'กรุณาเพิ่มข้อมูลอุปกรณ์' });
             }
         } catch (error) {
-            setAlert({ show: true, message: 'ระบบไม่สามารถดึงข้อมูลของท่านได้ กรุณาลองใหม่อีกครั้ง' });
+            setAlert({ show: true, message: 'ระบบไม่สามารถบันทึกข้อมูลได้ กรุณาลองใหม่อีกครั้ง' });
         } finally {
             setLoading(false);
             setValidated(true);
@@ -106,26 +110,22 @@ const Borrow = () => {
     }, [listItem, user, startDate, endDate]);
 
     const handleSave = async () => {
-        try {
-            const formInput = inputRef.current
-            if (formInput) {
-                if (formInput.checkValidity()) {
-                    setListItem([...listItem, { listName: formInput['listName'].value, numberCard: formInput['numberCard'].value }])
-                    setModalSave(false)
-                    setValidatedModal(false);
-                }else{
-                    setValidatedModal(true);
-                }
-            }
-            
-        } catch (error) {
-
+        if (selectedEquipment) {
+            setListItem([...listItem, { 
+                listName: selectedEquipment.equipment_name, 
+                numberCard: selectedEquipment.equipment_code 
+            }]);
+            setModalSave(false);
+            setValidatedModal(false);
+        } else {
+            setValidatedModal(true);
         }
-    }
+    };
+
     const removeListener = (index: number) => {
-        const newList = listItem.filter((item, i) => i !== index)
-        setListItem(newList)
-    }
+        const newList = listItem.filter((_, i) => i !== index);
+        setListItem(newList);
+    };
 
     return (
         <Container>
@@ -141,57 +141,51 @@ const Borrow = () => {
                         <TextareaLabel label='ที่อยู่' id="borrow_address" placeholder="กรอกที่อยู่" required />
                     </Form.Group>
                     <Form.Group>
-                        <InputLabel label='หมายเลขโทรศัทพ์' id="borrow_tel" placeholder="กรอกหมายเลขโทรศัทพ์" type="number" required />
+                        <InputLabel label='หมายเลขโทรศัพท์' id="borrow_tel" placeholder="กรอกหมายเลขโทรศัพท์" type="number" required />
                     </Form.Group>
                     <Form.Group>
                         <InputLabel label='ขอยืมครุภัณฑ์เพื่อ' id="borrow_objective" placeholder="กรอกประสงค์ขอยืม" required />
                     </Form.Group>
-                    <Form.Group>
-                        <p className="m-0">วันเดือนปี (เริ่ม)</p>
-                        <div className="py-2">
-                            <DatePickerX selected={startDate} onChange={(date) => setStartDate(date)} />
-                        </div>
-                    </Form.Group>
-                    <Form.Group>
-                        <p className="m-0">วันเดือนปี (สิ้นสุด)</p>
-                        <div className="py-2">
-                            <DatePickerX selected={endDate} onChange={(date) => setEndDate(date)} />
-                        </div>
-                    </Form.Group>
+
+                    {/* แสดงรายการอุปกรณ์ที่เลือก */}
                     <Form.Group className="py-2">
-                        {
-                            listItem.length > 0 && listItem.map((item, index) => (
-                                <Toast key={index} onClose={() => removeListener(index)} className="mb-2">
-                                    <Toast.Header>
-                                        <strong className="me-auto">{item.listName}</strong>
-                                    </Toast.Header>
-                                    <Toast.Body>{item.numberCard}</Toast.Body>
-                                </Toast>
-                            ))
-                        }
+                        {listItem.length > 0 && listItem.map((item, index) => (
+                            <Toast key={index} onClose={() => removeListener(index)} className="mb-2">
+                                <Toast.Header>
+                                    <strong className="me-auto">{item.listName}</strong>
+                                </Toast.Header>
+                                <Toast.Body>{item.numberCard}</Toast.Body>
+                            </Toast>
+                        ))}
 
                         <Col sm={2}>
                             <ButtonAdd onClick={() => setModalSave(true)} title='เพิ่มข้อมูลอุปกรณ์' />
                         </Col>
                     </Form.Group>
+
                     <Form.Group className="d-flex justify-content-center py-3">
                         <ButtonState type="submit" className={styles.button} text={'บันทึก'} icon="fas fa-save" isLoading={isLoading} />
                     </Form.Group>
                 </Form>
             </div>
-            <ModalAlert show={alert.show} message={alert.message} handleClose={() => setAlert({ show: false, message: '' })} />
-            <ModalActions show={modalSave} title='เพิ่มข้อมูลอุปกรณ์' onClick={() => handleSave()} onHide={() => setModalSave(false)}>
-                <Form noValidate validated={validatedModal} ref={inputRef}>
+
+            {/* Modal เลือกอุปกรณ์ */}
+            <ModalActions show={modalSave} title='เพิ่มข้อมูลอุปกรณ์' onClick={handleSave} onHide={() => setModalSave(false)}>
+                <Form noValidate validated={validatedModal}>
                     <Form.Group>
-                        <InputLabel label='รายการ' id='listName' placeholder="กรอกรายการ" required />
-                    </Form.Group>
-                    <Form.Group>
-                        <InputLabel label='หมายเลขชุดอุปกรณ์' id='numberCard' placeholder="กรอกหมายเลขชุดอุปกรณ์" required />
+                        <Form.Label>รายการอุปกรณ์</Form.Label>
+                        <Form.Select onChange={(e) => {
+                            const selected = availableEquipment.find(eq => eq.equipment_id === parseInt(e.target.value));
+                            if (selected) setSelectedEquipment(selected);
+                        }}>
+                            <option value="">-- เลือกอุปกรณ์ --</option>
+                            {availableEquipment.map(e => <option key={e.equipment_id} value={e.equipment_id}>{e.equipment_name}</option>)}
+                        </Form.Select>
                     </Form.Group>
                 </Form>
             </ModalActions>
         </Container>
-    )
+    );
 }
 
-export default Borrow
+export default Borrow;
