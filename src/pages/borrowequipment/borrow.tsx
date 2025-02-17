@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useRouter } from 'next/router';
 
@@ -28,8 +28,7 @@ interface ListItemType {
 
 const Borrow = () => {
     const router = useRouter();
-    const inputRef = useRef<HTMLFormElement>(null);
-
+    const [user, setUser] = useState<any>(null);
     const [validated, setValidated] = useState(false);
     const [validatedModal, setValidatedModal] = useState(false);
     const [alert, setAlert] = useState({ show: false, message: '' });
@@ -41,11 +40,31 @@ const Borrow = () => {
 
     useEffect(() => {
         fetchAvailableEquipment();
-    }, []);
+        const auToken = router.query.auToken;
+        if (auToken) {
+            onGetUserData(auToken as string);
+        }
+    }, [router]);
 
+    // ✅ ดึงข้อมูลผู้ใช้ที่ล็อกอิน
+    const onGetUserData = async (auToken: string) => {
+        try {
+            const responseUser = await axios.get(`/api/user/getUser/${auToken}`);
+            if (responseUser.data?.data) {
+                setUser(responseUser.data.data);
+            } else {
+                setAlert({ show: true, message: 'ระบบไม่สามารถดึงข้อมูลของท่านได้' });
+            }
+        } catch (error) {
+            console.error("Error fetching user data:", error);
+            setAlert({ show: true, message: 'เกิดข้อผิดพลาดในการดึงข้อมูลผู้ใช้' });
+        }
+    };
+
+    // ✅ โหลดอุปกรณ์ที่สามารถยืมได้จากฐานข้อมูล
     const fetchAvailableEquipment = async () => {
         try {
-            const response = await axios.get(`${process.env.WEB_DOMAIN}/api/borrowequipment/getAvailableEquipment`);
+            const response = await axios.get('/api/borrowequipment/getAvailableEquipment');
             if (response.data?.data) {
                 setAvailableEquipment(response.data.data);
             }
@@ -55,13 +74,15 @@ const Borrow = () => {
         }
     };
 
+    // ✅ บันทึกอุปกรณ์ที่เลือกไปในรายการ
     const handleSave = () => {
         if (selectedEquipment) {
-            setListItem([...listItem, { 
-                equipment_id: selectedEquipment.equipment_id, 
-                equipment_name: selectedEquipment.equipment_name, 
-                equipment_code: selectedEquipment.equipment_code 
+            setListItem([...listItem, {
+                equipment_id: selectedEquipment.equipment_id,
+                equipment_name: selectedEquipment.equipment_name,
+                equipment_code: selectedEquipment.equipment_code
             }]);
+            setSelectedEquipment(null); // ✅ รีเซ็ตค่า
             setModalSave(false);
             setValidatedModal(false);
         } else {
@@ -69,9 +90,15 @@ const Borrow = () => {
         }
     };
 
+    // ✅ ส่งข้อมูลไปยัง API `create.ts`
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         event.stopPropagation();
+
+        if (!user) {
+            setAlert({ show: true, message: 'กรุณาล็อกอินก่อนทำรายการ' });
+            return;
+        }
 
         if (listItem.length === 0) {
             setAlert({ show: true, message: 'กรุณาเพิ่มข้อมูลอุปกรณ์' });
@@ -85,20 +112,21 @@ const Borrow = () => {
                 borrow_date: new Date(),
                 borrow_return: new Date(),
                 borrow_status: 1,
-                borrow_user_id: 1, // ใส่ user_id ตามจริง
+                borrow_user_id: user.users_id,  // ✅ ใช้ ID ของผู้ใช้ที่ล็อกอิน
                 borrow_address: event.currentTarget['borrow_address'].value,
                 borrow_tel: event.currentTarget['borrow_tel'].value,
                 borrow_objective: event.currentTarget['borrow_objective'].value,
                 borrow_name: event.currentTarget['borrow_name'].value,
-                borrow_list: listItem.map(item => ({
-                    equipment_id: item.equipment_id,
-                    equipment_name: item.equipment_name,
-                    equipment_code: item.equipment_code
-                }))
+                borrow_list: listItem
             };
 
-            await axios.post(`${process.env.WEB_DOMAIN}/api/borrowequipment/create`, data);
+            await axios.post('/api/borrowequipment/create', data);
             setAlert({ show: true, message: 'บันทึกข้อมูลสำเร็จ' });
+
+            // ✅ ล้างรายการที่เลือกหลังจากบันทึกสำเร็จ
+            setListItem([]);
+            fetchAvailableEquipment(); // ✅ โหลดรายการอุปกรณ์ใหม่
+
         } catch (error) {
             setAlert({ show: true, message: 'ระบบไม่สามารถบันทึกข้อมูลได้ กรุณาลองใหม่อีกครั้ง' });
         } finally {
