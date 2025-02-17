@@ -1,18 +1,11 @@
+import { NextApiRequest, NextApiResponse } from 'next';
+import prisma from '@/lib/prisma';
 
-import { NextApiRequest, NextApiResponse } from 'next'
-import { NextResponse } from 'next/server'
-import axios from "axios";
-import prisma from '@/lib/prisma'
-import { replyMessage, replyRegistration } from '@/utils/apiLineReply';
-type Data = {
-    message: string;
-    data?: any;
-}
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
     if (req.method === 'POST') {
         try {
             const body = req.body;
-            
+
             // ตรวจสอบว่ามีข้อมูลครบถ้วน
             if (!body.borrow_date || !body.borrow_return || !body.borrow_user_id ||
                 !body.borrow_address || !body.borrow_tel || !body.borrow_objective ||
@@ -36,7 +29,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
                 },
             });
 
-            // เพิ่มอุปกรณ์ที่ถูกยืมลงใน borrowequipment_list
+            // เพิ่มอุปกรณ์ที่ถูกยืมลงใน borrowequipment_list และอัปเดตสถานะอุปกรณ์
             if (borrowequipment) {
                 for (const item of body.borrow_list) {
                     // ตรวจสอบว่าอุปกรณ์มีอยู่จริงในระบบหรือไม่
@@ -51,7 +44,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
                     await prisma.borrowequipment_list.create({
                         data: {
                             borrow_id: borrowequipment.borrow_id,
-                            equipment_id: item.equipment_id, // ✅ อ้างอิงอุปกรณ์จาก equipment_id
+                            equipment_id: item.equipment_id,
                         }
                     });
 
@@ -65,7 +58,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
             return res.status(200).json({ message: 'บันทึกข้อมูลสำเร็จ' });
         } catch (error) {
-            console.error("🚀 ~ handle ~ error:", error)
+            console.error("🚀 ~ handle ~ error:", error);
             return res.status(500).json({ message: 'เกิดข้อผิดพลาด', data: error });
         }
     } else {
