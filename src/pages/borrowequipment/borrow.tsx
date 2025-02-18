@@ -40,11 +40,13 @@ const Borrow = () => {
     const [selectedEquipment, setSelectedEquipment] = useState<EquipmentType | null>(null);
     const [listItem, setListItem] = useState<EquipmentType[]>([]);
 
+    // เรียกใช้ฟังก์ชันเมื่อเริ่มต้น
     useEffect(() => {
         fetchAvailableEquipment();
         fetchUserData();
     }, []);
 
+    // ฟังก์ชันโหลดอุปกรณ์
     const fetchAvailableEquipment = async () => {
         try {
             const response = await axios.get(`/api/borrowequipment/getAvailableEquipment`);
@@ -57,6 +59,7 @@ const Borrow = () => {
         }
     };
 
+    // ฟังก์ชันโหลดข้อมูลผู้ใช้
     const fetchUserData = async () => {
         try {
             const auToken = router.query.auToken;
@@ -74,6 +77,7 @@ const Borrow = () => {
         }
     };
 
+    // ฟังก์ชันที่ใช้ส่งข้อมูลไปยัง API
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         event.stopPropagation();
