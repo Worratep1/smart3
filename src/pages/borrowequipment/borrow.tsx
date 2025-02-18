@@ -78,7 +78,6 @@ const Borrow = () => {
         event.preventDefault();
         event.stopPropagation();
 
-        const form = inputRef.current;
         if (!listItem.length || !user) {
             setAlert({ show: true, message: 'กรุณาเลือกอุปกรณ์และกรอกข้อมูลให้ครบถ้วน' });
             return;
