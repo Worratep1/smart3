@@ -77,36 +77,50 @@ const Borrow = () => {
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         event.stopPropagation();
-
-        if (!listItem.length || !user) {
+    
+        // ตรวจสอบค่าของ listItem และ user
+        console.log('listItem:', listItem);  // เช็คค่าของ listItem
+        console.log('user:', user);  // เช็คค่าของ user
+    
+        if (!listItem || listItem.length === 0 || !user) {
             setAlert({ show: true, message: 'กรุณาเลือกอุปกรณ์และกรอกข้อมูลให้ครบถ้วน' });
             return;
         }
-
+    
         setLoading(true);
-
+    
         try {
             const data = {
                 borrow_date: startDate,
                 borrow_return: endDate,
                 borrow_status: 1,
-                borrow_user_id: user.users_id,
+                borrow_user_id: user.users_id, // ตรวจสอบว่า user.users_id ถูกต้อง
                 borrow_address: event.currentTarget['borrow_address'].value,
                 borrow_tel: event.currentTarget['borrow_tel'].value,
                 borrow_objective: event.currentTarget['borrow_objective'].value,
                 borrow_name: event.currentTarget['borrow_name'].value,
-                borrow_list: listItem.map(item => ({ equipment_id: item.equipment_id }))
+                borrow_list: listItem.map(item => ({ equipment_id: item.equipment_id })) // เช็คว่า listItem มีข้อมูลอุปกรณ์จริง
             };
-
-            await axios.post(`${process.env.WEB_DOMAIN}/api/borrowequipment/create`, data);
-            setAlert({ show: true, message: 'บันทึกข้อมูลสำเร็จ' });
+    
+            const response = await axios.post(`${process.env.WEB_DOMAIN}/api/borrowequipment/create`, data);
+    
+            // ตรวจสอบการตอบกลับจาก API
+            console.log('API response:', response);
+    
+            if (response.status === 200) {
+                setAlert({ show: true, message: 'บันทึกข้อมูลสำเร็จ' });
+            } else {
+                setAlert({ show: true, message: 'ไม่สามารถบันทึกข้อมูลได้ กรุณาลองใหม่อีกครั้ง' });
+            }
         } catch (error) {
+            console.error('Error during submit:', error);
             setAlert({ show: true, message: 'ไม่สามารถบันทึกข้อมูลได้ กรุณาลองใหม่อีกครั้ง' });
         } finally {
             setLoading(false);
             setValidated(true);
         }
     };
+    
 
     const handleAddEquipment = () => {
         if (selectedEquipment && !listItem.some(item => item.equipment_id === selectedEquipment.equipment_id)) {
