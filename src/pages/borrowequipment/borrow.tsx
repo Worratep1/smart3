@@ -106,8 +106,11 @@ const Borrow = () => {
                 }))
             };
 
+            console.log("🚀 ~ ส่งข้อมูลไปยัง API:", data); // ✅ Debug ค่าก่อนส่ง
+
             await axios.post(`${process.env.WEB_DOMAIN}/api/borrowequipment/create`, data);
             setAlert({ show: true, message: 'บันทึกข้อมูลสำเร็จ' });
+
             fetchAvailableEquipment(); // รีโหลดรายการอุปกรณ์
             setListItem([]); // รีเซ็ตค่าหลังบันทึก
         } catch (error) {
