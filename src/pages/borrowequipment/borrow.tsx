@@ -24,9 +24,9 @@ interface EquipmentType {
 }
 
 interface ListItemType {
-    listName: string;
-    numberCard: string;
     equipment_id: number;
+    equipment_name: string;
+    equipment_code: string;
 }
 
 const Borrow = () => {
@@ -34,7 +34,6 @@ const Borrow = () => {
     const inputRef = useRef<HTMLFormElement>(null);
 
     const [validated, setValidated] = useState(false);
-    const [validatedModal, setValidatedModal] = useState(false);
     const [alert, setAlert] = useState({ show: false, message: '' });
     const [isLoading, setLoading] = useState(false);
     const [startDate, setStartDate] = useState<Date | null>(new Date());
@@ -51,6 +50,7 @@ const Borrow = () => {
         fetchUserData();
     }, []);
 
+    // ✅ ดึงข้อมูลอุปกรณ์ที่ยังไม่ถูกยืม
     const fetchAvailableEquipment = async () => {
         try {
             const response = await axios.get(`/api/borrowequipment/getAvailableEquipment`);
@@ -62,6 +62,7 @@ const Borrow = () => {
         }
     };
 
+    // ✅ ดึงข้อมูลผู้ใช้
     const fetchUserData = async () => {
         try {
             const auToken = router.query.auToken;
@@ -78,6 +79,7 @@ const Borrow = () => {
         }
     };
 
+    // ✅ ฟังก์ชันบันทึกข้อมูล
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         event.stopPropagation();
@@ -101,13 +103,13 @@ const Borrow = () => {
                 borrow_name: event.currentTarget['borrow_name'].value,
                 borrow_list: listItem.map(item => ({
                     equipment_id: item.equipment_id,
-                    listName: item.listName,
-                    numberCard: item.numberCard,
                 }))
             };
 
             await axios.post(`${process.env.WEB_DOMAIN}/api/borrowequipment/create`, data);
             setAlert({ show: true, message: 'บันทึกข้อมูลสำเร็จ' });
+            fetchAvailableEquipment(); // รีโหลดรายการอุปกรณ์
+            setListItem([]); // รีเซ็ตค่าหลังบันทึก
         } catch (error) {
             setAlert({ show: true, message: 'ไม่สามารถบันทึกข้อมูลได้ กรุณาลองใหม่อีกครั้ง' });
         } finally {
@@ -116,20 +118,27 @@ const Borrow = () => {
         }
     };
 
+    // ✅ เพิ่มอุปกรณ์ที่เลือกไปยังรายการยืม
     const handleAddEquipment = () => {
         if (selectedEquipment && !listItem.some(item => item.equipment_id === selectedEquipment.equipment_id)) {
             setListItem([
                 ...listItem,
-                { listName: selectedEquipment.equipment_name, numberCard: selectedEquipment.equipment_code, equipment_id: selectedEquipment.equipment_id }
+                { 
+                    equipment_id: selectedEquipment.equipment_id,
+                    equipment_name: selectedEquipment.equipment_name,
+                    equipment_code: selectedEquipment.equipment_code 
+                }
             ]);
+            setAvailableEquipment(availableEquipment.filter(eq => eq.equipment_id !== selectedEquipment.equipment_id));
             setModalSave(false);
-        } else {
-            setValidatedModal(true);
         }
     };
 
+    // ✅ ลบอุปกรณ์ออกจากรายการ
     const removeItem = (index: number) => {
+        const removedItem = listItem[index];
         setListItem(listItem.filter((_, i) => i !== index));
+        setAvailableEquipment([...availableEquipment, removedItem]);
     };
 
     return (
@@ -143,7 +152,7 @@ const Borrow = () => {
                     <TextareaLabel label='ที่อยู่' id="borrow_address" required />
                     <InputLabel label='หมายเลขโทรศัพท์' id="borrow_tel" required />
                     <InputLabel label='ขอยืมครุภัณฑ์เพื่อ' id="borrow_objective" required />
-                    
+
                     <p className="m-0">วันเดือนปี (เริ่ม)</p>
                     <DatePickerX selected={startDate} onChange={setStartDate} />
 
@@ -154,9 +163,9 @@ const Borrow = () => {
                         {listItem.length > 0 && listItem.map((item, index) => (
                             <Toast key={index} onClose={() => removeItem(index)} className="mb-2">
                                 <Toast.Header>
-                                    <strong className="me-auto">{item.listName}</strong>
+                                    <strong className="me-auto">{item.equipment_name}</strong>
                                 </Toast.Header>
-                                <Toast.Body>{item.numberCard}</Toast.Body>
+                                <Toast.Body>{item.equipment_code}</Toast.Body>
                             </Toast>
                         ))}
                         <Col sm={2}>
@@ -172,23 +181,20 @@ const Borrow = () => {
 
             <ModalAlert show={alert.show} message={alert.message} handleClose={() => setAlert({ show: false, message: '' })} />
             
-            <ModalActions show={modalSave} title='เพิ่มข้อมูลอุปกรณ์' onClick={handleAddEquipment} onHide={() => setModalSave(false)}>
-                <Form noValidate validated={validatedModal}>
-                    <Form.Group>
-                        <Form.Label>เลือกอุปกรณ์</Form.Label>
-                        <Form.Select onChange={(e) => {
-                            const selected = availableEquipment.find(eq => eq.equipment_id === Number(e.target.value));
-                            if (selected) setSelectedEquipment(selected);
-                        }}>
-                            <option value="">-- เลือกอุปกรณ์ --</option>
-                            {availableEquipment.map(e => (
-                                <option key={e.equipment_id} value={e.equipment_id}>
-                                    {e.equipment_name} - {e.equipment_code}
-                                </option>
-                            ))}
-                        </Form.Select>
-                    </Form.Group>
-                </Form>
+            <ModalActions show={modalSave} title='เลือกอุปกรณ์' onClick={handleAddEquipment} onHide={() => setModalSave(false)}>
+                <Form.Group>
+                    <Form.Select onChange={(e) => {
+                        const selected = availableEquipment.find(eq => eq.equipment_id === Number(e.target.value));
+                        if (selected) setSelectedEquipment(selected);
+                    }}>
+                        <option value="">-- เลือกอุปกรณ์ --</option>
+                        {availableEquipment.map(e => (
+                            <option key={e.equipment_id} value={e.equipment_id}>
+                                {e.equipment_name} - {e.equipment_code}
+                            </option>
+                        ))}
+                    </Form.Select>
+                </Form.Group>
             </ModalActions>
         </Container>
     );
