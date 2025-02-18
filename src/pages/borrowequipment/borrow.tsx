@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
 import { useRouter } from 'next/router';
 
@@ -23,17 +23,12 @@ interface EquipmentType {
     equipment_code: string;
 }
 
-interface ListItemType {
-    equipment_id: number;
-    equipment_name: string;
-    equipment_code: string;
-}
-
 const Borrow = () => {
     const router = useRouter();
     const inputRef = useRef<HTMLFormElement>(null);
 
     const [validated, setValidated] = useState(false);
+    const [validatedModal, setValidatedModal] = useState(false);
     const [alert, setAlert] = useState({ show: false, message: '' });
     const [isLoading, setLoading] = useState(false);
     const [startDate, setStartDate] = useState<Date | null>(new Date());
@@ -43,14 +38,13 @@ const Borrow = () => {
     const [user, setUser] = useState<any>(null);
     const [availableEquipment, setAvailableEquipment] = useState<EquipmentType[]>([]);
     const [selectedEquipment, setSelectedEquipment] = useState<EquipmentType | null>(null);
-    const [listItem, setListItem] = useState<ListItemType[]>([]);
+    const [listItem, setListItem] = useState<EquipmentType[]>([]);
 
     useEffect(() => {
         fetchAvailableEquipment();
         fetchUserData();
     }, []);
 
-    // ✅ ดึงข้อมูลอุปกรณ์ที่ยังไม่ถูกยืม
     const fetchAvailableEquipment = async () => {
         try {
             const response = await axios.get(`/api/borrowequipment/getAvailableEquipment`);
@@ -58,11 +52,11 @@ const Borrow = () => {
                 setAvailableEquipment(response.data.data);
             }
         } catch (error) {
+            console.error("Error fetching available equipment:", error);
             setAlert({ show: true, message: 'ไม่สามารถโหลดรายการอุปกรณ์ได้' });
         }
     };
 
-    // ✅ ดึงข้อมูลผู้ใช้
     const fetchUserData = async () => {
         try {
             const auToken = router.query.auToken;
@@ -75,14 +69,18 @@ const Borrow = () => {
                 }
             }
         } catch (error) {
+            console.error("Error fetching user data:", error);
             setAlert({ show: true, message: 'ไม่สามารถโหลดข้อมูลผู้ใช้ได้' });
         }
     };
 
-    // ✅ ฟังก์ชันบันทึกข้อมูล
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         event.stopPropagation();
+
+        // Debug: ตรวจสอบค่า listItem และ user
+        console.log('listItem:', listItem);
+        console.log('user:', user);
 
         if (!listItem.length || !user) {
             setAlert({ show: true, message: 'กรุณาเลือกอุปกรณ์และกรอกข้อมูลให้ครบถ้วน' });
@@ -101,19 +99,13 @@ const Borrow = () => {
                 borrow_tel: event.currentTarget['borrow_tel'].value,
                 borrow_objective: event.currentTarget['borrow_objective'].value,
                 borrow_name: event.currentTarget['borrow_name'].value,
-                borrow_list: listItem.map(item => ({
-                    equipment_id: item.equipment_id,
-                }))
+                borrow_list: listItem.map(item => ({ equipment_id: item.equipment_id }))
             };
-
-            console.log("🚀 ~ ส่งข้อมูลไปยัง API:", data); // ✅ Debug ค่าก่อนส่ง
 
             await axios.post(`${process.env.WEB_DOMAIN}/api/borrowequipment/create`, data);
             setAlert({ show: true, message: 'บันทึกข้อมูลสำเร็จ' });
-
-            fetchAvailableEquipment(); // รีโหลดรายการอุปกรณ์
-            setListItem([]); // รีเซ็ตค่าหลังบันทึก
         } catch (error) {
+            console.error("Error on submit:", error);
             setAlert({ show: true, message: 'ไม่สามารถบันทึกข้อมูลได้ กรุณาลองใหม่อีกครั้ง' });
         } finally {
             setLoading(false);
@@ -121,27 +113,17 @@ const Borrow = () => {
         }
     };
 
-    // ✅ เพิ่มอุปกรณ์ที่เลือกไปยังรายการยืม
     const handleAddEquipment = () => {
         if (selectedEquipment && !listItem.some(item => item.equipment_id === selectedEquipment.equipment_id)) {
-            setListItem([
-                ...listItem,
-                { 
-                    equipment_id: selectedEquipment.equipment_id,
-                    equipment_name: selectedEquipment.equipment_name,
-                    equipment_code: selectedEquipment.equipment_code 
-                }
-            ]);
-            setAvailableEquipment(availableEquipment.filter(eq => eq.equipment_id !== selectedEquipment.equipment_id));
+            setListItem([...listItem, selectedEquipment]);
             setModalSave(false);
+        } else {
+            setValidatedModal(true);
         }
     };
 
-    // ✅ ลบอุปกรณ์ออกจากรายการ
     const removeItem = (index: number) => {
-        const removedItem = listItem[index];
         setListItem(listItem.filter((_, i) => i !== index));
-        setAvailableEquipment([...availableEquipment, removedItem]);
     };
 
     return (
@@ -150,12 +132,12 @@ const Borrow = () => {
                 <h1 className="py-2">ยืมอุปกรณ์ครุภัณฑ์</h1>
             </div>
             <div className="px-5">
-                <Form noValidate validated={validated} onSubmit={handleSubmit}>
+                <Form noValidate validated={validated} onSubmit={handleSubmit} ref={inputRef}>
                     <InputLabel label='ชื่อผู้ยืม' id="borrow_name" required />
                     <TextareaLabel label='ที่อยู่' id="borrow_address" required />
                     <InputLabel label='หมายเลขโทรศัพท์' id="borrow_tel" required />
                     <InputLabel label='ขอยืมครุภัณฑ์เพื่อ' id="borrow_objective" required />
-
+                    
                     <p className="m-0">วันเดือนปี (เริ่ม)</p>
                     <DatePickerX selected={startDate} onChange={setStartDate} />
 
@@ -182,22 +164,34 @@ const Borrow = () => {
                 </Form>
             </div>
 
-            <ModalAlert show={alert.show} message={alert.message} handleClose={() => setAlert({ show: false, message: '' })} />
+            <ModalAlert 
+                show={alert.show} 
+                message={alert.message} 
+                handleClose={() => setAlert({ show: false, message: '' })} 
+            />
             
-            <ModalActions show={modalSave} title='เลือกอุปกรณ์' onClick={handleAddEquipment} onHide={() => setModalSave(false)}>
-                <Form.Group>
-                    <Form.Select onChange={(e) => {
-                        const selected = availableEquipment.find(eq => eq.equipment_id === Number(e.target.value));
-                        if (selected) setSelectedEquipment(selected);
-                    }}>
-                        <option value="">-- เลือกอุปกรณ์ --</option>
-                        {availableEquipment.map(e => (
-                            <option key={e.equipment_id} value={e.equipment_id}>
-                                {e.equipment_name} - {e.equipment_code}
-                            </option>
-                        ))}
-                    </Form.Select>
-                </Form.Group>
+            <ModalActions 
+                show={modalSave} 
+                title='เพิ่มข้อมูลอุปกรณ์' 
+                onClick={handleAddEquipment} 
+                onHide={() => setModalSave(false)}
+            >
+                <Form noValidate validated={validatedModal}>
+                    <Form.Group>
+                        <Form.Label>เลือกอุปกรณ์</Form.Label>
+                        <Form.Select onChange={(e) => {
+                            const selected = availableEquipment.find(eq => eq.equipment_id === Number(e.target.value));
+                            if (selected) setSelectedEquipment(selected);
+                        }}>
+                            <option value="">-- เลือกอุปกรณ์ --</option>
+                            {availableEquipment.map(e => (
+                                <option key={e.equipment_id} value={e.equipment_id}>
+                                    {e.equipment_name} - {e.equipment_code}
+                                </option>
+                            ))}
+                        </Form.Select>
+                    </Form.Group>
+                </Form>
             </ModalActions>
         </Container>
     );
