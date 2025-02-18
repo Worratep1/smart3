@@ -18,188 +18,183 @@ import DatePickerX from '@/components/DatePicker/DatePickerX';
 import styles from '@/styles/page.module.css';
 
 interface EquipmentType {
-  equipment_id: number;
-  equipment_name: string;
-  equipment_code: string;
+    equipment_id: number;
+    equipment_name: string;
+    equipment_code: string;
 }
 
 const Borrow = () => {
-  const router = useRouter();
-  const inputRef = useRef<HTMLFormElement>(null);
+    const router = useRouter();
+    const inputRef = useRef<HTMLFormElement>(null);
 
-  const [validated, setValidated] = useState(false);
-  const [validatedModal, setValidatedModal] = useState(false);
-  const [alert, setAlert] = useState({ show: false, message: '' });
-  const [isLoading, setLoading] = useState(false);
-  const [startDate, setStartDate] = useState<Date | null>(new Date());
-  const [endDate, setEndDate] = useState<Date | null>(new Date());
-  const [modalSave, setModalSave] = useState(false);
+    const [validated, setValidated] = useState(false);
+    // ไม่ต้อง validate modal เพราะเป็นแค่ดรอปดาวน์
+    // const [validatedModal, setValidatedModal] = useState(false);
+    const [alert, setAlert] = useState({ show: false, message: '' });
+    const [isLoading, setLoading] = useState(false);
+    const [startDate, setStartDate] = useState<Date | null>(new Date());
+    const [endDate, setEndDate] = useState<Date | null>(new Date());
+    const [modalSave, setModalSave] = useState(false);
 
-  const [user, setUser] = useState<any>(null);
-  const [availableEquipment, setAvailableEquipment] = useState<EquipmentType[]>([]);
-  const [selectedEquipment, setSelectedEquipment] = useState<EquipmentType | null>(null);
-  const [listItem, setListItem] = useState<EquipmentType[]>([]);
+    const [user, setUser] = useState<any>(null);
+    const [availableEquipment, setAvailableEquipment] = useState<EquipmentType[]>([]);
+    const [selectedEquipment, setSelectedEquipment] = useState<EquipmentType | null>(null);
+    const [listItem, setListItem] = useState<EquipmentType[]>([]);
 
-  useEffect(() => {
-    fetchAvailableEquipment();
-    fetchUserData();
-  }, []);
+    useEffect(() => {
+        fetchAvailableEquipment();
+        fetchUserData();
+    }, []);
 
-  const fetchAvailableEquipment = async () => {
-    try {
-      const response = await axios.get(`/api/borrowequipment/getAvailableEquipment`);
-      if (response.data?.data) {
-        setAvailableEquipment(response.data.data);
-      }
-    } catch (error) {
-      console.error("Error fetching available equipment:", error);
-      setAlert({ show: true, message: 'ไม่สามารถโหลดรายการอุปกรณ์ได้' });
-    }
-  };
-
-  const fetchUserData = async () => {
-    try {
-      const auToken = router.query.auToken;
-      if (auToken) {
-        const responseUser = await axios.get(`${process.env.WEB_DOMAIN}/api/user/getUser/${auToken}`);
-        if (responseUser.data?.data) {
-          setUser(responseUser.data.data);
-        } else {
-          setAlert({ show: true, message: 'ไม่สามารถโหลดข้อมูลผู้ใช้ได้' });
+    const fetchAvailableEquipment = async () => {
+        try {
+            const response = await axios.get(`/api/borrowequipment/getAvailableEquipment`);
+            if (response.data?.data) {
+                setAvailableEquipment(response.data.data);
+            }
+        } catch (error) {
+            console.error("Error fetching available equipment:", error);
+            setAlert({ show: true, message: 'ไม่สามารถโหลดรายการอุปกรณ์ได้' });
         }
-      }
-    } catch (error) {
-      console.error("Error fetching user data:", error);
-      setAlert({ show: true, message: 'ไม่สามารถโหลดข้อมูลผู้ใช้ได้' });
-    }
-  };
+    };
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    event.stopPropagation();
+    const fetchUserData = async () => {
+        try {
+            const auToken = router.query.auToken;
+            if (auToken) {
+                const responseUser = await axios.get(`${process.env.WEB_DOMAIN}/api/user/getUser/${auToken}`);
+                if (responseUser.data?.data) {
+                    setUser(responseUser.data.data);
+                } else {
+                    setAlert({ show: true, message: 'ไม่สามารถโหลดข้อมูลผู้ใช้ได้' });
+                }
+            }
+        } catch (error) {
+            console.error("Error fetching user data:", error);
+            setAlert({ show: true, message: 'ไม่สามารถโหลดข้อมูลผู้ใช้ได้' });
+        }
+    };
 
-    // ตรวจสอบว่ามีการเลือกอุปกรณ์และข้อมูลผู้ใช้ครบถ้วนหรือไม่
-    if (!listItem.length || !user) {
-      setAlert({ show: true, message: 'กรุณาเลือกอุปกรณ์และกรอกข้อมูลให้ครบถ้วน' });
-      return;
-    }
+    const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        event.stopPropagation();
 
-    setLoading(true);
+        if (!listItem.length || !user) {
+            setAlert({ show: true, message: 'กรุณาเลือกอุปกรณ์และกรอกข้อมูลให้ครบถ้วน' });
+            return;
+        }
 
-    try {
-      const data = {
-        borrow_date: startDate,
-        borrow_return: endDate,
-        borrow_status: 1,
-        borrow_user_id: user.users_id,
-        borrow_address: event.currentTarget['borrow_address'].value,
-        borrow_tel: event.currentTarget['borrow_tel'].value,
-        borrow_objective: event.currentTarget['borrow_objective'].value,
-        borrow_name: event.currentTarget['borrow_name'].value,
-        // Mapping รายการอุปกรณ์ให้ตรงกับ API เก่า (listName และ numberCard)
-        borrow_list: listItem.map(item => ({
-          listName: item.equipment_name,
-          numberCard: item.equipment_code,
-        })),
-      };
+        setLoading(true);
 
-      await axios.post(`${process.env.WEB_DOMAIN}/api/borrowequipment/create`, data);
-      setAlert({ show: true, message: 'บันทึกข้อมูลสำเร็จ' });
-    } catch (error) {
-      setAlert({ show: true, message: 'ไม่สามารถบันทึกข้อมูลได้ กรุณาลองใหม่อีกครั้ง' });
-    } finally {
-      setLoading(false);
-      setValidated(true);
-    }
-  };
+        try {
+            const data = {
+                borrow_date: startDate,
+                borrow_return: endDate,
+                borrow_status: 1,
+                borrow_user_id: user.users_id,
+                borrow_address: event.currentTarget['borrow_address'].value,
+                borrow_tel: event.currentTarget['borrow_tel'].value,
+                borrow_objective: event.currentTarget['borrow_objective'].value,
+                borrow_name: event.currentTarget['borrow_name'].value,
+                borrow_list: listItem.map(item => ({ equipment_id: item.equipment_id }))
+            };
 
-  const handleAddEquipment = () => {
-    if (selectedEquipment && !listItem.some(item => item.equipment_id === selectedEquipment.equipment_id)) {
-      setListItem([...listItem, selectedEquipment]);
-      setModalSave(false);
-    } else {
-      setValidatedModal(true);
-    }
-  };
+            await axios.post(`${process.env.WEB_DOMAIN}/api/borrowequipment/create`, data);
+            setAlert({ show: true, message: 'บันทึกข้อมูลสำเร็จ' });
+        } catch (error) {
+            setAlert({ show: true, message: 'ไม่สามารถบันทึกข้อมูลได้ กรุณาลองใหม่อีกครั้ง' });
+        } finally {
+            setLoading(false);
+            setValidated(true);
+        }
+    };
 
-  const removeItem = (index: number) => {
-    setListItem(listItem.filter((_, i) => i !== index));
-  };
+    const handleAddEquipment = () => {
+        if (selectedEquipment && !listItem.some(item => item.equipment_id === selectedEquipment.equipment_id)) {
+            setListItem([...listItem, selectedEquipment]);
+            setModalSave(false);
+        } else {
+            // หากยังไม่ได้เลือกอุปกรณ์ อาจให้แจ้งเตือนเพิ่มเติมได้ที่นี่
+            setAlert({ show: true, message: 'กรุณาเลือกอุปกรณ์' });
+        }
+    };
 
-  return (
-    <Container>
-      <div className={styles.main}>
-        <h1 className="py-2">ยืมอุปกรณ์ครุภัณฑ์</h1>
-      </div>
-      <div className="px-5">
-        <Form noValidate validated={validated} onSubmit={handleSubmit}>
-          <InputLabel label="ชื่อผู้ยืม" id="borrow_name" required />
-          <TextareaLabel label="ที่อยู่" id="borrow_address" required />
-          <InputLabel label="หมายเลขโทรศัพท์" id="borrow_tel" required />
-          <InputLabel label="ขอยืมครุภัณฑ์เพื่อ" id="borrow_objective" required />
+    const removeItem = (index: number) => {
+        setListItem(listItem.filter((_, i) => i !== index));
+    };
 
-          <p className="m-0">วันเดือนปี (เริ่ม)</p>
-          <DatePickerX selected={startDate} onChange={setStartDate} />
+    return (
+        <Container>
+            <div className={styles.main}>
+                <h1 className="py-2">ยืมอุปกรณ์ครุภัณฑ์</h1>
+            </div>
+            <div className="px-5">
+                <Form noValidate validated={validated} onSubmit={handleSubmit}>
+                    <InputLabel label='ชื่อผู้ยืม' id="borrow_name" required />
+                    <TextareaLabel label='ที่อยู่' id="borrow_address" required />
+                    <InputLabel label='หมายเลขโทรศัพท์' id="borrow_tel" required />
+                    <InputLabel label='ขอยืมครุภัณฑ์เพื่อ' id="borrow_objective" required />
+                    
+                    <p className="m-0">วันเดือนปี (เริ่ม)</p>
+                    <DatePickerX selected={startDate} onChange={setStartDate} />
 
-          <p className="m-0">วันเดือนปี (สิ้นสุด)</p>
-          <DatePickerX selected={endDate} onChange={setEndDate} />
+                    <p className="m-0">วันเดือนปี (สิ้นสุด)</p>
+                    <DatePickerX selected={endDate} onChange={setEndDate} />
 
-          <Form.Group className="py-2">
-            {listItem.length > 0 &&
-              listItem.map((item, index) => (
-                <Toast key={index} onClose={() => removeItem(index)} className="mb-2">
-                  <Toast.Header>
-                    <strong className="me-auto">{item.equipment_name}</strong>
-                  </Toast.Header>
-                  <Toast.Body>{item.equipment_code}</Toast.Body>
-                </Toast>
-              ))}
-            <Col sm={2}>
-              <ButtonAdd onClick={() => setModalSave(true)} title="เพิ่มข้อมูลอุปกรณ์" />
-            </Col>
-          </Form.Group>
+                    <Form.Group className="py-2">
+                        {listItem.length > 0 && listItem.map((item, index) => (
+                            <Toast key={index} onClose={() => removeItem(index)} className="mb-2">
+                                <Toast.Header>
+                                    <strong className="me-auto">{item.equipment_name}</strong>
+                                </Toast.Header>
+                                <Toast.Body>{item.equipment_code}</Toast.Body>
+                            </Toast>
+                        ))}
+                        <Col sm={2}>
+                            <ButtonAdd onClick={() => setModalSave(true)} title='เพิ่มข้อมูลอุปกรณ์' />
+                        </Col>
+                    </Form.Group>
 
-          <Form.Group className="d-flex justify-content-center py-3">
-            <ButtonState type="submit" text={'บันทึก'} isLoading={isLoading} />
-          </Form.Group>
-        </Form>
-      </div>
+                    <Form.Group className="d-flex justify-content-center py-3">
+                        <ButtonState type="submit" text={'บันทึก'} isLoading={isLoading} />
+                    </Form.Group>
+                </Form>
+            </div>
 
-      <ModalAlert
-        show={alert.show}
-        message={alert.message}
-        handleClose={() => setAlert({ show: false, message: '' })}
-      />
-
-      <ModalActions
-        show={modalSave}
-        title="เพิ่มข้อมูลอุปกรณ์"
-        onClick={handleAddEquipment}
-        onHide={() => setModalSave(false)}
-      >
-        <Form noValidate validated={validatedModal}>
-          <Form.Group>
-            <Form.Label>เลือกอุปกรณ์</Form.Label>
-            <Form.Select
-              onChange={(e) => {
-                const selected = availableEquipment.find(
-                  (eq) => eq.equipment_id === Number(e.target.value)
-                );
-                if (selected) setSelectedEquipment(selected);
-              }}
+            <ModalAlert 
+                show={alert.show} 
+                message={alert.message} 
+                handleClose={() => setAlert({ show: false, message: '' })} 
+            />
+            
+            <ModalActions 
+                show={modalSave} 
+                title='เพิ่มข้อมูลอุปกรณ์' 
+                onClick={handleAddEquipment} 
+                onHide={() => setModalSave(false)}
             >
-              <option value="">-- เลือกอุปกรณ์ --</option>
-              {availableEquipment.map((e) => (
-                <option key={e.equipment_id} value={e.equipment_id}>
-                  {e.equipment_name} - {e.equipment_code}
-                </option>
-              ))}
-            </Form.Select>
-          </Form.Group>
-        </Form>
-      </ModalActions>
-    </Container>
-  );
+                {/* เปลี่ยน Form นี้ให้เป็นดรอปดาวน์ธรรมดา โดยไม่กำหนด validated หรือ noValidate */}
+                <Form>
+                    <Form.Group>
+                        <Form.Label>เลือกอุปกรณ์</Form.Label>
+                        <Form.Select onChange={(e) => {
+                            const selected = availableEquipment.find(
+                                (eq) => eq.equipment_id === Number(e.target.value)
+                            );
+                            if (selected) setSelectedEquipment(selected);
+                        }}>
+                            <option value="">-- เลือกอุปกรณ์ --</option>
+                            {availableEquipment.map(e => (
+                                <option key={e.equipment_id} value={e.equipment_id}>
+                                    {e.equipment_name} - {e.equipment_code}
+                                </option>
+                            ))}
+                        </Form.Select>
+                    </Form.Group>
+                </Form>
+            </ModalActions>
+        </Container>
+    );
 };
 
 export default Borrow;
