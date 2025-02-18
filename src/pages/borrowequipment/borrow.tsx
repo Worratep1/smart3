@@ -78,14 +78,8 @@ const Borrow = () => {
         event.preventDefault();
         event.stopPropagation();
 
-        // ตรวจสอบว่า user และ listItem ถูกโหลดแล้วก่อน
-        if (!user) {
-            setAlert({ show: true, message: 'ไม่สามารถโหลดข้อมูลผู้ใช้ได้' });
-            return;
-        }
-
-        if (!listItem.length) {
-            setAlert({ show: true, message: 'กรุณาเลือกอุปกรณ์' });
+        if (!listItem.length || !user) {
+            setAlert({ show: true, message: 'กรุณาเลือกอุปกรณ์และกรอกข้อมูลให้ครบถ้วน' });
             return;
         }
 
