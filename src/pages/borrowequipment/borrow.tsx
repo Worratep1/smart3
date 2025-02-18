@@ -17,6 +17,12 @@ import DatePickerX from '@/components/DatePicker/DatePickerX';
 
 import styles from '@/styles/page.module.css';
 
+interface ListItemType {
+    listName: string;
+    numberCard: string;
+    equipment_id: number;
+}
+
 interface EquipmentType {
     equipment_id: number;
     equipment_name: string;
@@ -38,7 +44,7 @@ const Borrow = () => {
     const [user, setUser] = useState<any>(null);
     const [availableEquipment, setAvailableEquipment] = useState<EquipmentType[]>([]);
     const [selectedEquipment, setSelectedEquipment] = useState<EquipmentType | null>(null);
-    const [listItem, setListItem] = useState<EquipmentType[]>([]);
+    const [listItem, setListItem] = useState<ListItemType[]>([]);
 
     useEffect(() => {
         fetchAvailableEquipment();
@@ -78,6 +84,8 @@ const Borrow = () => {
         event.preventDefault();
         event.stopPropagation();
 
+        console.log("📌 listItem ก่อนบันทึก:", listItem); // ✅ ตรวจสอบค่าก่อนบันทึก
+
         if (!listItem.length || !user) {
             setAlert({ show: true, message: 'กรุณาเลือกอุปกรณ์และกรอกข้อมูลให้ครบถ้วน' });
             return;
@@ -98,9 +106,12 @@ const Borrow = () => {
                 borrow_list: listItem.map(item => ({ equipment_id: item.equipment_id }))
             };
 
+            console.log("📌 Data ที่จะส่งไป Backend:", data); // ✅ ตรวจสอบโครงสร้างก่อนส่ง API
+
             await axios.post(`${process.env.WEB_DOMAIN}/api/borrowequipment/create`, data);
             setAlert({ show: true, message: 'บันทึกข้อมูลสำเร็จ' });
         } catch (error) {
+            console.error("🚨 Error:", error);
             setAlert({ show: true, message: 'ไม่สามารถบันทึกข้อมูลได้ กรุณาลองใหม่อีกครั้ง' });
         } finally {
             setLoading(false);
@@ -110,7 +121,11 @@ const Borrow = () => {
 
     const handleAddEquipment = () => {
         if (selectedEquipment && !listItem.some(item => item.equipment_id === selectedEquipment.equipment_id)) {
-            setListItem([...listItem, selectedEquipment]);
+            setListItem([...listItem, { 
+                listName: selectedEquipment.equipment_name, 
+                numberCard: selectedEquipment.equipment_code, 
+                equipment_id: selectedEquipment.equipment_id 
+            }]);
             setModalSave(false);
         } else {
             setValidatedModal(true);
@@ -143,9 +158,9 @@ const Borrow = () => {
                         {listItem.length > 0 && listItem.map((item, index) => (
                             <Toast key={index} onClose={() => removeItem(index)} className="mb-2">
                                 <Toast.Header>
-                                    <strong className="me-auto">{item.equipment_name}</strong>
+                                    <strong className="me-auto">{item.listName}</strong>
                                 </Toast.Header>
-                                <Toast.Body>{item.equipment_code}</Toast.Body>
+                                <Toast.Body>{item.numberCard}</Toast.Body>
                             </Toast>
                         ))}
                         <Col sm={2}>
