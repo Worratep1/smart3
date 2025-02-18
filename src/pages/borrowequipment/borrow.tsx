@@ -96,7 +96,11 @@ const Borrow = () => {
                 borrow_tel: event.currentTarget['borrow_tel'].value,
                 borrow_objective: event.currentTarget['borrow_objective'].value,
                 borrow_name: event.currentTarget['borrow_name'].value,
-                borrow_list: listItem.map(item => ({ equipment_id: item.equipment_id }))
+                borrow_list: listItem.map(item => ({
+                    equipment_id: item.equipment_id,
+                    listName: item.listName,
+                    numberCard: item.numberCard
+                }))
             };
 
             await axios.post(`${process.env.WEB_DOMAIN}/api/borrowequipment/create`, data);
@@ -159,8 +163,6 @@ const Borrow = () => {
                 </Form.Group>
             </Form>
 
-            <ModalAlert show={alert.show} message={alert.message} handleClose={() => setAlert({ show: false, message: '' })} />
-            
             <ModalActions show={modalSave} title='เพิ่มข้อมูลอุปกรณ์' onClick={handleAddEquipment} onHide={() => setModalSave(false)}>
                 <Form>
                     <Form.Group>
