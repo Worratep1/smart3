@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { useRouter } from 'next/router';
 
@@ -78,10 +78,6 @@ const Borrow = () => {
         event.preventDefault();
         event.stopPropagation();
 
-        // Debug: ตรวจสอบค่า listItem และ user
-        console.log('listItem:', listItem);
-        console.log('user:', user);
-
         if (!listItem.length || !user) {
             setAlert({ show: true, message: 'กรุณาเลือกอุปกรณ์และกรอกข้อมูลให้ครบถ้วน' });
             return;
@@ -105,7 +101,6 @@ const Borrow = () => {
             await axios.post(`${process.env.WEB_DOMAIN}/api/borrowequipment/create`, data);
             setAlert({ show: true, message: 'บันทึกข้อมูลสำเร็จ' });
         } catch (error) {
-            console.error("Error on submit:", error);
             setAlert({ show: true, message: 'ไม่สามารถบันทึกข้อมูลได้ กรุณาลองใหม่อีกครั้ง' });
         } finally {
             setLoading(false);
@@ -132,7 +127,7 @@ const Borrow = () => {
                 <h1 className="py-2">ยืมอุปกรณ์ครุภัณฑ์</h1>
             </div>
             <div className="px-5">
-                <Form noValidate validated={validated} onSubmit={handleSubmit} ref={inputRef}>
+                <Form noValidate validated={validated} onSubmit={handleSubmit}>
                     <InputLabel label='ชื่อผู้ยืม' id="borrow_name" required />
                     <TextareaLabel label='ที่อยู่' id="borrow_address" required />
                     <InputLabel label='หมายเลขโทรศัพท์' id="borrow_tel" required />
@@ -164,18 +159,9 @@ const Borrow = () => {
                 </Form>
             </div>
 
-            <ModalAlert 
-                show={alert.show} 
-                message={alert.message} 
-                handleClose={() => setAlert({ show: false, message: '' })} 
-            />
+            <ModalAlert show={alert.show} message={alert.message} handleClose={() => setAlert({ show: false, message: '' })} />
             
-            <ModalActions 
-                show={modalSave} 
-                title='เพิ่มข้อมูลอุปกรณ์' 
-                onClick={handleAddEquipment} 
-                onHide={() => setModalSave(false)}
-            >
+            <ModalActions show={modalSave} title='เพิ่มข้อมูลอุปกรณ์' onClick={handleAddEquipment} onHide={() => setModalSave(false)}>
                 <Form noValidate validated={validatedModal}>
                     <Form.Group>
                         <Form.Label>เลือกอุปกรณ์</Form.Label>
