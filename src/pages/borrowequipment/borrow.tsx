@@ -23,6 +23,12 @@ interface EquipmentType {
     equipment_code: string;
 }
 
+interface ListItemType {
+    listName: string;
+    numberCard: string;
+    equipment_id: number;
+}
+
 const Borrow = () => {
     const router = useRouter();
     const inputRef = useRef<HTMLFormElement>(null);
@@ -38,7 +44,7 @@ const Borrow = () => {
     const [user, setUser] = useState<any>(null);
     const [availableEquipment, setAvailableEquipment] = useState<EquipmentType[]>([]);
     const [selectedEquipment, setSelectedEquipment] = useState<EquipmentType | null>(null);
-    const [listItem, setListItem] = useState<EquipmentType[]>([]);
+    const [listItem, setListItem] = useState<ListItemType[]>([]);
 
     useEffect(() => {
         fetchAvailableEquipment();
@@ -52,7 +58,6 @@ const Borrow = () => {
                 setAvailableEquipment(response.data.data);
             }
         } catch (error) {
-            console.error("Error fetching available equipment:", error);
             setAlert({ show: true, message: 'ไม่สามารถโหลดรายการอุปกรณ์ได้' });
         }
     };
@@ -69,7 +74,6 @@ const Borrow = () => {
                 }
             }
         } catch (error) {
-            console.error("Error fetching user data:", error);
             setAlert({ show: true, message: 'ไม่สามารถโหลดข้อมูลผู้ใช้ได้' });
         }
     };
@@ -95,7 +99,11 @@ const Borrow = () => {
                 borrow_tel: event.currentTarget['borrow_tel'].value,
                 borrow_objective: event.currentTarget['borrow_objective'].value,
                 borrow_name: event.currentTarget['borrow_name'].value,
-                borrow_list: listItem.map(item => ({ equipment_id: item.equipment_id }))
+                borrow_list: listItem.map(item => ({
+                    equipment_id: item.equipment_id,
+                    listName: item.listName,
+                    numberCard: item.numberCard,
+                }))
             };
 
             await axios.post(`${process.env.WEB_DOMAIN}/api/borrowequipment/create`, data);
@@ -110,7 +118,10 @@ const Borrow = () => {
 
     const handleAddEquipment = () => {
         if (selectedEquipment && !listItem.some(item => item.equipment_id === selectedEquipment.equipment_id)) {
-            setListItem([...listItem, selectedEquipment]);
+            setListItem([
+                ...listItem,
+                { listName: selectedEquipment.equipment_name, numberCard: selectedEquipment.equipment_code, equipment_id: selectedEquipment.equipment_id }
+            ]);
             setModalSave(false);
         } else {
             setValidatedModal(true);
@@ -143,9 +154,9 @@ const Borrow = () => {
                         {listItem.length > 0 && listItem.map((item, index) => (
                             <Toast key={index} onClose={() => removeItem(index)} className="mb-2">
                                 <Toast.Header>
-                                    <strong className="me-auto">{item.equipment_name}</strong>
+                                    <strong className="me-auto">{item.listName}</strong>
                                 </Toast.Header>
-                                <Toast.Body>{item.equipment_code}</Toast.Body>
+                                <Toast.Body>{item.numberCard}</Toast.Body>
                             </Toast>
                         ))}
                         <Col sm={2}>
