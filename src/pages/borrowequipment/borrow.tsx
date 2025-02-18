@@ -28,8 +28,6 @@ const Borrow = () => {
     const inputRef = useRef<HTMLFormElement>(null);
 
     const [validated, setValidated] = useState(false);
-    // ไม่ต้อง validate modal เพราะเป็นแค่ดรอปดาวน์
-    // const [validatedModal, setValidatedModal] = useState(false);
     const [alert, setAlert] = useState({ show: false, message: '' });
     const [isLoading, setLoading] = useState(false);
     const [startDate, setStartDate] = useState<Date | null>(new Date());
@@ -79,6 +77,7 @@ const Borrow = () => {
         event.preventDefault();
         event.stopPropagation();
 
+        // ตรวจสอบว่าเลือกอุปกรณ์และข้อมูลผู้ใช้ครบถ้วน
         if (!listItem.length || !user) {
             setAlert({ show: true, message: 'กรุณาเลือกอุปกรณ์และกรอกข้อมูลให้ครบถ้วน' });
             return;
@@ -96,6 +95,7 @@ const Borrow = () => {
                 borrow_tel: event.currentTarget['borrow_tel'].value,
                 borrow_objective: event.currentTarget['borrow_objective'].value,
                 borrow_name: event.currentTarget['borrow_name'].value,
+                // ส่ง borrow_list ที่มีข้อมูลอุปกรณ์
                 borrow_list: listItem.map(item => ({ equipment_id: item.equipment_id }))
             };
 
@@ -110,11 +110,12 @@ const Borrow = () => {
     };
 
     const handleAddEquipment = () => {
+        // ตรวจสอบว่าเลือกอุปกรณ์แล้วและยังไม่ได้เพิ่มอุปกรณ์นั้นเข้าไปใน listItem
         if (selectedEquipment && !listItem.some(item => item.equipment_id === selectedEquipment.equipment_id)) {
             setListItem([...listItem, selectedEquipment]);
             setModalSave(false);
         } else {
-            // หากยังไม่ได้เลือกอุปกรณ์ อาจให้แจ้งเตือนเพิ่มเติมได้ที่นี่
+            // แจ้งเตือนหากยังไม่ได้เลือกอุปกรณ์
             setAlert({ show: true, message: 'กรุณาเลือกอุปกรณ์' });
         }
     };
@@ -173,14 +174,11 @@ const Borrow = () => {
                 onClick={handleAddEquipment} 
                 onHide={() => setModalSave(false)}
             >
-                {/* เปลี่ยน Form นี้ให้เป็นดรอปดาวน์ธรรมดา โดยไม่กำหนด validated หรือ noValidate */}
                 <Form>
                     <Form.Group>
                         <Form.Label>เลือกอุปกรณ์</Form.Label>
                         <Form.Select onChange={(e) => {
-                            const selected = availableEquipment.find(
-                                (eq) => eq.equipment_id === Number(e.target.value)
-                            );
+                            const selected = availableEquipment.find(eq => eq.equipment_id === Number(e.target.value));
                             if (selected) setSelectedEquipment(selected);
                         }}>
                             <option value="">-- เลือกอุปกรณ์ --</option>
