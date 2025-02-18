@@ -77,14 +77,17 @@ const Borrow = () => {
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         event.stopPropagation();
-
+    
+        console.log('listItem:', listItem);
+        console.log('user:', user);
+    
         if (!listItem.length || !user) {
             setAlert({ show: true, message: 'กรุณาเลือกอุปกรณ์และกรอกข้อมูลให้ครบถ้วน' });
             return;
         }
-
+    
         setLoading(true);
-
+    
         try {
             const data = {
                 borrow_date: startDate,
@@ -97,9 +100,13 @@ const Borrow = () => {
                 borrow_name: event.currentTarget['borrow_name'].value,
                 borrow_list: listItem.map(item => ({ equipment_id: item.equipment_id }))
             };
-
-            await axios.post(`${process.env.WEB_DOMAIN}/api/borrowequipment/create`, data);
-            setAlert({ show: true, message: 'บันทึกข้อมูลสำเร็จ' });
+    
+            const response = await axios.post(`${process.env.WEB_DOMAIN}/api/borrowequipment/create`, data);
+            if (response.status === 200) {
+                setAlert({ show: true, message: 'บันทึกข้อมูลสำเร็จ' });
+            } else {
+                setAlert({ show: true, message: 'ไม่สามารถบันทึกข้อมูลได้ กรุณาลองใหม่อีกครั้ง' });
+            }
         } catch (error) {
             setAlert({ show: true, message: 'ไม่สามารถบันทึกข้อมูลได้ กรุณาลองใหม่อีกครั้ง' });
         } finally {
