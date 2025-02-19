@@ -77,14 +77,19 @@ const Borrow = () => {
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         event.stopPropagation();
-
+    
+        // ตรวจสอบค่าของ listItem ก่อนการบันทึก
+        console.log("🚀 ~ handleSubmit ~ listItem:", listItem);  // ตรวจสอบค่า listItem ก่อนการบันทึก
+    
+        // หากไม่มีอุปกรณ์หรือผู้ใช้ไม่ได้รับการโหลด จะมีการแสดงแจ้งเตือน
         if (!listItem.length || !user) {
             setAlert({ show: true, message: 'กรุณาเลือกอุปกรณ์และกรอกข้อมูลให้ครบถ้วน' });
             return;
         }
-
+    
+        // การส่งข้อมูลไปยัง API หลังจากการตรวจสอบข้อมูล
         setLoading(true);
-
+    
         try {
             const data = {
                 borrow_date: startDate,
@@ -97,7 +102,7 @@ const Borrow = () => {
                 borrow_name: event.currentTarget['borrow_name'].value,
                 borrow_list: listItem.map(item => ({ equipment_id: item.equipment_id }))
             };
-
+    
             await axios.post(`${process.env.WEB_DOMAIN}/api/borrowequipment/create`, data);
             setAlert({ show: true, message: 'บันทึกข้อมูลสำเร็จ' });
         } catch (error) {
@@ -107,15 +112,29 @@ const Borrow = () => {
             setValidated(true);
         }
     };
-
+    
+    // แก้ไขใน handleAddEquipment โดยการใช้ prevList เพื่ออัพเดต listItem
     const handleAddEquipment = () => {
         if (selectedEquipment && !listItem.some(item => item.equipment_id === selectedEquipment.equipment_id)) {
-            setListItem([...listItem, selectedEquipment]);
+            setListItem(prevList => [...prevList, selectedEquipment]);  // ใช้ prevList เพื่ออัพเดตค่าของ listItem
             setModalSave(false);
         } else {
             setValidatedModal(true);
+            setAlert({ show: true, message: 'กรุณาเลือกอุปกรณ์ที่แตกต่างกัน' });
         }
     };
+    
+    // การเลือกอุปกรณ์จาก Form.Select และอัพเดต selectedEquipment
+    const handleSelectEquipment = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const selectedId = e.target.value;
+        const selected = availableEquipment.find(eq => eq.equipment_id === Number(selectedId));
+        if (selected) {
+            setSelectedEquipment(selected);
+        } else {
+            setSelectedEquipment(null);
+        }
+    };
+    
 
     const removeItem = (index: number) => {
         setListItem(listItem.filter((_, i) => i !== index));
