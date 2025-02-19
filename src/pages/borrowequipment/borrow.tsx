@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { useRouter } from 'next/router';
 
@@ -95,7 +95,7 @@ const Borrow = () => {
                 borrow_tel: event.currentTarget['borrow_tel'].value,
                 borrow_objective: event.currentTarget['borrow_objective'].value,
                 borrow_name: event.currentTarget['borrow_name'].value,
-                borrow_list: listItem.map(item => ({ equipment_id: item.equipment_id })) // ส่งข้อมูล listItem ที่เลือก
+                borrow_list: listItem.map(item => ({ equipment_id: item.equipment_id }))
             };
 
             await axios.post(`${process.env.WEB_DOMAIN}/api/borrowequipment/create`, data);
@@ -110,11 +110,10 @@ const Borrow = () => {
 
     const handleAddEquipment = () => {
         if (selectedEquipment && !listItem.some(item => item.equipment_id === selectedEquipment.equipment_id)) {
-            setListItem([...listItem, selectedEquipment]); // เพิ่มอุปกรณ์ลงใน listItem
-            setModalSave(false); // ปิด Modal
-            setSelectedEquipment(null); // เคลียร์การเลือก
+            setListItem([...listItem, selectedEquipment]);
+            setModalSave(false);
         } else {
-            setValidatedModal(true); // ถ้าเลือกซ้ำ
+            setValidatedModal(true);
         }
     };
 
