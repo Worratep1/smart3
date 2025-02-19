@@ -110,26 +110,15 @@ const Borrow = () => {
 
     const handleAddEquipment = () => {
         if (selectedEquipment && !listItem.some(item => item.equipment_id === selectedEquipment.equipment_id)) {
-            setListItem(prevList => [...prevList, selectedEquipment]);
+            setListItem([...listItem, selectedEquipment]);
             setModalSave(false);
         } else {
             setValidatedModal(true);
-            setAlert({ show: true, message: 'กรุณาเลือกอุปกรณ์ที่แตกต่างกัน' });  // เพิ่มการแจ้งเตือนเพิ่มเติม
         }
     };
 
     const removeItem = (index: number) => {
         setListItem(listItem.filter((_, i) => i !== index));
-    };
-
-    const handleSelectEquipment = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const selectedId = e.target.value;
-        const selected = availableEquipment.find(eq => eq.equipment_id === Number(selectedId));
-        if (selected) {
-            setSelectedEquipment(selected);
-        } else {
-            setSelectedEquipment(null);
-        }
     };
 
     return (
@@ -176,7 +165,10 @@ const Borrow = () => {
                 <Form noValidate validated={validatedModal}>
                     <Form.Group>
                         <Form.Label>เลือกอุปกรณ์</Form.Label>
-                        <Form.Select onChange={handleSelectEquipment}>
+                        <Form.Select onChange={(e) => {
+                            const selected = availableEquipment.find(eq => eq.equipment_id === Number(e.target.value));
+                            if (selected) setSelectedEquipment(selected);
+                        }}>
                             <option value="">-- เลือกอุปกรณ์ --</option>
                             {availableEquipment.map(e => (
                                 <option key={e.equipment_id} value={e.equipment_id}>
