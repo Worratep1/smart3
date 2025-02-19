@@ -78,7 +78,7 @@ const Borrow = () => {
         event.preventDefault();
         event.stopPropagation();
 
-        if (listItem.length || !user) {
+        if (!listItem.length || !user) {
             setAlert({ show: true, message: 'กรุณาเลือกอุปกรณ์และกรอกข้อมูลให้ครบถ้วน' });
             return;
         }
@@ -95,20 +95,12 @@ const Borrow = () => {
                 borrow_tel: event.currentTarget['borrow_tel'].value,
                 borrow_objective: event.currentTarget['borrow_objective'].value,
                 borrow_name: event.currentTarget['borrow_name'].value,
-                borrow_list: listItem.map(item => ({ equipment_id: item.equipment_id }))
+                borrow_list: listItem.map(item => ({ equipment_id: item.equipment_id })) // ส่งข้อมูล listItem ที่เลือก
             };
 
-            console.log("Data to be sent:", data);
-
-            const response = await axios.post(`${process.env.WEB_DOMAIN}/api/borrowequipment/create`,data);
-
-            if (response.data?.success) {
-                setAlert({ show: true, message: 'บันทึกข้อมูลสำเร็จ' });
-            } else {
-                setAlert({ show: true, message: 'ไม่สามารถบันทึกข้อมูลได้ กรุณาลองใหม่อีกครั้ง' });
-            }
+            await axios.post(`${process.env.WEB_DOMAIN}/api/borrowequipment/create`, data);
+            setAlert({ show: true, message: 'บันทึกข้อมูลสำเร็จ' });
         } catch (error) {
-            console.error("Error during submission:", error);
             setAlert({ show: true, message: 'ไม่สามารถบันทึกข้อมูลได้ กรุณาลองใหม่อีกครั้ง' });
         } finally {
             setLoading(false);
@@ -118,10 +110,11 @@ const Borrow = () => {
 
     const handleAddEquipment = () => {
         if (selectedEquipment && !listItem.some(item => item.equipment_id === selectedEquipment.equipment_id)) {
-            setListItem([...listItem, selectedEquipment]);
-            setModalSave(false);
+            setListItem([...listItem, selectedEquipment]); // เพิ่มอุปกรณ์ลงใน listItem
+            setModalSave(false); // ปิด Modal
+            setSelectedEquipment(null); // เคลียร์การเลือก
         } else {
-            setValidatedModal(true);
+            setValidatedModal(true); // ถ้าเลือกซ้ำ
         }
     };
 
