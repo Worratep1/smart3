@@ -113,7 +113,7 @@ const Borrow = () => {
             setListItem([...listItem, selectedEquipment]);
             setModalSave(false);
         } else {
-            setValidatedModal(true); // แจ้งเตือนถ้าลองเลือกอุปกรณ์ซ้ำ
+            setValidatedModal(true);
         }
     };
 
@@ -152,6 +152,7 @@ const Borrow = () => {
                             <ButtonAdd onClick={() => setModalSave(true)} title='เพิ่มข้อมูลอุปกรณ์' />
                         </Col>
                     </Form.Group>
+
                     <Form.Group className="d-flex justify-content-center py-3">
                         <ButtonState type="submit" text={'บันทึก'} isLoading={isLoading} />
                     </Form.Group>
@@ -175,15 +176,6 @@ const Borrow = () => {
                                 </option>
                             ))}
                         </Form.Select>
-                    </Form.Group>
-
-                    {/* ปุ่มบันทึกใน modal */}
-                    <Form.Group className="d-flex justify-content-center py-3">
-                        <ButtonState 
-                            type="button" 
-                            text="บันทึก" 
-                            onClick={handleAddEquipment} 
-                        />
                     </Form.Group>
                 </Form>
             </ModalActions>
