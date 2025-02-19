@@ -78,6 +78,9 @@ const Borrow = () => {
         event.preventDefault();
         event.stopPropagation();
 
+        console.log("🚀 ~ handleSubmit ~ listItem:", listItem);  // ตรวจสอบค่าของ listItem
+
+        // ตรวจสอบว่า listItem มีข้อมูลหรือไม่
         if (!listItem.length || !user) {
             setAlert({ show: true, message: 'กรุณาเลือกอุปกรณ์และกรอกข้อมูลให้ครบถ้วน' });
             return;
@@ -95,8 +98,10 @@ const Borrow = () => {
                 borrow_tel: event.currentTarget['borrow_tel'].value,
                 borrow_objective: event.currentTarget['borrow_objective'].value,
                 borrow_name: event.currentTarget['borrow_name'].value,
-                borrow_list: listItem.map(item => ({ equipment_id: item.equipment_id }))
+                borrow_list: listItem.map(item => ({ equipment_id: item.equipment_id })) // ส่งข้อมูลอุปกรณ์ที่เลือกไป
             };
+
+            console.log("🚀 ~ Data to send to API:", data); // ตรวจสอบข้อมูลที่ส่งไป
 
             await axios.post(`${process.env.WEB_DOMAIN}/api/borrowequipment/create`, data);
             setAlert({ show: true, message: 'บันทึกข้อมูลสำเร็จ' });
@@ -109,8 +114,10 @@ const Borrow = () => {
     };
 
     const handleAddEquipment = () => {
+        console.log("🚀 ~ handleAddEquipment ~ selectedEquipment:", selectedEquipment); // ตรวจสอบค่า selectedEquipment
+
         if (selectedEquipment && !listItem.some(item => item.equipment_id === selectedEquipment.equipment_id)) {
-            setListItem([...listItem, selectedEquipment]);
+            setListItem(prevList => [...prevList, selectedEquipment]);  // อัพเดต listItem ด้วย prevList
             setModalSave(false);
         } else {
             setValidatedModal(true);
