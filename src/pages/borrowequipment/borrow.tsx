@@ -86,7 +86,8 @@ const Borrow = () => {
         setLoading(true);
 
         try {
-            const data = {
+            // 1. บันทึกข้อมูลใน borrowequipment
+            const borrowData = {
                 borrow_date: startDate,
                 borrow_return: endDate,
                 borrow_status: 1,
@@ -95,10 +96,31 @@ const Borrow = () => {
                 borrow_tel: event.currentTarget['borrow_tel'].value,
                 borrow_objective: event.currentTarget['borrow_objective'].value,
                 borrow_name: event.currentTarget['borrow_name'].value,
-                borrow_list: listItem.map(item => ({ equipment_id: item.equipment_id }))
+                borrow_create_date: new Date(),
+                borrow_update_date: new Date(),
+                borrow_update_user_id: user.users_id,
+                borrow_equipment_status: 1,
             };
 
-            await axios.post(`${process.env.WEB_DOMAIN}/api/borrowequipment/create`, data);
+            // ส่งข้อมูลการยืมไปบันทึกใน borrowequipment และรับ borrow_id
+            const borrowResponse = await axios.post(`${process.env.WEB_DOMAIN}/api/borrowequipment/create`, borrowData);
+            const borrowId = borrowResponse.data.borrow_id;  // ค่าที่ส่งกลับจาก API หลังบันทึก
+
+            if (!borrowId) {
+                setAlert({ show: true, message: 'ไม่สามารถบันทึกข้อมูลการยืมได้' });
+                return;
+            }
+
+            // 2. บันทึกข้อมูลอุปกรณ์ใน borrowequipment_list
+            const borrowListData = listItem.map(item => ({
+                borrow_id: borrowId,
+                equipment_id: item.equipment_id,  // เพิ่มข้อมูลอุปกรณ์
+                borrow_equipment_status: 1,
+            }));
+
+            // ส่งข้อมูลอุปกรณ์ที่ยืมไปบันทึกใน borrowequipment_list
+            await axios.post(`${process.env.WEB_DOMAIN}/api/borrowequipment_list/create`, borrowListData);
+
             setAlert({ show: true, message: 'บันทึกข้อมูลสำเร็จ' });
         } catch (error) {
             setAlert({ show: true, message: 'ไม่สามารถบันทึกข้อมูลได้ กรุณาลองใหม่อีกครั้ง' });
