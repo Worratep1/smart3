@@ -1,25 +1,27 @@
-// File: /pages/api/borrowequipment/list.ts
 import { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '@/lib/prisma';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') {
     try {
-      // ดึงเฉพาะข้อมูลการยืมที่ยังมีรายการใน borrowequipment_list
-      // ซึ่ง borrow_equipment_status = 1 (หมายถึงยังยืมอยู่)
+      // กรองเฉพาะ borrowequipment ที่มีบางรายการ (some) ใน borrowequipment_list
+      // ซึ่ง borrow_equipment_status = 1 และ equipment.equipment_status = 0
       const borrowedItems = await prisma.borrowequipment.findMany({
         where: {
           borrowequipment_list: {
             some: {
-              borrow_equipment_status: 1,  // 1 = ยืมอยู่
+              borrow_equipment_status: 1,   // 1 = ยืมอยู่
+              equipment: {
+                equipment_status: 0,       // 0 = อุปกรณ์ถูกยืม
+              },
             },
           },
         },
         include: {
+          // จากนั้นดึงข้อมูลทั้งหมดใน borrowequipment_list + equipment
+          // (ถ้าอยากได้เฉพาะสถานะ 1 ก็อาจกรองในฝั่ง Frontend หรือทำ nested where ก็ได้
+          // แต่ถ้าเจอ error แนะนำให้ใช้วิธีนี้เพื่อเลี่ยงปัญหาเวอร์ชัน Prisma)
           borrowequipment_list: {
-            where: {
-              borrow_equipment_status: 1, // ดึงเฉพาะรายการย่อยที่ยังยืม
-            },
             include: {
               equipment: true,
             },
@@ -40,6 +42,8 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     }
   } else {
     res.setHeader('Allow', ['GET']);
-    return res.status(405).json({ message: `Method ${req.method} not allowed` });
+    return res
+      .status(405)
+      .json({ message: `Method ${req.method} not allowed` });
   }
 }
