@@ -238,8 +238,8 @@ const BorrowEquipment = () => {
                                             return (
                                                 <tr key={index}>
                                                     <td className="px-2">{index + 1}</td>
-                                                    <td className="px-2">{item.borrow_equipment}</td>
-                                                    <td className="px-2">{item.borrow_equipment_number}</td>
+                                                    <td className="px-2">{item.equipment?.equipment_name}</td>
+                                                    <td className="px-2">{item.equipment?.equipment_code}</td>
                                                 </tr>
                                             )
                                         })
