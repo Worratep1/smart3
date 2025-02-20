@@ -19,10 +19,10 @@ interface BorrowedItemType {
 const ReturnOf = () => {
   const [isLoading, setLoading] = useState(true);
   const [borrowedItems, setBorrowedItems] = useState<BorrowedItemType[]>([]);
-  const [returnList, setReturnList] = useState<number[]>([]); // 🆕 เก็บรายการที่ต้องการคืน
+  const [returnList, setReturnList] = useState<number[]>([]); // เก็บ ID ของรายการที่ต้องการคืน
   const [alert, setAlert] = useState({ show: false, message: '' });
 
-  // 🔹 ดึงข้อมูลอุปกรณ์ที่ถูกยืม
+  // ดึงข้อมูลอุปกรณ์ที่ถูกยืมจาก API
   const fetchBorrowedItems = async () => {
     try {
       setLoading(true);
@@ -30,9 +30,9 @@ const ReturnOf = () => {
       if (response.data?.data) {
         const borrowedData = response.data.data.flatMap((item: any) =>
           item.borrowequipment_list.map((eq: any) => ({
-            borrow_equipment_id: eq.borrow_equipment_id, // 🆕 ใช้ ID เพื่อลบ
-            equipment_name: eq.equipment?.equipment_name || "ไม่พบข้อมูล", // 🆕 แสดงชื่ออุปกรณ์
-            equipment_code: eq.equipment?.equipment_code || "ไม่พบข้อมูล", // 🆕 แสดงหมายเลขอุปกรณ์
+            borrow_equipment_id: eq.borrow_equipment_id, // ใช้ ID ของรายการ
+            equipment_name: eq.equipment?.equipment_name || "ไม่พบข้อมูล", // แสดงชื่ออุปกรณ์
+            equipment_code: eq.equipment?.equipment_code || "ไม่พบข้อมูล", // แสดงหมายเลขอุปกรณ์
             startDate: item.borrow_date ? new Date(item.borrow_date).toISOString().split('T')[0] : "",
             endDate: item.borrow_return ? new Date(item.borrow_return).toISOString().split('T')[0] : "",
           }))
@@ -51,13 +51,15 @@ const ReturnOf = () => {
     fetchBorrowedItems();
   }, []);
 
-  // 🔹 ฟังก์ชันลบอุปกรณ์ออกจาก UI (ถือว่าอุปกรณ์ถูกคืน)
-  const removeItem = (index: number, id: number) => {
-    setReturnList([...returnList, id]); // 🆕 เก็บ ID ไว้สำหรับคืน
-    setBorrowedItems(borrowedItems.filter((_, i) => i !== index));
+  // เปลี่ยนวิธีการลบรายการออกจาก UI โดยใช้ ID แทน index
+  const removeItem = (id: number) => {
+    // เพิ่ม id ที่ถูกเลือกคืนลงใน returnList
+    setReturnList(prev => [...prev, id]);
+    // ลบรายการออกจาก borrowedItems โดยกรองจาก borrow_equipment_id
+    setBorrowedItems(prev => prev.filter(item => item.borrow_equipment_id !== id));
   };
 
-  // 🔹 ฟังก์ชันบันทึกการคืนอุปกรณ์
+  // ฟังก์ชันบันทึกการคืนอุปกรณ์
   const handleReturnSubmit = async () => {
     if (returnList.length === 0) {
       setAlert({ show: true, message: 'กรุณาเลือกรายการที่ต้องการคืน' });
@@ -67,12 +69,14 @@ const ReturnOf = () => {
     try {
       setLoading(true);
       await axios.post(`${process.env.WEB_DOMAIN}/api/borrowequipment/return`, {
-        returnList, // 🆕 ส่งอุปกรณ์ที่ถูกคืนไปอัปเดตสถานะในฐานข้อมูล
+        returnList, // ส่งรายการ ID ที่ต้องการคืนไปอัปเดตสถานะในฐานข้อมูล
       });
 
       setAlert({ show: true, message: 'คืนอุปกรณ์สำเร็จแล้ว' });
       setReturnList([]);
-      fetchBorrowedItems(); // 🔹 โหลดข้อมูลใหม่
+      // หลังจากคืนสำเร็จ ไม่จำเป็นต้อง re-fetch หาก UI ถูกอัปเดตแล้ว
+      // แต่ถ้าต้องการให้ข้อมูลล่าสุด สามารถเรียก fetchBorrowedItems() ได้
+      // fetchBorrowedItems();
     } catch (error) {
       console.error('Error returning equipment:', error);
       setAlert({ show: true, message: 'เกิดข้อผิดพลาดในการคืนอุปกรณ์' });
@@ -92,8 +96,8 @@ const ReturnOf = () => {
             {isLoading ? (
               <p>กำลังโหลด...</p>
             ) : borrowedItems.length > 0 ? (
-              borrowedItems.map((item, index) => (
-                <Toast key={index} onClose={() => removeItem(index, item.borrow_equipment_id)} className="mb-2">
+              borrowedItems.map((item) => (
+                <Toast key={item.borrow_equipment_id} onClose={() => removeItem(item.borrow_equipment_id)} className="mb-2">
                   <Toast.Header>
                     <strong className="me-auto">{item.equipment_name}</strong>
                   </Toast.Header>
@@ -113,7 +117,7 @@ const ReturnOf = () => {
             )}
           </Form.Group>
 
-          {/* 🔹 ปุ่มบันทึกการคืนอุปกรณ์ */}
+          {/* ปุ่มสำหรับบันทึกการคืนอุปกรณ์ */}
           <Button variant="primary" onClick={handleReturnSubmit} disabled={returnList.length === 0}>
             {isLoading ? 'กำลังบันทึก...' : 'บันทึกการคืน'}
           </Button>
