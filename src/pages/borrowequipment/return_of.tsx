@@ -8,36 +8,41 @@ import Button from 'react-bootstrap/Button';
 
 import styles from '@/styles/page.module.css';
 
+// กำหนด Interface ของรายการที่ถูกยืมโดยเพิ่ม borrow_equipment_status เพื่อใช้กรอง
 interface BorrowedItemType {
   borrow_equipment_id: number;
   equipment_name: string;
   equipment_code: string;
   startDate: string;
   endDate: string;
+  borrow_equipment_status: number; // 1 = ยืมอยู่, 2 = คืนแล้ว (หรือค่าที่คุณกำหนด)
 }
 
 const ReturnOf = () => {
   const [isLoading, setLoading] = useState(true);
   const [borrowedItems, setBorrowedItems] = useState<BorrowedItemType[]>([]);
-  const [returnList, setReturnList] = useState<number[]>([]); //เก็บรายการที่ต้องการคืน
+  const [returnList, setReturnList] = useState<number[]>([]); // เก็บ ID ของรายการที่ต้องการคืน
   const [alert, setAlert] = useState({ show: false, message: '' });
 
-  //  ดึงข้อมูลอุปกรณ์ที่ถูกยืม
+  // ดึงข้อมูลอุปกรณ์ที่ถูกยืมจาก API และกรองเฉพาะรายการที่ยังถูกยืม (borrow_equipment_status = 1)
   const fetchBorrowedItems = async () => {
     try {
       setLoading(true);
       const response = await axios.get(`${process.env.WEB_DOMAIN}/api/borrowequipment/list`);
       if (response.data?.data) {
-        const borrowedData = response.data.data.flatMap((item: any) =>
+        const borrowedData: BorrowedItemType[] = response.data.data.flatMap((item: any) =>
           item.borrowequipment_list.map((eq: any) => ({
-            borrow_equipment_id: eq.borrow_equipment_id, // 🆕 ใช้ ID เพื่อลบ
-            equipment_name: eq.equipment?.equipment_name || "ไม่พบข้อมูล", // 🆕 แสดงชื่ออุปกรณ์
-            equipment_code: eq.equipment?.equipment_code || "ไม่พบข้อมูล", // 🆕 แสดงหมายเลขอุปกรณ์
+            borrow_equipment_id: eq.borrow_equipment_id, // ใช้ ID ของรายการ
+            equipment_name: eq.equipment?.equipment_name || "ไม่พบข้อมูล", // ชื่ออุปกรณ์
+            equipment_code: eq.equipment?.equipment_code || "ไม่พบข้อมูล", // หมายเลขอุปกรณ์
             startDate: item.borrow_date ? new Date(item.borrow_date).toISOString().split('T')[0] : "",
             endDate: item.borrow_return ? new Date(item.borrow_return).toISOString().split('T')[0] : "",
+            borrow_equipment_status: eq.borrow_equipment_status, // รับสถานะของรายการ
           }))
         );
-        setBorrowedItems(borrowedData);
+        // กรองเฉพาะรายการที่ยังยืมอยู่ (borrow_equipment_status === 1)
+        const filteredData = borrowedData.filter(item => item.borrow_equipment_status === 1);
+        setBorrowedItems(filteredData);
       }
     } catch (error) {
       console.error('Error fetching borrowed equipment:', error);
@@ -51,13 +56,16 @@ const ReturnOf = () => {
     fetchBorrowedItems();
   }, []);
 
-  // 🔹 ฟังก์ชันลบอุปกรณ์ออกจาก UI (ถือว่าอุปกรณ์ถูกคืน)
-  const removeItem = (index: number, id: number) => {
-    setReturnList([...returnList, id]); // เก็บ ID ไว้สำหรับคืน
-    setBorrowedItems(borrowedItems.filter((_, i) => i !== index));
+  // ฟังก์ชันลบอุปกรณ์ออกจาก UI เมื่อผู้ใช้กดกากบาท
+  // เมื่อกดกากบาท จะเก็บ ID ของรายการนั้นไว้ใน returnList และลบออกจาก borrowedItems
+  const removeItem = (id: number) => {
+    setReturnList(prev => [...prev, id]);
+    setBorrowedItems(prev => prev.filter(item => item.borrow_equipment_id !== id));
   };
 
-  // 🔹 ฟังก์ชันบันทึกการคืนอุปกรณ์
+  // ฟังก์ชันบันทึกการคืนอุปกรณ์
+  // เมื่อกดบันทึก ระบบจะส่ง returnList ไปให้ API เพื่ออัปเดตสถานะในฐานข้อมูล
+  // หลังจากนั้น re-fetch รายการที่ยังถูกยืมอยู่ (ที่มี borrow_equipment_status = 1)
   const handleReturnSubmit = async () => {
     if (returnList.length === 0) {
       setAlert({ show: true, message: 'กรุณาเลือกรายการที่ต้องการคืน' });
@@ -67,12 +75,12 @@ const ReturnOf = () => {
     try {
       setLoading(true);
       await axios.post(`${process.env.WEB_DOMAIN}/api/borrowequipment/return`, {
-        returnList, // 🆕 ส่งอุปกรณ์ที่ถูกคืนไปอัปเดตสถานะในฐานข้อมูล
+        returnList, // ส่งรายการ ID ที่ถูกคืนไปอัปเดตสถานะในฐานข้อมูล
       });
-
       setAlert({ show: true, message: 'คืนอุปกรณ์สำเร็จแล้ว' });
       setReturnList([]);
-      fetchBorrowedItems(); // 🔹 โหลดข้อมูลใหม่
+      // re-fetch รายการที่ยังยืมอยู่ ซึ่งจะไม่รวมรายการที่ถูกคืน (borrow_equipment_status ≠ 1)
+      fetchBorrowedItems();
     } catch (error) {
       console.error('Error returning equipment:', error);
       setAlert({ show: true, message: 'เกิดข้อผิดพลาดในการคืนอุปกรณ์' });
@@ -92,14 +100,20 @@ const ReturnOf = () => {
             {isLoading ? (
               <p>กำลังโหลด...</p>
             ) : borrowedItems.length > 0 ? (
-              borrowedItems.map((item, index) => (
-                <Toast key={index} onClose={() => removeItem(index, item.borrow_equipment_id)} className="mb-2">
+              borrowedItems.map((item) => (
+                <Toast
+                  key={item.borrow_equipment_id}
+                  onClose={() => removeItem(item.borrow_equipment_id)}
+                  className="mb-2"
+                >
                   <Toast.Header>
                     <strong className="me-auto">{item.equipment_name}</strong>
                   </Toast.Header>
                   <Toast.Body>
                     <div>
-                      <span style={{ fontWeight: 'bold' }}>หมายเลขอุปกรณ์: {item.equipment_code}</span>
+                      <span style={{ fontWeight: 'bold' }}>
+                        หมายเลขอุปกรณ์: {item.equipment_code}
+                      </span>
                     </div>
                     <div className={styles.toastDate}>
                       <span>เริ่ม {item.startDate}</span>
@@ -113,7 +127,7 @@ const ReturnOf = () => {
             )}
           </Form.Group>
 
-          {/* 🔹 ปุ่มบันทึกการคืนอุปกรณ์ */}
+          {/* ปุ่มบันทึกการคืนอุปกรณ์ */}
           <Button variant="primary" onClick={handleReturnSubmit} disabled={returnList.length === 0}>
             {isLoading ? 'กำลังบันทึก...' : 'บันทึกการคืน'}
           </Button>
