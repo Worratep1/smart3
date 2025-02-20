@@ -17,61 +17,38 @@ interface ListItemType {
 const ReturnOf = () => {
   const inputRef = useRef<HTMLFormElement>(null);
 
-  // สร้าง state สำหรับ validation, alert, loading และข้อมูลรายการอุปกรณ์ที่ยืม
   const [validated, setValidated] = useState(false);
   const [alert, setAlert] = useState({ show: false, message: '' });
-  const [isLoading, setLoading] = useState(true); // เริ่มต้นเป็น true เพราะต้องโหลดข้อมูลก่อน
+  const [isLoading, setLoading] = useState(true); // ✅ เริ่มต้นเป็น `true` เพราะต้องโหลดข้อมูลก่อน
   const [listItem, setListItem] = useState<ListItemType[]>([]);
 
-  // ฟังก์ชันดึงข้อมูลจาก API พร้อมการ debug ด้วย console.log
+  // 🔹 ฟังก์ชันดึงข้อมูลจาก API
   const fetchBorrowedItems = async () => {
     try {
-      setLoading(true); // ตั้งค่าสถานะเป็น "กำลังโหลด"
-      // เรียก API เพื่อดึงข้อมูลรายการยืม
+      setLoading(true); // ✅ ตั้งค่าสถานะเป็น "กำลังโหลด"
       const response = await axios.get(`${process.env.WEB_DOMAIN}/api/borrowequipment/list`);
-
-      // Debug: log entire API response
-      console.log("API Response:", response.data);
-
       if (response.data && response.data.data) {
-        // Debug: log the data array
-        console.log("Response Data Array:", response.data.data);
-
-        // แมปข้อมูลจาก API ให้ได้ชื่อรายการและหมายเลขอุปกรณ์จาก borrowequipment_list
-        const borrowedData = response.data.data.map((item: any) => {
-          // Debug: log each item เพื่อดูโครงสร้างของข้อมูล
-          console.log("Item from API:", item);
-
-          return {
-            // เปลี่ยนจากใช้ borrow_name เป็นชื่อของอุปกรณ์ใน borrowequipment_list
-            listName: item.borrowequipment_list
-              ? item.borrowequipment_list.map((eq: any) => eq.equipment_name).join(", ")
-              : "",
-            // เปลี่ยนจากใช้ข้อมูลอื่น ให้ใช้หมายเลขอุปกรณ์จาก borrowequipment_list
-            numberCard: item.borrowequipment_list
-              ? item.borrowequipment_list.map((eq: any) => eq.borrow_equipment_number).join(", ")
-              : "",
-            // แปลงวันที่ให้เป็นรูปแบบ YYYY-MM-DD
-            startDate: item.borrow_date ? new Date(item.borrow_date).toISOString().split('T')[0] : "",
-            endDate: item.borrow_return ? new Date(item.borrow_return).toISOString().split('T')[0] : "",
-          };
-        });
-        setListItem(borrowedData); // อัปเดต state ด้วยข้อมูลที่แมปแล้ว
+        const borrowedData = response.data.data.map((item: any) => ({
+          listName: item.borrow_name,
+          numberCard: item.borrowequipment_list.map((eq: any) => eq.borrow_equipment_number).join(", "),
+          startDate: item.borrow_date ? new Date(item.borrow_date).toISOString().split('T')[0] : "",
+          endDate: item.borrow_return ? new Date(item.borrow_return).toISOString().split('T')[0] : "",
+        }));
+        setListItem(borrowedData);
       }
     } catch (error) {
       console.error('Error fetching borrowed equipment:', error);
       setAlert({ show: true, message: 'ไม่สามารถดึงข้อมูลได้' });
     } finally {
-      setLoading(false); // เมื่อโหลดข้อมูลเสร็จแล้ว ให้เปลี่ยนสถานะ loading เป็น false
+      setLoading(false); // ✅ โหลดเสร็จแล้วเปลี่ยนเป็น `false`
     }
   };
 
-  // ใช้ useEffect เพื่อดึงข้อมูลเมื่อ component โหลด
+  // 🔹 ใช้ useEffect เพื่อดึงข้อมูลเมื่อ component โหลด
   useEffect(() => {
     fetchBorrowedItems();
   }, []);
 
-  // ฟังก์ชันจัดการการส่งฟอร์ม (ยังอยู่ในช่วงพัฒนา)
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     const form = event.currentTarget;
     setLoading(true);
@@ -84,14 +61,13 @@ const ReturnOf = () => {
       event.preventDefault();
       event.stopPropagation();
     }
-    // เปลี่ยนสถานะ loading กลับเป็น false หลังจาก 2 วินาที
     setTimeout(() => {
       setLoading(false);
     }, 2000);
     setValidated(true);
   };
 
-  // ฟังก์ชันลบรายการออกจาก UI (เฉพาะการแสดงผล)
+  // 🔹 ฟังก์ชันลบรายการ (เฉพาะ UI)
   const removeListener = (index: number) => {
     const newList = listItem.filter((_, i) => i !== index);
     setListItem(newList);
@@ -105,11 +81,10 @@ const ReturnOf = () => {
       <div className="px-5">
         <Form noValidate validated={validated} onSubmit={(e) => handleSubmit(e)}>
           <Form.Group className="py-2">
-            {/* แสดงข้อความกำลังโหลดหรือรายการข้อมูล */}
+            {/* 🔹 แสดงสถานะกำลังโหลด */}
             {isLoading ? (
-              <p>กำลังโหลดข้อมูล...</p>
+              <p></p>
             ) : listItem.length > 0 ? (
-              // แสดงรายการอุปกรณ์ที่ถูกยืม โดยแต่ละรายการจะเป็น Toast
               listItem.map((item, index) => (
                 <Toast key={index} onClose={() => removeListener(index)} className="mb-2">
                   <Toast.Header>
