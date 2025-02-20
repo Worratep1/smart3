@@ -16,7 +16,6 @@ interface ListItemType {
 
 const ReturnOf = () => {
   const inputRef = useRef<HTMLFormElement>(null);
-
   const [validated, setValidated] = useState(false);
   const [alert, setAlert] = useState({ show: false, message: '' });
   const [isLoading, setLoading] = useState(true); // ✅ เริ่มต้นเป็น `true` เพราะต้องโหลดข้อมูลก่อน
@@ -29,7 +28,7 @@ const ReturnOf = () => {
       const response = await axios.get(`${process.env.WEB_DOMAIN}/api/borrowequipment/list`);
       if (response.data && response.data.data) {
         const borrowedData = response.data.data.map((item: any) => ({
-          listName: item.borrow_name,
+          listName: item.equipment_name,
           numberCard: item.borrowequipment_list.map((eq: any) => eq.borrow_equipment_number).join(", "),
           startDate: item.borrow_date ? new Date(item.borrow_date).toISOString().split('T')[0] : "",
           endDate: item.borrow_return ? new Date(item.borrow_return).toISOString().split('T')[0] : "",
