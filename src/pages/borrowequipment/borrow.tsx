@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
 import { useRouter } from 'next/router';
 
@@ -40,10 +40,17 @@ const Borrow = () => {
     const [selectedEquipment, setSelectedEquipment] = useState<EquipmentType | null>(null);
     const [listItem, setListItem] = useState<EquipmentType[]>([]);
 
+    // โหลดรายการอุปกรณ์ครั้งเดียวเมื่อ component mount
     useEffect(() => {
         fetchAvailableEquipment();
-        fetchUserData();
     }, []);
+
+    // โหลดข้อมูลผู้ใช้เมื่อค่า auToken พร้อมใช้งาน
+    useEffect(() => {
+        if (router.query.auToken) {
+            fetchUserData();
+        }
+    }, [router.query.auToken]);
 
     const fetchAvailableEquipment = async () => {
         try {
@@ -78,6 +85,7 @@ const Borrow = () => {
         event.preventDefault();
         event.stopPropagation();
 
+        // ตรวจสอบว่ามีการเพิ่มอุปกรณ์และข้อมูลผู้ใช้ถูกโหลดแล้ว
         if (!listItem.length || !user) {
             setAlert({ show: true, message: 'กรุณาเลือกอุปกรณ์และกรอกข้อมูลให้ครบถ้วน' });
             return;
