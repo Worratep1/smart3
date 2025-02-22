@@ -88,7 +88,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
                                 noti_status = 1;
                             } else {
                                 const distance = (Number(safezone.safez_radiuslv1) * 0.8);
-                                const checkTime = location.locat_noti_status === 2 && moment().diff(moment(location.locat_noti_time), 'minutes') >= 5 ? true : false;
+                                const checkTime = location.locat_noti_status === 1 && moment().diff(moment(location.locat_noti_time), 'minutes') >= 5 ? true : false;
 
                                 if (Number(body.distance) >= distance) {
                                     noti_status = 2;
@@ -107,7 +107,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
                             }
                         } else if (status === 2) {
                             const message = `คุณ ${takecareperson.takecare_fname} ${takecareperson.takecare_sname} \nออกนอกเขต Safezone ชั้นที่ 2 แล้ว`;
-                            const checkTime = location?.locat_noti_status === 3 && moment().diff(moment(location.locat_noti_time), 'minutes') >= 5 ? true : false;
+                            const checkTime = location?.locat_noti_status === 1 && moment().diff(moment(location.locat_noti_time), 'minutes') >= 5 ? true : false;
                             const params = {
                                 replyToken: user.users_line_id || '', // ใช้ค่าว่างถ้าเป็น null
                                 userId: user.users_id,
