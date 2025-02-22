@@ -75,36 +75,59 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
                     let noti_status = null;
 
                     if (location) {
-                        // คำนวณเงื่อนไขการแจ้งเตือน
+                        // คำนวณเงื่อนไขการแจ้งเตือนสำหรับสถานะ 1 (ออกจาก Safezone ชั้นที่ 1)
                         if (status === 1 && (location.locat_noti_status !== 1 || !location.locat_noti_time)) {
                             noti_time = new Date();
                             const message = `คุณ ${takecareperson.takecare_fname} ${takecareperson.takecare_sname} \nออกนอก Safezone ชั้นที่ 1 แล้ว`;
 
                             const replyToken = user.users_line_id || ''; // ใช้ค่าว่างถ้าค่าเป็น null
-                            await replyNotification({ replyToken, message });
-                            noti_status = 1; // ตั้งค่าการแจ้งเตือน
+                            if (replyToken) {
+                                await replyNotification({ replyToken, message });
+                            }
+                            noti_status = 1; // แจ้งสถานะออกจากชั้นที่ 1
 
-                        } else if (status === 2 && (location.locat_noti_status !== 2 || moment().diff(moment(location.locat_noti_time), 'minutes') >= 5)) {
-                            const message = `คุณ ${takecareperson.takecare_fname} ${takecareperson.takecare_sname} \nเข้าใกล้ Safezone ชั้นที่ 2 แล้ว`;
+                        } else if (status === 1) {
+                            // คำนวณระยะห่าง 80% ของ Safezone ชั้นที่ 1
+                            const distance = (Number(safezone.safez_radiuslv1) * 0.8);
+                            const checkTime = location.locat_noti_status === 2 && moment().diff(moment(location.locat_noti_time), 'minutes') >= 5 ? true : false;
 
-                            const replyToken = user.users_line_id || ''; // ใช้ค่าว่างถ้าค่าเป็น null
-                            await replyNotification({ replyToken, message });
-                            noti_status = 2;
-                            noti_time = new Date();
+                            // ถ้าระยะทางเกิน 80% ของ Safezone ชั้นที่ 1
+                            if (Number(body.distance) >= distance) {
+                                noti_status = 2;
+                                noti_time = location.locat_noti_time;
+                                const message = `คุณ ${takecareperson.takecare_fname} ${takecareperson.takecare_sname} \nเข้าใกล้ Safezone ชั้นที่ 2 แล้ว`;
 
-                        } else if (status === 3 && (location.locat_noti_status !== 3 || moment().diff(moment(location.locat_noti_time), 'minutes') >= 5)) {
+                                if (location.locat_noti_status === 1) {
+                                    const replyToken = user.users_line_id || '';
+                                    if (replyToken) {
+                                        await replyNotification({ replyToken, message });
+                                    }
+                                } else if (location.locat_noti_status === 2 && checkTime) {
+                                    const replyToken = user.users_line_id || '';
+                                    if (replyToken) {
+                                        await replyNotification({ replyToken, message });
+                                        noti_time = new Date(); // อัปเดตเวลาแจ้งเตือน
+                                    }
+                                }
+                            }
+                        }
+
+                        // คำนวณเงื่อนไขสำหรับสถานะ 2 (ออกจากเขต Safezone ชั้นที่ 2)
+                        if (status === 2 && (location.locat_noti_status !== 2 || moment().diff(moment(location.locat_noti_time), 'minutes') >= 5)) {
                             const message = `คุณ ${takecareperson.takecare_fname} ${takecareperson.takecare_sname} \nออกนอกเขต Safezone ชั้นที่ 2 แล้ว`;
 
-                            const replyToken = user.users_line_id || '';
-                            await replyNotificationPostback({
-                                replyToken,
-                                userId: user.users_id,
-                                takecarepersonId: takecareperson.takecare_id,
-                                type: 'safezone',
-                                message
-                            });
-                            noti_status = 3;
-                            noti_time = new Date();
+                            const replyToken = user.users_line_id || ''; // ใช้ค่าว่างถ้าค่าเป็น null
+                            if (replyToken) {
+                                await replyNotificationPostback({
+                                    replyToken,
+                                    userId: user.users_id,
+                                    takecarepersonId: takecareperson.takecare_id,
+                                    type: 'safezone',
+                                    message
+                                });
+                                noti_status = 3; // แจ้งสถานะออกจากชั้นที่ 2
+                                noti_time = new Date();
+                            }
                         }
 
                         // อัปเดตสถานะตำแหน่ง
