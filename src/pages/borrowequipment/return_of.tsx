@@ -19,7 +19,7 @@ interface BorrowedItemType {
 const ReturnOf = () => {
   const [isLoading, setLoading] = useState(true);
   const [borrowedItems, setBorrowedItems] = useState<BorrowedItemType[]>([]);
-  const [returnList, setReturnList] = useState<number[]>([]); // เก็บรายการที่ต้องการคืน
+  const [returnList, setReturnList] = useState<number[]>([]); //เก็บรายการที่ต้องการคืน
   const [alert, setAlert] = useState({ show: false, message: '' });
 
   //  ดึงข้อมูลอุปกรณ์ที่ถูกยืม
@@ -29,17 +29,15 @@ const ReturnOf = () => {
       const response = await axios.get(`${process.env.WEB_DOMAIN}/api/borrowequipment/list`);
       if (response.data?.data) {
         const borrowedData = response.data.data.flatMap((item: any) =>
-          item.borrowequipment_list
-            .filter((eq: any) => !returnList.includes(eq.borrow_equipment_id)) // กรองอุปกรณ์ที่ถูกคืนแล้ว
-            .map((eq: any) => ({
-              borrow_equipment_id: eq.borrow_equipment_id, // 🆕 ใช้ ID เพื่อลบ
-              equipment_name: eq.equipment?.equipment_name || "ไม่พบข้อมูล", // 🆕 แสดงชื่ออุปกรณ์
-              equipment_code: eq.equipment?.equipment_code || "ไม่พบข้อมูล", // 🆕 แสดงหมายเลขอุปกรณ์
-              startDate: item.borrow_date ? new Date(item.borrow_date).toISOString().split('T')[0] : "",
-              endDate: item.borrow_return ? new Date(item.borrow_return).toISOString().split('T')[0] : "",
-            }))
+          item.borrowequipment_list.map((eq: any) => ({
+            borrow_equipment_id: eq.borrow_equipment_id, // 🆕 ใช้ ID เพื่อลบ
+            equipment_name: eq.equipment?.equipment_name || "ไม่พบข้อมูล", // 🆕 แสดงชื่ออุปกรณ์
+            equipment_code: eq.equipment?.equipment_code || "ไม่พบข้อมูล", // 🆕 แสดงหมายเลขอุปกรณ์
+            startDate: item.borrow_date ? new Date(item.borrow_date).toISOString().split('T')[0] : "",
+            endDate: item.borrow_return ? new Date(item.borrow_return).toISOString().split('T')[0] : "",
+          }))
         );
-        setBorrowedItems(borrowedData); // อัปเดต borrowedItems
+        setBorrowedItems(borrowedData);
       }
     } catch (error) {
       console.error('Error fetching borrowed equipment:', error);
@@ -51,12 +49,12 @@ const ReturnOf = () => {
 
   useEffect(() => {
     fetchBorrowedItems();
-  }, [returnList]); // กำหนดให้ใช้ returnList เป็น dependency เพื่อโหลดข้อมูลใหม่เมื่อมีการอัพเดต returnList
+  }, []);
 
   // 🔹 ฟังก์ชันลบอุปกรณ์ออกจาก UI (ถือว่าอุปกรณ์ถูกคืน)
   const removeItem = (index: number, id: number) => {
     setReturnList([...returnList, id]); // เก็บ ID ไว้สำหรับคืน
-    setBorrowedItems(borrowedItems.filter((_, i) => i !== index)); // ลบอุปกรณ์ออกจาก UI
+    setBorrowedItems(borrowedItems.filter((_, i) => i !== index));
   };
 
   // 🔹 ฟังก์ชันบันทึกการคืนอุปกรณ์
@@ -68,15 +66,13 @@ const ReturnOf = () => {
 
     try {
       setLoading(true);
-      // ส่งรายการที่ถูกคืนไปยัง API
       await axios.post(`${process.env.WEB_DOMAIN}/api/borrowequipment/return`, {
-        returnList, // ส่ง ID ของอุปกรณ์ที่ถูกคืน
+        returnList, // 🆕 ส่งอุปกรณ์ที่ถูกคืนไปอัปเดตสถานะในฐานข้อมูล
       });
 
-      // รีเซ็ตรายการที่เลือกคืน และรีเฟรชข้อมูลใหม่
       setAlert({ show: true, message: 'คืนอุปกรณ์สำเร็จแล้ว' });
-      setReturnList([]); // ล้างรายการที่เลือกคืน
-      fetchBorrowedItems(); // โหลดข้อมูลใหม่
+      setReturnList([]);
+      fetchBorrowedItems(); //  โหลดข้อมูลใหม่
     } catch (error) {
       console.error('Error returning equipment:', error);
       setAlert({ show: true, message: 'เกิดข้อผิดพลาดในการคืนอุปกรณ์' });
@@ -128,3 +124,7 @@ const ReturnOf = () => {
 };
 
 export default ReturnOf;
+
+//git add .
+//git commit -m "Add return equipment page"
+//git push origin main
