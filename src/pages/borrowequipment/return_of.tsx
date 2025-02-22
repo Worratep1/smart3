@@ -22,16 +22,16 @@ const ReturnOf = () => {
   const [returnList, setReturnList] = useState<number[]>([]); // เก็บ ID ของรายการที่ต้องการคืน
   const [alert, setAlert] = useState({ show: false, message: '' });
 
-  // ดึงข้อมูลอุปกรณ์ที่ถูกยืม
+  // ฟังก์ชันดึงข้อมูลอุปกรณ์ที่ยืม
   const fetchBorrowedItems = async () => {
     try {
       setLoading(true);
       const response = await axios.get(`${process.env.WEB_DOMAIN}/api/borrowequipment/list`);
       if (response.data?.data) {
-        // กรองเฉพาะอุปกรณ์ที่ยืมไป โดยใช้ filter ค่าของ is_borrowed เพื่อให้แสดงเฉพาะอุปกรณ์ที่ถูกยืม
+        // ดึงข้อมูลเฉพาะอุปกรณ์ที่ยืมไป (โดยกรองรายการที่ยังไม่ได้คืน)
         const borrowedData = response.data.data.flatMap((item: any) =>
           item.borrowequipment_list
-            .filter((eq: any) => eq.is_borrowed) // กรองเฉพาะอุปกรณ์ที่ยืมไป
+            .filter((eq: any) => !eq.returned) // กรองรายการที่ยังไม่ได้คืน (สมมติว่า 'returned' คือสถานะการคืน)
             .map((eq: any) => ({
               borrow_equipment_id: eq.borrow_equipment_id,
               equipment_name: eq.equipment?.equipment_name || "ไม่พบข้อมูล",
@@ -40,7 +40,7 @@ const ReturnOf = () => {
               endDate: item.borrow_return ? new Date(item.borrow_return).toISOString().split('T')[0] : "",
             }))
         );
-        setBorrowedItems(borrowedData); // อัปเดตรายการอุปกรณ์ที่ยืม
+        setBorrowedItems(borrowedData);
       }
     } catch (error) {
       console.error('Error fetching borrowed equipment:', error);
@@ -51,10 +51,10 @@ const ReturnOf = () => {
   };
 
   useEffect(() => {
-    fetchBorrowedItems(); // ดึงข้อมูลเมื่อเริ่มโหลด
-  }, []); // ฟังก์ชันนี้จะเรียกเพียงครั้งเดียวเมื่อโหลดครั้งแรก
+    fetchBorrowedItems();
+  }, []); // ฟังก์ชันนี้จะดึงข้อมูลเมื่อเริ่มโหลดหน้า
 
-  // ฟังก์ชันลบอุปกรณ์ออกจาก UI (ถือว่าอุปกรณ์ถูกคืน)
+  // ฟังก์ชันลบอุปกรณ์ออกจาก UI เมื่อกดกากบาท (ถือว่าอุปกรณ์ถูกคืน)
   const removeItem = (index: number, id: number) => {
     setReturnList([...returnList, id]); // เก็บ ID ของอุปกรณ์ที่ถูกคืน
     setBorrowedItems(borrowedItems.filter((_, i) => i !== index)); // ลบอุปกรณ์ออกจาก UI
