@@ -19,7 +19,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
         },
         data: {
           borrow_equipment_status: 0, // 0 = คืนแล้ว
-          // หากต้องการบันทึกเวลาที่คืน สามารถเพิ่ม field เช่น returned_date: new Date()
+          // หากต้องการบันทึกเวลาอาจเพิ่ม field เช่น returned_date: new Date()
         },
       });
 
@@ -65,4 +65,3 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     return res.status(405).json({ message: `Method ${req.method} not allowed` });
   }
 }
-// File: /pages/api/borrowequipment/return.ts

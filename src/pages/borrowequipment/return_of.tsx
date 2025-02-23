@@ -22,14 +22,16 @@ const ReturnOf = () => {
   const [returnList, setReturnList] = useState<number[]>([]);
   const [alert, setAlert] = useState({ show: false, message: '' });
 
-  // ดึงข้อมูลจาก API (API ได้กรองเอาเฉพาะรายการที่ยังถูกยืมอยู่แล้ว)
+  // ดึงข้อมูลจาก API โดยส่ง query parameter status=2
+  // เพื่อดึงเฉพาะรายการที่ได้รับการอนุมัติแล้ว (borrow_equipment_status === 2)
   const fetchBorrowedItems = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`${process.env.WEB_DOMAIN}/api/borrowequipment/list`);
+      const response = await axios.get(`${process.env.WEB_DOMAIN}/api/borrowequipment/list?status=2`);
       console.log("API Response:", response.data);
 
       if (response.data?.data) {
+        // สมมติว่าข้อมูลส่งกลับมาในรูปแบบของแต่ละ item มี borrowequipment_list
         const borrowedData = response.data.data.flatMap((item: any) =>
           item.borrowequipment_list.map((eq: any) => ({
             borrow_equipment_id: eq.borrow_equipment_id,
@@ -63,7 +65,7 @@ const ReturnOf = () => {
     setBorrowedItems(borrowedItems.filter((_, i) => i !== index));
   };
 
-  // เมื่อกดปุ่มบันทึกการคืน ส่งรายการคืนไปยัง API และอัปเดต UI ให้ไม่แสดงรายการที่คืนออกไป
+  // เมื่อกดปุ่ม "บันทึกการคืน" ส่งรายการคืนไปยัง API แล้วอัปเดต UI
   const handleReturnSubmit = async () => {
     if (returnList.length === 0) {
       setAlert({ show: true, message: 'กรุณาเลือกรายการที่ต้องการคืน' });
@@ -76,10 +78,10 @@ const ReturnOf = () => {
         returnList,
       });
       setAlert({ show: true, message: 'คืนอุปกรณ์สำเร็จแล้ว' });
-      // อัปเดต UI โดยเอารายการที่ถูกคืน (ใน returnList) ออกไปจาก borrowedItems
+      // อัปเดต UI โดยเอารายการที่ถูกคืนออกจาก borrowedItems
       setBorrowedItems(borrowedItems.filter(item => !returnList.includes(item.borrow_equipment_id)));
       setReturnList([]);
-      // หากต้องการให้ข้อมูลใน UIถูกซิงค์กับ Back-Endจริง สามารถ re-fetch ได้ด้วย
+      // หากต้องการให้ข้อมูลใน UI ถูกซิงค์กับ Back-Endจริง สามารถ re-fetch ได้ด้วย
       // fetchBorrowedItems();
     } catch (error) {
       console.error('Error returning equipment:', error);
@@ -141,3 +143,4 @@ const ReturnOf = () => {
 };
 
 export default ReturnOf;
+// Compare this snippet from src/pages/borrowequipment/borrow.tsx:
