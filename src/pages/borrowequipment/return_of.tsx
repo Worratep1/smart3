@@ -143,4 +143,3 @@ const ReturnOf = () => {
 };
 
 export default ReturnOf;
-// Compare this snippet from src/pages/borrowequipment/borrow.tsx:
