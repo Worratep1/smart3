@@ -1,33 +1,23 @@
+// File: /pages/api/borrowequipment/list.ts
 import { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '@/lib/prisma';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') {
     try {
-      // รับ query parameter "userId" ถ้ามี
-      const { userId } = req.query;
-      const userIdNum = userId ? parseInt(userId as string) : undefined;
-
-      // สร้างเงื่อนไข where
-      const whereClause: any = {
-        borrowequipment_list: {
-          some: {
-            borrow_equipment_status: 1, // กำลังยืมอยู่
-            equipment: {
-              equipment_status: 0, // ถูกยืมอยู่
+      // ดึงเฉพาะ borrowequipment ที่มีรายการใน borrowequipment_list
+      // ที่มี borrow_equipment_status = 1 (กำลังยืมอยู่) และในความสัมพันธ์ equipment มี equipment_status = 0 (ถูกยืม)
+      const borrowedItems = await prisma.borrowequipment.findMany({
+        where: {
+          borrowequipment_list: {
+            some: {
+              borrow_equipment_status: 1,
+              equipment: {
+                equipment_status: 0,
+              },
             },
           },
         },
-      };
-
-      // หากมี userId ให้กรองเฉพาะรายการที่สังกัดผู้ใช้นั้นด้วย
-      if (userIdNum) {
-        // สมมติว่ามี relation ชื่อ users_id_ref และใน Users model มีฟิลด์ id
-        whereClause.users_id_ref = { id: userIdNum };
-      }
-
-      const borrowedItems = await prisma.borrowequipment.findMany({
-        where: whereClause,
         include: {
           borrowequipment_list: {
             where: {
@@ -56,3 +46,5 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     return res.status(405).json({ message: `Method ${req.method} not allowed` });
   }
 }
+//git add .
+//git commit -m "Add return equipment API"
