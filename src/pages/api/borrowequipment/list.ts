@@ -6,15 +6,15 @@ import prisma from '@/lib/prisma';
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') {
     try {
-      // ดึงเฉพาะ borrowequipment ที่มีรายการใน borrowequipment_list
-      // ที่มี borrow_equipment_status = 1 (กำลังยืมอยู่) และในความสัมพันธ์ equipment มี equipment_status = 0 (ถูกยืม)
+      // ดึงเฉพาะ borrowequipment ที่มีอย่างน้อยหนึ่งรายการใน borrowequipment_list
+      // ที่มี borrow_equipment_status = 1 (ยืมอยู่) และในความสัมพันธ์ equipment มี equipment_status = 0 (ถูกยืม)
       const borrowedItems = await prisma.borrowequipment.findMany({
         where: {
           borrowequipment_list: {
             some: {
-              borrow_equipment_status: 1,
+              borrow_equipment_status: 1,  // 1 = กำลังถูกยืม
               equipment: {
-                equipment_status: 0,
+                equipment_status: 0,       // 0 = ถูกยืม
               },
             },
           },
@@ -22,7 +22,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
         include: {
           borrowequipment_list: {
             where: {
-              borrow_equipment_status: 1,
+              borrow_equipment_status: 1, // ดึงเฉพาะรายการย่อยที่ยังถูกยืมอยู่
             },
             include: {
               equipment: true,
