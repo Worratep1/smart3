@@ -8,7 +8,6 @@ import Button from 'react-bootstrap/Button';
 
 import styles from '@/styles/page.module.css';
 
-// ประกาศ Interface ให้ตรงกับข้อมูลจริงที่ API ส่งมา
 interface BorrowedItemType {
   borrow_equipment_id: number;
   equipment_name: string;
@@ -23,38 +22,34 @@ const ReturnOf = () => {
   const [returnList, setReturnList] = useState<number[]>([]);
   const [alert, setAlert] = useState({ show: false, message: '' });
 
+  // ดึงข้อมูลจาก API แล้วกรองเฉพาะรายการที่ยังไม่คืน
   const fetchBorrowedItems = async () => {
     try {
       setLoading(true);
       const response = await axios.get(`${process.env.WEB_DOMAIN}/api/borrowequipment/list`);
-      
-      // ดูโครงสร้างข้อมูลที่ได้จาก API
       console.log("API Response:", response.data);
-
+      
       if (response.data?.data) {
-        // flatMap: รวมรายการทั้งหมดจากแต่ละ item
-        // กรอง eq ที่ยังไม่คืน (เช่น return_date === null) ก่อน
         const borrowedData = response.data.data.flatMap((item: any) => {
-          // ตรวจสอบใน console ว่า item.borrowequipment_list มีอะไรบ้าง
-          console.log("Borrow item:", item);
-
+          // ดูว่าในแต่ละ record ภายใน borrowequipment_list มีฟิลด์อะไรบ้าง
+          console.log("Borrow equipment list:", item.borrowequipment_list);
           return item.borrowequipment_list
-            // สมมติว่ายังไม่คืนคือ return_date === null
+            // สมมติว่าฟิลด์ "return_date" บอกว่าถ้ายังไม่คืน จะมีค่าเป็น null
             .filter((eq: any) => eq.return_date === null)
             .map((eq: any) => ({
               borrow_equipment_id: eq.borrow_equipment_id,
               equipment_name: eq.equipment?.equipment_name || "ไม่พบข้อมูล",
               equipment_code: eq.equipment?.equipment_code || "ไม่พบข้อมูล",
-              // startDate / endDate ใช้ค่าจาก item หรือ eq ตามโครงสร้างจริง
+              // startDate ใช้วันที่ยืมจาก item หลัก
               startDate: item.borrow_date
                 ? new Date(item.borrow_date).toISOString().split('T')[0]
                 : "",
+              // endDate อาจแสดงวันที่ครบกำหนดคืน (borrow_return) ถ้ามี
               endDate: item.borrow_return
                 ? new Date(item.borrow_return).toISOString().split('T')[0]
                 : "",
             }));
         });
-
         setBorrowedItems(borrowedData);
       }
     } catch (error) {
@@ -69,13 +64,13 @@ const ReturnOf = () => {
     fetchBorrowedItems();
   }, []);
 
-  // ฟังก์ชันลบอุปกรณ์ออกจาก UI (ถือว่าอุปกรณ์ถูกคืน)
+  // เมื่อผู้ใช้กดปุ่ม "ปิด" ที่ Toast ให้ถือว่าอุปกรณ์นั้นถูกเลือกสำหรับคืน
   const removeItem = (index: number, id: number) => {
     setReturnList([...returnList, id]);
     setBorrowedItems(borrowedItems.filter((_, i) => i !== index));
   };
 
-  // ฟังก์ชันบันทึกการคืนอุปกรณ์
+  // บันทึกการคืนอุปกรณ์
   const handleReturnSubmit = async () => {
     if (returnList.length === 0) {
       setAlert({ show: true, message: 'กรุณาเลือกรายการที่ต้องการคืน' });
