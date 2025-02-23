@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useSelector } from 'react-redux';
-import { RootState } from '@/redux/store';
 
 import Container from 'react-bootstrap/Container';
 import Form from 'react-bootstrap/Form';
@@ -19,24 +17,17 @@ interface BorrowedItemType {
 }
 
 const ReturnOf = () => {
-  const user = useSelector((state: RootState) => state.user.user);
   const [isLoading, setLoading] = useState(true);
   const [borrowedItems, setBorrowedItems] = useState<BorrowedItemType[]>([]);
   const [returnList, setReturnList] = useState<number[]>([]);
   const [alert, setAlert] = useState({ show: false, message: '' });
 
-  // ✅ **ส่ง userId ไปที่ API เพื่อดึงเฉพาะอุปกรณ์ของผู้ใช้ที่ล็อกอิน**
+  // ดึงข้อมูลจาก API /api/borrowequipment/list
+  // ซึ่งควรดึงเฉพาะรายการที่ borrow_equipment_status=1 (ยังยืมอยู่) เท่านั้น
   const fetchBorrowedItems = async () => {
-    if (!user || !user.userId) {
-      console.error("User is not logged in");
-      return;
-    }
-
     try {
       setLoading(true);
-      const response = await axios.get(
-        `${process.env.WEB_DOMAIN}/api/borrowequipment/list?status=2&userId=${user.userId}`
-      );
+      const response = await axios.get(`${process.env.WEB_DOMAIN}/api/borrowequipment/list`);
       console.log("API Response:", response.data);
 
       if (response.data?.data) {
@@ -64,18 +55,17 @@ const ReturnOf = () => {
   };
 
   useEffect(() => {
-    if (user && user.userId) {
-      fetchBorrowedItems();
-    }
-  }, [user]);
+    fetchBorrowedItems();
+  }, []);
 
-  // ✅ ฟังก์ชันสำหรับเพิ่มอุปกรณ์ลงในรายการคืน
+  // เมื่อกดปิด Toast (กากบาท) ให้ถือว่าอุปกรณ์นั้นถูกเลือกสำหรับคืน
   const removeItem = (index: number, id: number) => {
-    setReturnList([...returnList, id]);
-    setBorrowedItems(borrowedItems.filter((_, i) => i !== index));
+    setReturnList(prev => [...prev, id]);
+    setBorrowedItems(prev => prev.filter((_, i) => i !== index));
   };
 
-  // ✅ ฟังก์ชันบันทึกการคืนอุปกรณ์
+  // เมื่อกดปุ่ม "บันทึกการคืน"
+  // เรียก API /api/borrowequipment/return เพื่ออัปเดตสถานะใน DB
   const handleReturnSubmit = async () => {
     if (returnList.length === 0) {
       setAlert({ show: true, message: 'กรุณาเลือกรายการที่ต้องการคืน' });
@@ -87,10 +77,13 @@ const ReturnOf = () => {
       await axios.post(`${process.env.WEB_DOMAIN}/api/borrowequipment/return`, {
         returnList,
       });
-
       setAlert({ show: true, message: 'คืนอุปกรณ์สำเร็จแล้ว' });
       setReturnList([]);
-      fetchBorrowedItems(); // โหลดข้อมูลใหม่หลังจากคืนสำเร็จ
+
+      // หากต้องการดึงข้อมูลใหม่จากฐานข้อมูล เพื่อให้มั่นใจว่า
+      // ไม่มีรายการเก่าๆ โผล่มาอีก (ถ้า DB อัปเดตแล้ว)
+      await fetchBorrowedItems();
+
     } catch (error) {
       console.error('Error returning equipment:', error);
       setAlert({ show: true, message: 'เกิดข้อผิดพลาดในการคืนอุปกรณ์' });
@@ -101,24 +94,42 @@ const ReturnOf = () => {
 
   return (
     <Container>
-      <h1>คืนอุปกรณ์ครุภัณฑ์</h1>
+      <div className={styles.main}>
+        <h1 className="py-2">คืนอุปกรณ์ครุภัณฑ์</h1>
+      </div>
+      <div className="px-5">
+        <Form noValidate>
+          <Form.Group className="py-2">
+            {isLoading ? (
+              <p>กำลังโหลด...</p>
+            ) : borrowedItems.length > 0 ? (
+              borrowedItems.map((item, index) => (
+                <Toast
+                  key={index}
+                  onClose={() => removeItem(index, item.borrow_equipment_id)}
+                  className="mb-2"
+                >
+                  <Toast.Header>
+                    <strong className="me-auto">{item.equipment_name}</strong>
+                  </Toast.Header>
+                  <Toast.Body>
+                    <div>
+                      <span style={{ fontWeight: 'bold' }}>
+                        หมายเลขอุปกรณ์: {item.equipment_code}
+                      </span>
+                    </div>
+                    <div className={styles.toastDate}>
+                      <span>เริ่ม {item.startDate}</span>
+                      <span>สิ้นสุด {item.endDate}</span>
+                    </div>
+                  </Toast.Body>
+                </Toast>
+              ))
+            ) : (
+              <p>ไม่มีอุปกรณ์ที่ถูกยืม</p>
+            )}
+          </Form.Group>
 
-      {alert.show && <p className="alert alert-warning">{alert.message}</p>}
-
-      {borrowedItems.length > 0 ? (
-        <>
-          {borrowedItems.map((item, index) => (
-            <Toast key={index} onClose={() => removeItem(index, item.borrow_equipment_id)} className="mb-2">
-              <Toast.Header>
-                <strong className="me-auto">{item.equipment_name}</strong>
-              </Toast.Header>
-              <Toast.Body>
-                หมายเลขอุปกรณ์: {item.equipment_code}
-              </Toast.Body>
-            </Toast>
-          ))}
-          
-          {/* ✅ ปุ่ม "บันทึก" ที่คืนอุปกรณ์ */}
           <Button
             variant="primary"
             onClick={handleReturnSubmit}
@@ -126,12 +137,12 @@ const ReturnOf = () => {
           >
             {isLoading ? 'กำลังบันทึก...' : 'บันทึกการคืน'}
           </Button>
-        </>
-      ) : (
-        <p>ไม่มีอุปกรณ์ที่ถูกยืม</p>
-      )}
+        </Form>
+      </div>
     </Container>
   );
 };
 
 export default ReturnOf;
+//git add .
+//git commit -m "Add return equipment API"
