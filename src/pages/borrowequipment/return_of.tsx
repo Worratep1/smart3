@@ -22,8 +22,7 @@ const ReturnOf = () => {
   const [returnList, setReturnList] = useState<number[]>([]);
   const [alert, setAlert] = useState({ show: false, message: '' });
 
-  // ดึงข้อมูลรายการอุปกรณ์ที่ถูกยืมจาก API
-  // API นี้ได้กรองเอาเฉพาะรายการที่ยังยืมอยู่ (borrow_equipment_status = 1) แล้ว
+  // ดึงข้อมูลจาก API (API ได้กรองเอาเฉพาะรายการที่ยังถูกยืมอยู่แล้ว)
   const fetchBorrowedItems = async () => {
     try {
       setLoading(true);
@@ -31,7 +30,6 @@ const ReturnOf = () => {
       console.log("API Response:", response.data);
 
       if (response.data?.data) {
-        // รวมรายการอุปกรณ์จาก borrowequipment_list ในแต่ละ item
         const borrowedData = response.data.data.flatMap((item: any) =>
           item.borrowequipment_list.map((eq: any) => ({
             borrow_equipment_id: eq.borrow_equipment_id,
@@ -59,13 +57,13 @@ const ReturnOf = () => {
     fetchBorrowedItems();
   }, []);
 
-  // เมื่อผู้ใช้กดปิด Toast ให้นับว่าอุปกรณ์นั้นเลือกคืนแล้ว
+  // เมื่อกดกากบาท (ปิด Toast) ให้ถือว่าอุปกรณ์นั้นถูกเลือกสำหรับคืน
   const removeItem = (index: number, id: number) => {
     setReturnList([...returnList, id]);
     setBorrowedItems(borrowedItems.filter((_, i) => i !== index));
   };
 
-  // ส่งรายการคืนไปยัง API เพื่ออัปเดตสถานะในฐานข้อมูล
+  // เมื่อกดปุ่มบันทึกการคืน ส่งรายการคืนไปยัง API และอัปเดต UI ให้ไม่แสดงรายการที่คืนออกไป
   const handleReturnSubmit = async () => {
     if (returnList.length === 0) {
       setAlert({ show: true, message: 'กรุณาเลือกรายการที่ต้องการคืน' });
@@ -78,8 +76,11 @@ const ReturnOf = () => {
         returnList,
       });
       setAlert({ show: true, message: 'คืนอุปกรณ์สำเร็จแล้ว' });
+      // อัปเดต UI โดยเอารายการที่ถูกคืน (ใน returnList) ออกไปจาก borrowedItems
+      setBorrowedItems(borrowedItems.filter(item => !returnList.includes(item.borrow_equipment_id)));
       setReturnList([]);
-      fetchBorrowedItems();
+      // หากต้องการให้ข้อมูลใน UIถูกซิงค์กับ Back-Endจริง สามารถ re-fetch ได้ด้วย
+      // fetchBorrowedItems();
     } catch (error) {
       console.error('Error returning equipment:', error);
       setAlert({ show: true, message: 'เกิดข้อผิดพลาดในการคืนอุปกรณ์' });
