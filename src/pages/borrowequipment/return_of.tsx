@@ -22,29 +22,34 @@ const ReturnOf = () => {
   const [returnList, setReturnList] = useState<number[]>([]);
   const [alert, setAlert] = useState({ show: false, message: '' });
 
-  // ดึงข้อมูลรายการอุปกรณ์ที่ถูกยืมจาก API
-  // API นี้ได้กรองเอาเฉพาะรายการที่ยังยืมอยู่ (borrow_equipment_status = 1) แล้ว
+  // ดึงข้อมูลจาก API แล้วกรองเฉพาะรายการที่ยังไม่คืน
   const fetchBorrowedItems = async () => {
     try {
       setLoading(true);
       const response = await axios.get(`${process.env.WEB_DOMAIN}/api/borrowequipment/list`);
       console.log("API Response:", response.data);
-
+      
       if (response.data?.data) {
-        // รวมรายการอุปกรณ์จาก borrowequipment_list ในแต่ละ item
-        const borrowedData = response.data.data.flatMap((item: any) =>
-          item.borrowequipment_list.map((eq: any) => ({
-            borrow_equipment_id: eq.borrow_equipment_id,
-            equipment_name: eq.equipment?.equipment_name || "ไม่พบข้อมูล",
-            equipment_code: eq.equipment?.equipment_code || "ไม่พบข้อมูล",
-            startDate: item.borrow_date
-              ? new Date(item.borrow_date).toISOString().split('T')[0]
-              : "",
-            endDate: item.borrow_return
-              ? new Date(item.borrow_return).toISOString().split('T')[0]
-              : "",
-          }))
-        );
+        const borrowedData = response.data.data.flatMap((item: any) => {
+          // ดูว่าในแต่ละ record ภายใน borrowequipment_list มีฟิลด์อะไรบ้าง
+          console.log("Borrow equipment list:", item.borrowequipment_list);
+          return item.borrowequipment_list
+            // สมมติว่าฟิลด์ "return_date" บอกว่าถ้ายังไม่คืน จะมีค่าเป็น null
+            .filter((eq: any) => eq.return_date === null)
+            .map((eq: any) => ({
+              borrow_equipment_id: eq.borrow_equipment_id,
+              equipment_name: eq.equipment?.equipment_name || "ไม่พบข้อมูล",
+              equipment_code: eq.equipment?.equipment_code || "ไม่พบข้อมูล",
+              // startDate ใช้วันที่ยืมจาก item หลัก
+              startDate: item.borrow_date
+                ? new Date(item.borrow_date).toISOString().split('T')[0]
+                : "",
+              // endDate อาจแสดงวันที่ครบกำหนดคืน (borrow_return) ถ้ามี
+              endDate: item.borrow_return
+                ? new Date(item.borrow_return).toISOString().split('T')[0]
+                : "",
+            }));
+        });
         setBorrowedItems(borrowedData);
       }
     } catch (error) {
@@ -59,13 +64,13 @@ const ReturnOf = () => {
     fetchBorrowedItems();
   }, []);
 
-  // เมื่อผู้ใช้กดปิด Toast ให้นับว่าอุปกรณ์นั้นเลือกคืนแล้ว
+  // เมื่อผู้ใช้กดปุ่ม "ปิด" ที่ Toast ให้ถือว่าอุปกรณ์นั้นถูกเลือกสำหรับคืน
   const removeItem = (index: number, id: number) => {
     setReturnList([...returnList, id]);
     setBorrowedItems(borrowedItems.filter((_, i) => i !== index));
   };
 
-  // ส่งรายการคืนไปยัง API เพื่ออัปเดตสถานะในฐานข้อมูล
+  // บันทึกการคืนอุปกรณ์
   const handleReturnSubmit = async () => {
     if (returnList.length === 0) {
       setAlert({ show: true, message: 'กรุณาเลือกรายการที่ต้องการคืน' });
@@ -77,6 +82,7 @@ const ReturnOf = () => {
       await axios.post(`${process.env.WEB_DOMAIN}/api/borrowequipment/return`, {
         returnList,
       });
+
       setAlert({ show: true, message: 'คืนอุปกรณ์สำเร็จแล้ว' });
       setReturnList([]);
       fetchBorrowedItems();
