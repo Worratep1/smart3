@@ -14,6 +14,9 @@ interface BorrowedItemType {
   equipment_code: string;
   startDate: string;
   endDate: string;
+  // เพิ่ม field นี้เพื่อเก็บค่าดิบจาก API สำหรับ borrow_return
+  // ใช้ ? เพื่อป้องกัน error กรณีข้อมูลบางชิ้นไม่มีฟิลด์นี้
+  rawBorrowReturn?: string | null;
 }
 
 const ReturnOf = () => {
@@ -22,23 +25,34 @@ const ReturnOf = () => {
   const [returnList, setReturnList] = useState<number[]>([]); // เก็บรายการที่ต้องการคืน
   const [alert, setAlert] = useState({ show: false, message: '' });
 
-  // ดึงข้อมูลอุปกรณ์ที่ถูกยืมและกรองเฉพาะรายการที่ยังไม่คืน (endDate ว่าง)
+  // ดึงข้อมูลอุปกรณ์ที่ถูกยืม และกรองเฉพาะรายการที่ยังไม่คืน
   const fetchBorrowedItems = async () => {
     try {
       setLoading(true);
       const response = await axios.get(`${process.env.WEB_DOMAIN}/api/borrowequipment/list`);
+      
+      // ตรวจสอบข้อมูลดิบที่ได้จาก API ใน console
+      console.log("API Response:", response.data);
+
       if (response.data?.data) {
         const borrowedData = response.data.data.flatMap((item: any) =>
-          item.borrowequipment_list.map((eq: any) => ({
-            borrow_equipment_id: eq.borrow_equipment_id, // ใช้ ID เพื่อลบ
-            equipment_name: eq.equipment?.equipment_name || "ไม่พบข้อมูล", // แสดงชื่ออุปกรณ์
-            equipment_code: eq.equipment?.equipment_code || "ไม่พบข้อมูล", // แสดงหมายเลขอุปกรณ์
-            startDate: item.borrow_date ? new Date(item.borrow_date).toISOString().split('T')[0] : "",
-            endDate: item.borrow_return ? new Date(item.borrow_return).toISOString().split('T')[0] : "",
-          }))
+          item.borrowequipment_list.map((eq: any) => {
+            return {
+              borrow_equipment_id: eq.borrow_equipment_id,
+              equipment_name: eq.equipment?.equipment_name || "ไม่พบข้อมูล",
+              equipment_code: eq.equipment?.equipment_code || "ไม่พบข้อมูล",
+              startDate: item.borrow_date ? new Date(item.borrow_date).toISOString().split('T')[0] : "",
+              endDate: item.borrow_return ? new Date(item.borrow_return).toISOString().split('T')[0] : "",
+              // เก็บค่าวันที่คืนจริง หรือค่าที่บอกว่าคืนแล้วหรือยัง
+              rawBorrowReturn: item.borrow_return,
+            };
+          })
         );
-        // กรองเฉพาะรายการที่ยังไม่ได้คืน (endDate ว่าง)
-        const filteredData = borrowedData.filter((item: { endDate: string; }) => item.endDate === "");
+
+        // กรองเฉพาะรายการที่ยังไม่คืน (ถ้า borrow_return เป็น null หรือไม่มี แสดงว่ายังไม่คืน)
+        // ถ้า API ของคุณใช้ฟิลด์อื่น เช่น is_returned = false, ให้ปรับเงื่อนไข filter ตามจริง
+        const filteredData = borrowedData.filter((item: { rawBorrowReturn: any; }) => !item.rawBorrowReturn);
+
         setBorrowedItems(filteredData);
       }
     } catch (error) {
@@ -95,13 +109,19 @@ const ReturnOf = () => {
               <p>กำลังโหลด...</p>
             ) : borrowedItems.length > 0 ? (
               borrowedItems.map((item, index) => (
-                <Toast key={index} onClose={() => removeItem(index, item.borrow_equipment_id)} className="mb-2">
+                <Toast
+                  key={index}
+                  onClose={() => removeItem(index, item.borrow_equipment_id)}
+                  className="mb-2"
+                >
                   <Toast.Header>
                     <strong className="me-auto">{item.equipment_name}</strong>
                   </Toast.Header>
                   <Toast.Body>
                     <div>
-                      <span style={{ fontWeight: 'bold' }}>หมายเลขอุปกรณ์: {item.equipment_code}</span>
+                      <span style={{ fontWeight: 'bold' }}>
+                        หมายเลขอุปกรณ์: {item.equipment_code}
+                      </span>
                     </div>
                     <div className={styles.toastDate}>
                       <span>เริ่ม {item.startDate}</span>
@@ -116,7 +136,11 @@ const ReturnOf = () => {
           </Form.Group>
 
           {/* ปุ่มบันทึกการคืนอุปกรณ์ */}
-          <Button variant="primary" onClick={handleReturnSubmit} disabled={returnList.length === 0}>
+          <Button
+            variant="primary"
+            onClick={handleReturnSubmit}
+            disabled={returnList.length === 0}
+          >
             {isLoading ? 'กำลังบันทึก...' : 'บันทึกการคืน'}
           </Button>
         </Form>
