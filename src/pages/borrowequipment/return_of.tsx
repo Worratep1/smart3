@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/redux/store';
 
 import Container from 'react-bootstrap/Container';
 import Form from 'react-bootstrap/Form';
@@ -17,17 +19,19 @@ interface BorrowedItemType {
 }
 
 const ReturnOf = () => {
+  const user = useSelector((state: RootState) => state.user.user);
   const [isLoading, setLoading] = useState(true);
   const [borrowedItems, setBorrowedItems] = useState<BorrowedItemType[]>([]);
   const [returnList, setReturnList] = useState<number[]>([]);
   const [alert, setAlert] = useState({ show: false, message: '' });
 
-  // ดึงข้อมูลจาก API /api/borrowequipment/list
-  // ซึ่งควรดึงเฉพาะรายการที่ borrow_equipment_status=1 (ยังยืมอยู่) เท่านั้น
+  // ดึงข้อมูลจาก API โดยส่ง query parameter userId และ status=2 (สำหรับรายการที่ได้รับการอนุมัติแล้ว)
   const fetchBorrowedItems = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`${process.env.WEB_DOMAIN}/api/borrowequipment/list`);
+      const response = await axios.get(
+        `${process.env.WEB_DOMAIN}/api/borrowequipment/list?status=2&userId=${user.userId}`
+      );
       console.log("API Response:", response.data);
 
       if (response.data?.data) {
@@ -55,17 +59,18 @@ const ReturnOf = () => {
   };
 
   useEffect(() => {
-    fetchBorrowedItems();
-  }, []);
+    if(user && user.userId) {
+      fetchBorrowedItems();
+    }
+  }, [user]);
 
-  // เมื่อกดปิด Toast (กากบาท) ให้ถือว่าอุปกรณ์นั้นถูกเลือกสำหรับคืน
+  // เมื่อกดกากบาท (ปิด Toast) ให้ถือว่าอุปกรณ์นั้นถูกเลือกสำหรับคืน
   const removeItem = (index: number, id: number) => {
-    setReturnList(prev => [...prev, id]);
-    setBorrowedItems(prev => prev.filter((_, i) => i !== index));
+    setReturnList([...returnList, id]);
+    setBorrowedItems(borrowedItems.filter((_, i) => i !== index));
   };
 
   // เมื่อกดปุ่ม "บันทึกการคืน"
-  // เรียก API /api/borrowequipment/return เพื่ออัปเดตสถานะใน DB
   const handleReturnSubmit = async () => {
     if (returnList.length === 0) {
       setAlert({ show: true, message: 'กรุณาเลือกรายการที่ต้องการคืน' });
@@ -78,12 +83,8 @@ const ReturnOf = () => {
         returnList,
       });
       setAlert({ show: true, message: 'คืนอุปกรณ์สำเร็จแล้ว' });
+      setBorrowedItems(borrowedItems.filter(item => !returnList.includes(item.borrow_equipment_id)));
       setReturnList([]);
-
-      // หากต้องการดึงข้อมูลใหม่จากฐานข้อมูล เพื่อให้มั่นใจว่า
-      // ไม่มีรายการเก่าๆ โผล่มาอีก (ถ้า DB อัปเดตแล้ว)
-      await fetchBorrowedItems();
-
     } catch (error) {
       console.error('Error returning equipment:', error);
       setAlert({ show: true, message: 'เกิดข้อผิดพลาดในการคืนอุปกรณ์' });
@@ -144,5 +145,3 @@ const ReturnOf = () => {
 };
 
 export default ReturnOf;
-//git add .
-//git commit -m "Add return equipment API"
