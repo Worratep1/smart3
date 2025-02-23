@@ -1,42 +1,64 @@
 // File: /pages/api/borrowequipment/return.ts
+
 import { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '@/lib/prisma';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'POST') {
     try {
-      const { returnList } = req.body; // Array ของ borrow_equipment_id ที่ต้องการคืน
-      if (!returnList || returnList.length === 0) {
-        return res.status(400).json({ message: 'ไม่มีรายการที่ต้องการคืน' });
+      // รับค่า returnList ซึ่งเป็นอาเรย์ของ borrow_equipment_id ที่ต้องการคืน
+      const { returnList } = req.body;
+      if (!returnList || !Array.isArray(returnList)) {
+        return res.status(400).json({ message: "Invalid request: returnList must be an array" });
       }
 
-      // 1) ดึงข้อมูล equipment_id จากตาราง borrowequipment_list
-      //    เพื่อทราบว่า borrow_equipment_id เหล่านี้เกี่ยวข้องกับอุปกรณ์ชิ้นไหน
-      const returnedEquipments = await prisma.borrowequipment_list.findMany({
-        where: { borrow_equipment_id: { in: returnList } },
-        select: { equipment_id: true },
+      // อัปเดตสถานะในตาราง borrowequipment_list ให้เป็นคืนแล้ว (borrow_equipment_status = 0)
+      const updatedBorrowList = await prisma.borrowequipment_list.updateMany({
+        where: {
+          borrow_equipment_id: { in: returnList },
+        },
+        data: {
+          borrow_equipment_status: 0, // 0 = คืนแล้ว
+          // หากต้องการบันทึกเวลาที่คืน สามารถเพิ่ม field เช่น returned_date: new Date()
+        },
       });
 
-      // 2) สร้าง array ของ equipment_id ที่เกี่ยวข้องกับรายการที่ถูกคืน
-      const equipmentIds = returnedEquipments.map((item) => item.equipment_id);
-
-      // 3) อัปเดตสถานะในตาราง equipment ให้เป็น 1 (ยังไม่ได้ถูกยืม / คืนแล้ว)
-      await prisma.equipment.updateMany({
-        where: { equipment_id: { in: equipmentIds } },
-        data: { equipment_status: 1 }, // 1 = ไม่ได้ถูกยืม
+      // ดึง equipment_id ที่เกี่ยวข้องกับ borrow_equipment_id ที่ถูกคืน
+      const equipmentRecords = await prisma.borrowequipment_list.findMany({
+        where: {
+          borrow_equipment_id: { in: returnList },
+        },
+        select: {
+          equipment_id: true,
+        },
       });
 
-      // (อาจจะอัปเดตสถานะใน borrowequipment_list ด้วยถ้าต้องการเก็บประวัติการยืม-คืน)
-      // เช่น:
-      // await prisma.borrowequipment_list.updateMany({
-      //   where: { borrow_equipment_id: { in: returnList } },
-      //   data: { borrow_equipment_status: 2 }, // สมมุติให้ 2 = คืนแล้ว
-      // });
+      // สร้างอาเรย์ของ equipment_id โดยกำจัดค่าซ้ำ
+      const equipmentIds = Array.from(new Set(equipmentRecords.map(record => record.equipment_id)));
 
-      return res.status(200).json({ message: 'คืนอุปกรณ์สำเร็จแล้ว' });
+      // อัปเดตสถานะในตาราง equipment ให้เป็นว่าง (equipment_status = 1)
+      const updatedEquipment = await prisma.equipment.updateMany({
+        where: {
+          equipment_id: { in: equipmentIds },
+        },
+        data: {
+          equipment_status: 1, // 1 = ว่างสำหรับยืม
+        },
+      });
+
+      return res.status(200).json({
+        message: 'คืนอุปกรณ์สำเร็จแล้ว',
+        data: {
+          updatedBorrowList,
+          updatedEquipment,
+        },
+      });
     } catch (error) {
-      console.error('Error updating return status:', error);
-      return res.status(500).json({ message: 'เกิดข้อผิดพลาดในการคืนอุปกรณ์' });
+      console.error('Error returning equipment:', error);
+      return res.status(500).json({
+        message: 'เกิดข้อผิดพลาดในการคืนอุปกรณ์',
+        error,
+      });
     }
   } else {
     res.setHeader('Allow', ['POST']);
