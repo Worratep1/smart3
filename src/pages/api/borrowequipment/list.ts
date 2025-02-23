@@ -1,19 +1,27 @@
-// File: /pages/api/borrowequipment/list.ts
 import { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '@/lib/prisma';
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') {
     try {
-      // ดึงเฉพาะ borrowequipment ที่มีรายการใน borrowequipment_list
-      // ที่มี borrow_equipment_status = 1 (กำลังยืมอยู่) และในความสัมพันธ์ equipment มี equipment_status = 0 (ถูกยืม)
+      const { status, userId } = req.query;
+
+      if (!userId) {
+        return res.status(400).json({ message: 'Missing userId parameter' });
+      }
+
+      const statusValue = status ? parseInt(status as string) : 1;
+      const userIdNum = parseInt(userId as string);
+
+      // ✅ **กรองเฉพาะอุปกรณ์ที่ผู้ใช้ที่ล็อกอินอยู่ยืมไป**
       const borrowedItems = await prisma.borrowequipment.findMany({
         where: {
+          borrow_user_id: userIdNum, // **กรองเฉพาะของผู้ใช้ที่ยืมอุปกรณ์**
           borrowequipment_list: {
             some: {
-              borrow_equipment_status: 1,
+              borrow_equipment_status: statusValue,
               equipment: {
-                equipment_status: 0,
+                equipment_status: 0, // **แสดงเฉพาะอุปกรณ์ที่ถูกยืม**
               },
             },
           },
@@ -21,7 +29,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
         include: {
           borrowequipment_list: {
             where: {
-              borrow_equipment_status: 1,
+              borrow_equipment_status: statusValue,
             },
             include: {
               equipment: true,
@@ -46,5 +54,3 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     return res.status(405).json({ message: `Method ${req.method} not allowed` });
   }
 }
-//git add .
-//git commit -m "Add return equipment API"
