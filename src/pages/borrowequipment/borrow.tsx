@@ -36,6 +36,7 @@ const Borrow = () => {
     const [modalSave, setModalSave] = useState(false);
 
     const [user, setUser] = useState<any>(null);
+    const [userName, setUserName] = useState<string>(''); // สร้าง state สำหรับเก็บชื่อผู้ยืม
     const [availableEquipment, setAvailableEquipment] = useState<EquipmentType[]>([]);
     const [selectedEquipment, setSelectedEquipment] = useState<EquipmentType | null>(null);
     const [listItem, setListItem] = useState<EquipmentType[]>([]);
@@ -74,6 +75,12 @@ const Borrow = () => {
                 } else {
                     setAlert({ show: true, message: 'ไม่สามารถโหลดข้อมูลผู้ใช้ได้' });
                 }
+
+                // ดึงชื่อผู้ยืมจาก API ที่สร้างขึ้น
+                const response = await axios.get(`/api/takecareperson?auToken=${auToken}`);
+                if (response.data?.name) {
+                    setUserName(response.data.name); // อัปเดตชื่อผู้ยืม
+                }
             }
         } catch (error) {
             console.error("Error fetching user data:", error);
@@ -102,7 +109,7 @@ const Borrow = () => {
                 borrow_address: event.currentTarget['borrow_address'].value,
                 borrow_tel: event.currentTarget['borrow_tel'].value,
                 borrow_objective: event.currentTarget['borrow_objective'].value,
-                borrow_name: event.currentTarget['borrow_name'].value,
+                borrow_name: userName, // ใช้ชื่อผู้ยืมจาก state
                 borrow_list: listItem.map(item => ({ equipment_id: item.equipment_id }))
             };
 
@@ -136,7 +143,8 @@ const Borrow = () => {
             </div>
             <div className="px-5">
                 <Form noValidate validated={validated} onSubmit={handleSubmit}>
-                    <InputLabel label='ชื่อผู้ยืม' id="borrow_name" required />
+                    {/* ชื่อผู้ยืมจะแสดงจาก state userName */}
+                    <InputLabel label='ชื่อผู้ยืม' id="borrow_name" required defaultValue={userName}  />
                     <TextareaLabel label='ที่อยู่' id="borrow_address" required />
                     <InputLabel label='หมายเลขโทรศัพท์' id="borrow_tel" required />
                     <InputLabel label='ขอยืมครุภัณฑ์เพื่อ' id="borrow_objective" required />
@@ -168,25 +176,6 @@ const Borrow = () => {
             </div>
 
             <ModalAlert show={alert.show} message={alert.message} handleClose={() => setAlert({ show: false, message: '' })} />
-            
-            <ModalActions show={modalSave} title='เพิ่มข้อมูลอุปกรณ์' onClick={handleAddEquipment} onHide={() => setModalSave(false)}>
-                <Form noValidate validated={validatedModal}>
-                    <Form.Group>
-                        <Form.Label>เลือกอุปกรณ์</Form.Label>
-                        <Form.Select onChange={(e) => {
-                            const selected = availableEquipment.find(eq => eq.equipment_id === Number(e.target.value));
-                            if (selected) setSelectedEquipment(selected);
-                        }}>
-                            <option value="">-- เลือกอุปกรณ์ --</option>
-                            {availableEquipment.map(e => (
-                                <option key={e.equipment_id} value={e.equipment_id}>
-                                    {e.equipment_name} - {e.equipment_code}
-                                </option>
-                            ))}
-                        </Form.Select>
-                    </Form.Group>
-                </Form>
-            </ModalActions>
         </Container>
     );
 };
