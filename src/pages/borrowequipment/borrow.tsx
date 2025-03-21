@@ -174,7 +174,7 @@ const Borrow = () => {
 
                         <Form.Label>ที่อยู่</Form.Label>
                         <Form.Control
-                            value={carePerson ? `${carePerson.takecare_number}` : ''}
+                            value={carePerson ? `${carePerson.takecare_number} ${carePerson.takecare_moo} ${carePerson.takecare_moo} ${carePerson.takecare_road}` : ''}
                             disabled
                             readOnly
                         />
@@ -182,7 +182,7 @@ const Borrow = () => {
                             type="hidden"
                             id="borrow_address"
                             name="borrow_address"
-                            value={carePerson ? `${carePerson.takecare_number}` : ''}
+                            value={carePerson ? `${carePerson.takecare_number} ${carePerson.takecare_moo} ${carePerson.takecare_moo} ${carePerson.takecare_road}` : ''}
 
                         />
                     </Form.Group>  
