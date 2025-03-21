@@ -23,6 +23,7 @@ interface EquipmentType {
     equipment_code: string;
 }
 
+
 const Borrow = () => {
     const router = useRouter();
     const inputRef = useRef<HTMLFormElement>(null);
@@ -36,6 +37,7 @@ const Borrow = () => {
     const [modalSave, setModalSave] = useState(false);
 
     const [user, setUser] = useState<any>(null);
+    const [userName, setUserName] = useState<string>(''); // สำหรับเก็บชื่อผู้ยืม
     const [availableEquipment, setAvailableEquipment] = useState<EquipmentType[]>([]);
     const [selectedEquipment, setSelectedEquipment] = useState<EquipmentType | null>(null);
     const [listItem, setListItem] = useState<EquipmentType[]>([]);
@@ -74,6 +76,12 @@ const Borrow = () => {
                 } else {
                     setAlert({ show: true, message: 'ไม่สามารถโหลดข้อมูลผู้ใช้ได้' });
                 }
+
+                // ดึงชื่อผู้ยืมจากตาราง takecareperson
+                const responseTakecareperson = await axios.get(`/api/takecareperson?auToken=${auToken}`);
+                if (responseTakecareperson.data?.name) {
+                    setUserName(responseTakecareperson.data.name); // อัปเดตชื่อผู้ยืม
+                }
             }
         } catch (error) {
             console.error("Error fetching user data:", error);
@@ -102,7 +110,7 @@ const Borrow = () => {
                 borrow_address: event.currentTarget['borrow_address'].value,
                 borrow_tel: event.currentTarget['borrow_tel'].value,
                 borrow_objective: event.currentTarget['borrow_objective'].value,
-                borrow_name: event.currentTarget['borrow_name'].value,
+                borrow_name: userName, // ใช้ชื่อผู้ยืมจาก state
                 borrow_list: listItem.map(item => ({ equipment_id: item.equipment_id }))
             };
 
@@ -136,10 +144,11 @@ const Borrow = () => {
             </div>
             <div className="px-5">
                 <Form noValidate validated={validated} onSubmit={handleSubmit}>
-                    <InputLabel label='ชื่อผู้ยืม' id="borrow_name" required />
-                    <TextareaLabel label='ที่อยู่' id="borrow_address" required />
-                    <InputLabel label='หมายเลขโทรศัพท์' id="borrow_tel" required />
-                    <InputLabel label='ขอยืมครุภัณฑ์เพื่อ' id="borrow_objective" required />
+                    {/* แสดงชื่อผู้ยืม */}
+                   <InputLabel label="ชื่อผู้ยืม" id="borrow_name" required defaultValue={userName}  disabled={!!userName}  />
+                    <TextareaLabel label="ที่อยู่" id="borrow_address" required />
+                    <InputLabel label="หมายเลขโทรศัพท์" id="borrow_tel" required />
+                    <InputLabel label="ขอยืมครุภัณฑ์เพื่อ" id="borrow_objective" required />
                     
                     <p className="m-0">วันเดือนปี (เริ่ม)</p>
                     <DatePickerX selected={startDate} onChange={setStartDate} />
@@ -157,36 +166,17 @@ const Borrow = () => {
                             </Toast>
                         ))}
                         <Col sm={2}>
-                            <ButtonAdd onClick={() => setModalSave(true)} title='เพิ่มข้อมูลอุปกรณ์' />
+                            <ButtonAdd onClick={() => setModalSave(true)} title="เพิ่มข้อมูลอุปกรณ์" />
                         </Col>
                     </Form.Group>
 
                     <Form.Group className="d-flex justify-content-center py-3">
-                        <ButtonState type="submit" text={'บันทึก'} isLoading={isLoading} />
+                        <ButtonState type="submit" text="บันทึก" isLoading={isLoading} />
                     </Form.Group>
                 </Form>
             </div>
 
             <ModalAlert show={alert.show} message={alert.message} handleClose={() => setAlert({ show: false, message: '' })} />
-            
-            {/* <ModalActions show={modalSave} title='เพิ่มข้อมูลอุปกรณ์' onClick={handleAddEquipment} onHide={() => setModalSave(false)}>
-                <Form noValidate validated={validatedModal}>
-                    <Form.Group>
-                        <Form.Label>เลือกอุปกรณ์</Form.Label>
-                        <Form.Select onChange={(e) => {
-                            const selected = availableEquipment.find(eq => eq.equipment_id === Number(e.target.value));
-                            if (selected) setSelectedEquipment(selected);
-                        }}>
-                            <option value="">-- เลือกอุปกรณ์ --</option>
-                            {availableEquipment.map(e => (
-                                <option key={e.equipment_id} value={e.equipment_id}>
-                                    {e.equipment_name} - {e.equipment_code}
-                                </option>
-                            ))}
-                        </Form.Select>
-                    </Form.Group>
-                </Form>
-            </ModalActions> */}
         </Container>
     );
 };
