@@ -168,16 +168,23 @@ const Borrow = () => {
                             name="borrow_name"
                             value={carePerson ? `${carePerson.takecare_fname} ${carePerson.takecare_sname}` : ''}
                         />
-
+                    </Form.Group>
+                    {/* ที่อยู่และเบอร์โทร */}
+                    <Form.Group>
+                        <Form.Label>ที่อยู๋</Form.Label>
                         <Form.Control
+                            value={carePerson ? carePerson.takecare_address : ''}
+                            disabled
+                            readOnly
+                        />
+                         <Form.Control
                             type="hidden"
                             id="borrow_address"
                             name="borrow_address"
                             value={carePerson ? carePerson.takecare_address : ''}
                         />
-                    </Form.Group>
-
-                    {/* ที่อยู่และเบอร์โทร */}
+                    </Form.Group>  
+            
                     <TextareaLabel label='ที่อยู่' id="borrow_address" required />
                     <InputLabel label='หมายเลขโทรศัพท์' id="borrow_tel" required />
                     <InputLabel label='ขอยืมครุภัณฑ์เพื่อ' id="borrow_objective" required />
