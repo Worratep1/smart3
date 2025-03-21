@@ -168,6 +168,13 @@ const Borrow = () => {
                             name="borrow_name"
                             value={carePerson ? `${carePerson.takecare_fname} ${carePerson.takecare_sname}` : ''}
                         />
+
+                        <Form.Control
+                            type="hidden"
+                            id="borrow_address"
+                            name="borrow_address"
+                            value={carePerson ? carePerson.takecare_address : ''}
+                        />
                     </Form.Group>
 
                     {/* ที่อยู่และเบอร์โทร */}
