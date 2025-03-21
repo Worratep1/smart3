@@ -174,7 +174,7 @@ const Borrow = () => {
 
                         <Form.Label>ที่อยู่</Form.Label>
                         <Form.Control
-                             value={carePerson ? `${carePerson.takecare_number} ${carePerson.takecare_moo} 'ถนน' ${carePerson.takecare_road} ${carePerson.takecare_tubon} ${carePerson.takecare_amphur} ${carePerson.takecare_province} ${carePerson.takecare_postcode}`  : ''}
+                             value={carePerson ? `${carePerson.takecare_number} ${carePerson.takecare_moo} ถนน ${carePerson.takecare_road} ${carePerson.takecare_tubon} ${carePerson.takecare_amphur} ${carePerson.takecare_province} ${carePerson.takecare_postcode}`  : ''}
                             disabled
                             readOnly
                         />
@@ -182,14 +182,29 @@ const Borrow = () => {
                             type="hidden"
                             id="borrow_address"
                             name="borrow_address"
-                            value={carePerson ? `${carePerson.takecare_number} ${carePerson.takecare_moo} 'ถนน' ${carePerson.takecare_road} ${carePerson.takecare_tubon} ${carePerson.takecare_amphur} ${carePerson.takecare_province} ${carePerson.takecare_postcode}`  : ''}
+                            value={carePerson ? `${carePerson.takecare_number} ${carePerson.takecare_moo} ถนน ${carePerson.takecare_road} ${carePerson.takecare_tubon} ${carePerson.takecare_amphur} ${carePerson.takecare_province} ${carePerson.takecare_postcode}`  : ''}
 
                         />
                     </Form.Group>  
+                    
+                     <Form.Group>
+                             <Form.Label>หมายเลขอุปกรณ์</Form.Label>
+                                <Form.Control
+                                value={carePerson ? `${carePerson.takecare_tel1} ` : ''}
+                                 disabled
+                                 readOnly
+                                            />
+                              <Form.Control
+                                  type="hidden"
+                                  id="borrow_tel"
+                                 name="borrow_tel"
+                             value={carePerson ? `${carePerson.takecare_tel1} ` : ''}
+                                            />
+                            </Form.Group>
             
                     {/* <TextareaLabel label='ที่อยู่' id="borrow_address" required /> */}
-                    <InputLabel label='หมายเลขโทรศัพท์' id="borrow_tel" required />
-                    <InputLabel label='ขอยืมครุภัณฑ์เพื่อ' id="borrow_objective" required />
+                    {/* <InputLabel label='หมายเลขโทรศัพท์' id="borrow_tel" required /> */}
+                    {/* <InputLabel label='ขอยืมครุภัณฑ์เพื่อ' id="borrow_objective" required /> */}
                     
                     <p className="m-0">วันเดือนปี (เริ่ม)</p>
                     <DatePickerX selected={startDate} onChange={setStartDate} />
