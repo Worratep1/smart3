@@ -170,25 +170,24 @@ const Borrow = () => {
                         />
                     </Form.Group>
                     {/* ที่อยู่และเบอร์โทร */}
-                    <Form.Group controlId="borrow_address">
-                        <Form.Label>ที่อยู่</Form.Label>
-  
-                {/* ใช้ readOnly และเพิ่มการเลื่อน */}
-                    <Form.Control
-                     value={carePerson ? `${carePerson.takecare_number} ${carePerson.takecare_moo} ถนน ${carePerson.takecare_road} ${carePerson.takecare_tubon} ${carePerson.takecare_amphur} ${carePerson.takecare_province} ${carePerson.takecare_postcode}` : ''}
-                     readOnly
-                     style={{ whiteSpace: 'nowrap', overflowX: 'auto', width: '100%' }} // ทำให้สามารถเลื่อนข้อความได้
-                    />
-  
-                {/* ช่อง hidden สำหรับส่งข้อมูล */}
-            <Form.Control
-                type="hidden"
-                id="borrow_address"
-                name="borrow_address"
-                value={carePerson ? `${carePerson.takecare_number} ${carePerson.takecare_moo} ถนน ${carePerson.takecare_road} ${carePerson.takecare_tubon} ${carePerson.takecare_amphur} ${carePerson.takecare_province} ${carePerson.takecare_postcode}` : ''}
-                />
-            </Form.Group>
+                    <Form.Group>
 
+                        <Form.Label>ที่อยู่</Form.Label>
+                        <Form.Control
+                             value={carePerson ? `${carePerson.takecare_number} ${carePerson.takecare_moo} ถนน ${carePerson.takecare_road} ${carePerson.takecare_tubon} ${carePerson.takecare_amphur} ${carePerson.takecare_province} ${carePerson.takecare_postcode}`  : ''}
+                            disabled
+                            readOnly
+                            style={{ whiteSpace: 'nowrap', overflowX: 'auto', width: '100%' }} 
+                        />
+                         <Form.Control
+                            type="hidden"
+                            id="borrow_address"
+                            name="borrow_address"
+                            value={carePerson ? `${carePerson.takecare_number} ${carePerson.takecare_moo} ถนน ${carePerson.takecare_road} ${carePerson.takecare_tubon} ${carePerson.takecare_amphur} ${carePerson.takecare_province} ${carePerson.takecare_postcode}`  : ''}
+
+                        />
+                    </Form.Group>  
+                    
                      <Form.Group>
                              <Form.Label>หมายเลขโทรศัพท์</Form.Label>
                                 <Form.Control
