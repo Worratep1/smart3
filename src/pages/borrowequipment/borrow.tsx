@@ -14,7 +14,7 @@ import ModalActions from '@/components/Modals/ModalActions';
 import ButtonState from '@/components/Button/ButtonState';
 import ButtonAdd from '@/components/Button/ButtonAdd';
 import DatePickerX from '@/components/DatePicker/DatePickerX';
-
+import { encrypt } from '@/utils/helpers'
 import styles from '@/styles/page.module.css';
 
 interface EquipmentType {
@@ -39,6 +39,7 @@ const Borrow = () => {
     const [availableEquipment, setAvailableEquipment] = useState<EquipmentType[]>([]);
     const [selectedEquipment, setSelectedEquipment] = useState<EquipmentType | null>(null);
     const [listItem, setListItem] = useState<EquipmentType[]>([]);
+    const [carePerson, setCarePerson] = useState<any>(null);
 
     // โหลดรายการอุปกรณ์ครั้งเดียวเมื่อ component mount
     useEffect(() => {
@@ -71,6 +72,13 @@ const Borrow = () => {
                 const responseUser = await axios.get(`${process.env.WEB_DOMAIN}/api/user/getUser/${auToken}`);
                 if (responseUser.data?.data) {
                     setUser(responseUser.data.data);
+                    const encodedUsersId = encrypt(responseUser.data?.data.users_id.toString());
+                    // ดึงข้อมูลผู้สูงอายุจากผู้ดูแล
+                    const responseTakecareperson = await axios.get(`${process.env.WEB_DOMAIN}/api/user/getUserTakecareperson/${encodedUsersId}`);
+                    const data = responseTakecareperson.data?.data;
+                    if (data) {
+                        setCarePerson(data);  // เก็บข้อมูลผู้สูงอายุที่ดูแล
+                    }
                 } else {
                     setAlert({ show: true, message: 'ไม่สามารถโหลดข้อมูลผู้ใช้ได้' });
                 }
@@ -86,7 +94,7 @@ const Borrow = () => {
         event.stopPropagation();
 
         // ตรวจสอบว่ามีการเพิ่มอุปกรณ์และข้อมูลผู้ใช้ถูกโหลดแล้ว
-        if (!listItem.length || !user) {
+        if (!listItem.length || !user || !carePerson) {
             setAlert({ show: true, message: 'กรุณาเลือกอุปกรณ์และกรอกข้อมูลให้ครบถ้วน' });
             return;
         }
@@ -102,7 +110,7 @@ const Borrow = () => {
                 borrow_address: event.currentTarget['borrow_address'].value,
                 borrow_tel: event.currentTarget['borrow_tel'].value,
                 borrow_objective: event.currentTarget['borrow_objective'].value,
-                borrow_name: event.currentTarget['borrow_name'].value,
+                borrow_name: event.currentTarget['borrow_name'].value, // เก็บชื่อผู้สูงอายุ
                 borrow_list: listItem.map(item => ({ equipment_id: item.equipment_id }))
             };
 
@@ -136,7 +144,33 @@ const Borrow = () => {
             </div>
             <div className="px-5">
                 <Form noValidate validated={validated} onSubmit={handleSubmit}>
-                    <InputLabel label='ชื่อผู้ยืม' id="borrow_name" required />
+                    {/* ชื่อผู้ดูแล */}
+                    <Form.Group>
+                        <Form.Label>ชื่อผู้ดูแล</Form.Label>
+                        <Form.Control
+                            value={user ? `${user.users_fname} ${user.users_sname}` : ''}
+                            readOnly
+                            disabled
+                        />
+                    </Form.Group>
+
+                    {/* ชื่อผู้สูงอายุ */}
+                    <Form.Group>
+                        <Form.Label>ชื่อผู้สูงอายุ</Form.Label>
+                        <Form.Control
+                            value={carePerson ? `${carePerson.takecare_fname} ${carePerson.takecare_sname}` : ''}
+                            disabled
+                            readOnly
+                        />
+                        <Form.Control
+                            type="hidden"
+                            id="borrow_name"
+                            name="borrow_name"
+                            value={carePerson ? `${carePerson.takecare_fname} ${carePerson.takecare_sname}` : ''}
+                        />
+                    </Form.Group>
+
+                    {/* ที่อยู่และเบอร์โทร */}
                     <TextareaLabel label='ที่อยู่' id="borrow_address" required />
                     <InputLabel label='หมายเลขโทรศัพท์' id="borrow_tel" required />
                     <InputLabel label='ขอยืมครุภัณฑ์เพื่อ' id="borrow_objective" required />
