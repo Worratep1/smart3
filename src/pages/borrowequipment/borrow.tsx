@@ -191,14 +191,20 @@ const Borrow = () => {
             
                     {/* <TextareaLabel label='ที่อยู่' id="borrow_address" required /> */}
                     {/* <InputLabel label='หมายเลขโทรศัพท์' id="borrow_tel" required /> */}
-                    {/* <InputLabel label='ขอยืมครุภัณฑ์เพื่อ' id="borrow_objective" required /> */}
+                    {<InputLabel label='ขอยืมครุภัณฑ์เพื่อ' id="borrow_objective" required />}
                     
-                
-                    <p className="m-0">วันเดือนปี (เริ่ม)</p>
-                    <DatePickerX selected={startDate} onChange={setStartDate} />
-
-                    <p className="m-0">วันเดือนปี (สิ้นสุด)</p>
-                    <DatePickerX selected={endDate} onChange={setEndDate} />
+                    <Form.Group>
+                        <p className="m-0">วันเดือนปี (เริ่ม)</p>
+                        <div className="py-2">
+                            <DatePickerX selected={startDate} onChange={(date) => setStartDate(date)} />
+                        </div>
+                    </Form.Group>
+                    <Form.Group>
+                        <p className="m-0">วันเดือนปี (สิ้นสุด)</p>
+                        <div className="py-2">
+                            <DatePickerX selected={endDate} onChange={(date) => setEndDate(date)} />
+                        </div>
+                    </Form.Group>
 
                     <Form.Group className="py-2">
                         {listItem.length > 0 && listItem.map((item, index) => (
