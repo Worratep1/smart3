@@ -169,24 +169,11 @@ const Borrow = () => {
                         />
                     </Form.Group>
                     {/* ที่อยู่และเบอร์โทร */}
-                    <Form.Group>
-
-                        <Form.Label>ที่อยู่</Form.Label>
-                        <Form.Control
-                             value={carePerson ? `${carePerson.takecare_number} ${carePerson.takecare_moo} ถนน ${carePerson.takecare_road} ${carePerson.takecare_tubon} ${carePerson.takecare_amphur} ${carePerson.takecare_province} ${carePerson.takecare_postcode}`  : ''}
-                            disabled
-                            readOnly
-                            style={{ whiteSpace: 'nowrap', overflowX: 'auto', width: '100%' }} 
-                        />
-                         <Form.Control
-                            type="hidden"
-                            id="borrow_address"
-                            name="borrow_address"
-                            value={carePerson ? `${carePerson.takecare_number} ${carePerson.takecare_moo} ถนน ${carePerson.takecare_road} ${carePerson.takecare_tubon} ${carePerson.takecare_amphur} ${carePerson.takecare_province} ${carePerson.takecare_postcode}`  : ''}
-
-                        />
-                    </Form.Group>  
                     
+                    <Form.Group>
+                        <TextareaLabel label='ที่อยู่' id="borrow_address" placeholder="กรอกที่อยู่" required />
+                    </Form.Group>
+                
                      <Form.Group >
                              <Form.Label>หมายเลขโทรศัพท์</Form.Label>
                                 <Form.Control
