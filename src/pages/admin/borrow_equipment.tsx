@@ -310,7 +310,7 @@ const BorrowEquipment = () => {
                                 <tr>
                                     <td className="px-2">{'8.ท่านมีโรคประจําตัว'}</td>
                                     <td className="px-2">{'ไม่มี'}</td>
-                                </tr>
+                                </tr> 
                                 <tr>
                                     <td className="px-2">{'9.รับประทานยา'}</td>
                                     <td className="px-2">{'ไม่จําเป็นต้องรับประทานยา'}</td>
