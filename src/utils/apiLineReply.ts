@@ -574,7 +574,7 @@ export const replyLocation = async ({
                                         uri  : `tel:${userTakecarepersonData.takecare_tel1 || '-'}`
                                     }
                                 },
-                                {
+                                { 
                                     type  : "button",
                                     style : "primary",
                                     height: "sm",
