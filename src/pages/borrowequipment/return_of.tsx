@@ -14,6 +14,7 @@ interface BorrowedItemType {
   equipment_code: string;
   startDate: string;
   endDate: string;
+  borrow_user_id: number;
 }
 
 const ReturnOf = () => {
@@ -21,9 +22,21 @@ const ReturnOf = () => {
   const [borrowedItems, setBorrowedItems] = useState<BorrowedItemType[]>([]);
   const [returnList, setReturnList] = useState<number[]>([]);
   const [alert, setAlert] = useState({ show: false, message: '' });
+  const [currentUserId, setCurrentUserId] = useState<number | null>(null);
+
+  // ดึง currentUserId จาก localStorage เฉพาะเมื่อรันบน client
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const storedUserId = localStorage.getItem('userId');
+      if (storedUserId) {
+        setCurrentUserId(Number(storedUserId));
+      }
+    }
+  }, []);
 
   // ดึงข้อมูลจาก API /api/borrowequipment/list
-  // ปรับให้ดึงเฉพาะรายการที่ได้รับการอนุมัติ (borrow_equipment_status === 2)
+  // กรองให้รับเฉพาะรายการที่ได้รับการอนุมัติ (borrow_equipment_status === 2)
+  // และเป็นของผู้ใช้ที่เข้าสู่ระบบ (currentUserId)
   const fetchBorrowedItems = async () => {
     try {
       setLoading(true);
@@ -31,8 +44,7 @@ const ReturnOf = () => {
       console.log("API Response:", response.data);
 
       if (response.data?.data) {
-        const borrowedData = response.data.data.flatMap((item: any) => {
-          // ตรวจสอบสถานะให้รับเฉพาะรายการที่ได้รับการอนุมัติ (2)
+        const allBorrowedData = response.data.data.flatMap((item: any) => {
           if (item.borrow_equipment_status === 2) {
             return item.borrowequipment_list.map((eq: any) => ({
               borrow_equipment_id: eq.borrow_equipment_id,
@@ -44,11 +56,18 @@ const ReturnOf = () => {
               endDate: item.borrow_return
                 ? new Date(item.borrow_return).toISOString().split('T')[0]
                 : "",
+              // สมมุติว่า API ส่ง borrow_user_id มาด้วย
+              borrow_user_id: item.borrow_user_id,
             }));
           }
           return [];
         });
-        setBorrowedItems(borrowedData);
+        if (currentUserId !== null) {
+          const filteredData = allBorrowedData.filter((data: any) => data.borrow_user_id === currentUserId);
+          setBorrowedItems(filteredData);
+        } else {
+          setBorrowedItems([]);
+        }
       }
     } catch (error) {
       console.error('Error fetching borrowed equipment:', error);
@@ -58,9 +77,12 @@ const ReturnOf = () => {
     }
   };
 
+  // ดึงข้อมูลใหม่เมื่อ currentUserId ถูกตั้งค่าแล้ว
   useEffect(() => {
-    fetchBorrowedItems();
-  }, []);
+    if (currentUserId !== null) {
+      fetchBorrowedItems();
+    }
+  }, [currentUserId]);
 
   // เมื่อกดปิด Toast (กากบาท) ให้ถือว่าอุปกรณ์นั้นถูกเลือกสำหรับคืน
   const removeItem = (index: number, id: number) => {
