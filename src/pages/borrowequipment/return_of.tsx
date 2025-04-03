@@ -28,13 +28,18 @@ const ReturnOf = () => {
   // ➋ ดึง userId จาก localStorage (หรืออาจมาจาก Redux / Context ก็ได้)
   useEffect(() => {
     if (typeof window !== 'undefined') {
+      // ตั้งค่า userId ก่อน
+      localStorage.setItem('userId', '123');
+      // ดึงค่า userId ที่ตั้งไว้
       const storedUserId = localStorage.getItem('userId');
       console.log("Stored userId:", storedUserId);
+    
       if (storedUserId) {
         setCurrentUserId(Number(storedUserId));
       }
     }
   }, []);
+  
   
 
   // ➌ เมื่อ currentUserId พร้อมแล้ว จึงเรียกฟังก์ชัน fetchBorrowedItems
