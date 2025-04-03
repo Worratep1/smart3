@@ -181,7 +181,7 @@ const Borrow = () => {
                                  disabled
                                  readOnly
                                             />
-                              <Form.Control
+                              <Form.Control 
                                   type="hidden"
                                   id="borrow_tel"
                                  name="borrow_tel"
@@ -191,6 +191,7 @@ const Borrow = () => {
             
                     {/* <TextareaLabel label='ที่อยู่' id="borrow_address" required /> */}
                     {/* <InputLabel label='หมายเลขโทรศัพท์' id="borrow_tel" required /> */}
+
                     {<InputLabel label='ขอยืมครุภัณฑ์เพื่อ' id="borrow_objective" required />}
                     
                     <Form.Group>

@@ -23,7 +23,7 @@ const ReturnOf = () => {
   const [alert, setAlert] = useState({ show: false, message: '' });
 
   // ดึงข้อมูลจาก API /api/borrowequipment/list
-  // ซึ่งควรดึงเฉพาะรายการที่ borrow_equipment_status=1 (ยังยืมอยู่) เท่านั้น
+  // ปรับให้ดึงเฉพาะรายการที่ได้รับการอนุมัติ (borrow_equipment_status === 2)
   const fetchBorrowedItems = async () => {
     try {
       setLoading(true);
@@ -31,19 +31,23 @@ const ReturnOf = () => {
       console.log("API Response:", response.data);
 
       if (response.data?.data) {
-        const borrowedData = response.data.data.flatMap((item: any) =>
-          item.borrowequipment_list.map((eq: any) => ({
-            borrow_equipment_id: eq.borrow_equipment_id,
-            equipment_name: eq.equipment?.equipment_name || "ไม่พบข้อมูล",
-            equipment_code: eq.equipment?.equipment_code || "ไม่พบข้อมูล",
-            startDate: item.borrow_date
-              ? new Date(item.borrow_date).toISOString().split('T')[0]
-              : "",
-            endDate: item.borrow_return
-              ? new Date(item.borrow_return).toISOString().split('T')[0]
-              : "",
-          }))
-        );
+        const borrowedData = response.data.data.flatMap((item: any) => {
+          // ตรวจสอบสถานะให้รับเฉพาะรายการที่ได้รับการอนุมัติ (2)
+          if (item.borrow_equipment_status === 2) {
+            return item.borrowequipment_list.map((eq: any) => ({
+              borrow_equipment_id: eq.borrow_equipment_id,
+              equipment_name: eq.equipment?.equipment_name || "ไม่พบข้อมูล",
+              equipment_code: eq.equipment?.equipment_code || "ไม่พบข้อมูล",
+              startDate: item.borrow_date
+                ? new Date(item.borrow_date).toISOString().split('T')[0]
+                : "",
+              endDate: item.borrow_return
+                ? new Date(item.borrow_return).toISOString().split('T')[0]
+                : "",
+            }));
+          }
+          return [];
+        });
         setBorrowedItems(borrowedData);
       }
     } catch (error) {
@@ -79,11 +83,8 @@ const ReturnOf = () => {
       });
       setAlert({ show: true, message: 'คืนอุปกรณ์สำเร็จแล้ว' });
       setReturnList([]);
-
-      // หากต้องการดึงข้อมูลใหม่จากฐานข้อมูล เพื่อให้มั่นใจว่า
-      // ไม่มีรายการเก่าๆ โผล่มาอีก (ถ้า DB อัปเดตแล้ว)
+      // รีเฟรชข้อมูลหลังการคืน
       await fetchBorrowedItems();
-
     } catch (error) {
       console.error('Error returning equipment:', error);
       setAlert({ show: true, message: 'เกิดข้อผิดพลาดในการคืนอุปกรณ์' });
@@ -126,10 +127,9 @@ const ReturnOf = () => {
                 </Toast>
               ))
             ) : (
-              <p>ไม่มีอุปกรณ์ที่ถูกยืม</p>
+              <p>ไม่มีอุปกรณ์ที่ยืม</p>
             )}
           </Form.Group>
-
           <Button
             variant="primary"
             onClick={handleReturnSubmit}
@@ -144,5 +144,3 @@ const ReturnOf = () => {
 };
 
 export default ReturnOf;
-//git add .
-//git commit -m "Add return equipment API"
