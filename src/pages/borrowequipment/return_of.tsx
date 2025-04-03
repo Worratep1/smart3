@@ -29,11 +29,13 @@ const ReturnOf = () => {
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const storedUserId = localStorage.getItem('userId');
+      console.log("Stored userId:", storedUserId);
       if (storedUserId) {
         setCurrentUserId(Number(storedUserId));
       }
     }
   }, []);
+  
 
   // ➌ เมื่อ currentUserId พร้อมแล้ว จึงเรียกฟังก์ชัน fetchBorrowedItems
   useEffect(() => {
