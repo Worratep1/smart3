@@ -190,9 +190,9 @@ const Borrow = () => {
             
                     {/* <TextareaLabel label='ที่อยู่' id="borrow_address" required /> */}
                     {/* <InputLabel label='หมายเลขโทรศัพท์' id="borrow_tel" required /> */}
-                    <br>
+                    
                     {<InputLabel label='ขอยืมครุภัณฑ์เพื่อ' id="borrow_objective" required />}
-                    </br>
+                    
                     <Form.Group>
                         <p className="m-0">วันเดือนปี (เริ่ม)</p>
                         <div className="py-2">
