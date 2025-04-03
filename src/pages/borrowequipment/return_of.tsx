@@ -22,12 +22,8 @@ const ReturnOf = () => {
   const [returnList, setReturnList] = useState<number[]>([]);
   const [alert, setAlert] = useState({ show: false, message: '' });
 
-  // ดึง user id ของผู้ใช้ที่เข้าสู่ระบบจาก localStorage
-  const currentUserId = Number(localStorage.getItem('userId')); // สมมุติว่า userId ถูกเก็บใน localStorage
-
   // ดึงข้อมูลจาก API /api/borrowequipment/list
   // ปรับให้ดึงเฉพาะรายการที่ได้รับการอนุมัติ (borrow_equipment_status === 2)
-  // และกรองเฉพาะรายการที่เป็นของผู้ใช้ที่เข้าสู่ระบบ (currentUserId)
   const fetchBorrowedItems = async () => {
     try {
       setLoading(true);
@@ -35,8 +31,8 @@ const ReturnOf = () => {
       console.log("API Response:", response.data);
 
       if (response.data?.data) {
-        // สมมุติว่า API ส่งข้อมูลแต่ละรายการมาพร้อมกับ property borrow_user_id
-        const allBorrowedData = response.data.data.flatMap((item: any) => {
+        const borrowedData = response.data.data.flatMap((item: any) => {
+          // ตรวจสอบสถานะให้รับเฉพาะรายการที่ได้รับการอนุมัติ (2)
           if (item.borrow_equipment_status === 2) {
             return item.borrowequipment_list.map((eq: any) => ({
               borrow_equipment_id: eq.borrow_equipment_id,
@@ -48,15 +44,11 @@ const ReturnOf = () => {
               endDate: item.borrow_return
                 ? new Date(item.borrow_return).toISOString().split('T')[0]
                 : "",
-              // สมมุติว่า API ส่ง user id ของผู้ยืมใน property นี้
-              borrow_user_id: item.borrow_user_id,
             }));
           }
           return [];
         });
-        // กรองเฉพาะรายการที่ตรงกับ user id ของผู้ใช้ที่เข้าสู่ระบบ
-        const filteredData = allBorrowedData.filter((data: any) => data.borrow_user_id === currentUserId);
-        setBorrowedItems(filteredData);
+        setBorrowedItems(borrowedData);
       }
     } catch (error) {
       console.error('Error fetching borrowed equipment:', error);
