@@ -22,12 +22,35 @@ const ReturnOf = () => {
   const [returnList, setReturnList] = useState<number[]>([]);
   const [alert, setAlert] = useState({ show: false, message: '' });
 
-  // ดึงข้อมูลจาก API /api/borrowequipment/list
-  // ปรับให้ดึงเฉพาะรายการที่ได้รับการอนุมัติ (borrow_equipment_status === 2)
-  const fetchBorrowedItems = async () => {
+  // ➊ สร้าง state สำหรับเก็บ userId ของผู้ใช้ที่ล็อกอิน
+  const [currentUserId, setCurrentUserId] = useState<number | null>(null);
+
+  // ➋ ดึง userId จาก localStorage (หรืออาจมาจาก Redux / Context ก็ได้)
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const storedUserId = localStorage.getItem('userId');
+      if (storedUserId) {
+        setCurrentUserId(Number(storedUserId));
+      }
+    }
+  }, []);
+
+  // ➌ เมื่อ currentUserId พร้อมแล้ว จึงเรียกฟังก์ชัน fetchBorrowedItems
+  useEffect(() => {
+    if (currentUserId !== null) {
+      fetchBorrowedItems(currentUserId);
+    }
+  }, [currentUserId]);
+
+  // ดึงข้อมูลจาก API และกรองเฉพาะรายการที่ได้รับการอนุมัติ (borrow_equipment_status === 2)
+  // โดยส่ง userId ไปเป็น query parameter
+  const fetchBorrowedItems = async (userId: number) => {
     try {
       setLoading(true);
-      const response = await axios.get(`${process.env.WEB_DOMAIN}/api/borrowequipment/list`);
+      // ⭕ ตรงนี้เราใช้ userId ที่ส่งเข้ามาเป็นพารามิเตอร์
+      const response = await axios.get(
+        `${process.env.WEB_DOMAIN}/api/borrowequipment/list?userId=${userId}`
+      );
       console.log("API Response:", response.data);
 
       if (response.data?.data) {
@@ -58,10 +81,6 @@ const ReturnOf = () => {
     }
   };
 
-  useEffect(() => {
-    fetchBorrowedItems();
-  }, []);
-
   // เมื่อกดปิด Toast (กากบาท) ให้ถือว่าอุปกรณ์นั้นถูกเลือกสำหรับคืน
   const removeItem = (index: number, id: number) => {
     setReturnList(prev => [...prev, id]);
@@ -84,7 +103,9 @@ const ReturnOf = () => {
       setAlert({ show: true, message: 'คืนอุปกรณ์สำเร็จแล้ว' });
       setReturnList([]);
       // รีเฟรชข้อมูลหลังการคืน
-      await fetchBorrowedItems();
+      if (currentUserId !== null) {
+        await fetchBorrowedItems(currentUserId);
+      }
     } catch (error) {
       console.error('Error returning equipment:', error);
       setAlert({ show: true, message: 'เกิดข้อผิดพลาดในการคืนอุปกรณ์' });

@@ -5,15 +5,24 @@ import prisma from '@/lib/prisma';
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') {
     try {
+      // รับ userId จาก query parameter
+      const { userId } = req.query;
+      // ถ้า userId ไม่ถูกส่งมา ให้ส่งกลับ error
+      if (!userId) {
+        return res.status(400).json({ message: 'Missing userId query parameter' });
+      }
+
       // ดึงเฉพาะ borrowequipment ที่มีรายการใน borrowequipment_list
-      // ที่มี borrow_equipment_status = 1 (กำลังยืมอยู่) และในความสัมพันธ์ equipment มี equipment_status = 0 (ถูกยืม)
+      // ที่มี borrow_equipment_status = 2 (อนุมัติแล้ว)
+      // และ borrow_user_id ตรงกับ userId ที่ส่งมา
       const borrowedItems = await prisma.borrowequipment.findMany({
         where: {
+          borrow_user_id: Number(userId),
           borrowequipment_list: {
             some: {
-              borrow_equipment_status: 1,
+              borrow_equipment_status: 2,
               equipment: {
-                equipment_status: 0,
+                equipment_status: 0, // สมมุติว่า equipment_status = 0 หมายถึงถูกยืม
               },
             },
           },
@@ -21,7 +30,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
         include: {
           borrowequipment_list: {
             where: {
-              borrow_equipment_status: 1,
+              borrow_equipment_status: 2,
             },
             include: {
               equipment: true,
@@ -47,4 +56,4 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   }
 }
 //git add .
-//git commit -m "Add return equipment API"
+//git commit -m "Update list API to filter by userId and approved status"
