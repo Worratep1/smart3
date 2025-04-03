@@ -14,7 +14,6 @@ interface BorrowedItemType {
   equipment_code: string;
   startDate: string;
   endDate: string;
-  borrow_user_id: number;
 }
 
 const ReturnOf = () => {
@@ -22,28 +21,9 @@ const ReturnOf = () => {
   const [borrowedItems, setBorrowedItems] = useState<BorrowedItemType[]>([]);
   const [returnList, setReturnList] = useState<number[]>([]);
   const [alert, setAlert] = useState({ show: false, message: '' });
-  const [currentUserId, setCurrentUserId] = useState<number | null>(null);
 
-  // ดึง currentUserId จาก localStorage เมื่ออยู่บน client side
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const storedUserId = localStorage.getItem('userId');
-      if (storedUserId) {
-        setCurrentUserId(Number(storedUserId));
-      }
-    }
-  }, []);
-
-  // เมื่อ currentUserId ถูกตั้งค่าแล้ว ให้ดึงข้อมูลจาก API
-  useEffect(() => {
-    if (currentUserId !== null) {
-      fetchBorrowedItems();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentUserId]);
-
-  // ดึงข้อมูลจาก API และกรองเฉพาะรายการที่ได้รับการอนุมัติ (สถานะ 2)
-  // และมี borrow_user_id ตรงกับ currentUserId
+  // ดึงข้อมูลจาก API /api/borrowequipment/list
+  // ปรับให้ดึงเฉพาะรายการที่ได้รับการอนุมัติ (borrow_equipment_status === 2)
   const fetchBorrowedItems = async () => {
     try {
       setLoading(true);
@@ -51,9 +31,9 @@ const ReturnOf = () => {
       console.log("API Response:", response.data);
 
       if (response.data?.data) {
-        const allBorrowedData = response.data.data.flatMap((item: any) => {
-          // ใช้ Number() เพื่อแปลงสถานะให้เป็นตัวเลข
-          if (Number(item.borrow_equipment_status) === 2) {
+        const borrowedData = response.data.data.flatMap((item: any) => {
+          // ตรวจสอบสถานะให้รับเฉพาะรายการที่ได้รับการอนุมัติ (2)
+          if (item.borrow_equipment_status === 2) {
             return item.borrowequipment_list.map((eq: any) => ({
               borrow_equipment_id: eq.borrow_equipment_id,
               equipment_name: eq.equipment?.equipment_name || "ไม่พบข้อมูล",
@@ -64,18 +44,11 @@ const ReturnOf = () => {
               endDate: item.borrow_return
                 ? new Date(item.borrow_return).toISOString().split('T')[0]
                 : "",
-              // สมมุติว่า API ส่ง borrow_user_id มาด้วย
-              borrow_user_id: item.borrow_user_id,
             }));
           }
           return [];
         });
-        const filteredData = allBorrowedData.filter(
-          (data: any) => data.borrow_user_id === currentUserId
-        );
-        setBorrowedItems(filteredData);
-      } else {
-        setBorrowedItems([]);
+        setBorrowedItems(borrowedData);
       }
     } catch (error) {
       console.error('Error fetching borrowed equipment:', error);
@@ -85,13 +58,18 @@ const ReturnOf = () => {
     }
   };
 
-  // เมื่อกดปิด Toast ให้ถือว่าอุปกรณ์นั้นถูกเลือกสำหรับคืน
+  useEffect(() => {
+    fetchBorrowedItems();
+  }, []);
+
+  // เมื่อกดปิด Toast (กากบาท) ให้ถือว่าอุปกรณ์นั้นถูกเลือกสำหรับคืน
   const removeItem = (index: number, id: number) => {
     setReturnList(prev => [...prev, id]);
     setBorrowedItems(prev => prev.filter((_, i) => i !== index));
   };
 
   // เมื่อกดปุ่ม "บันทึกการคืน"
+  // เรียก API /api/borrowequipment/return เพื่ออัปเดตสถานะใน DB
   const handleReturnSubmit = async () => {
     if (returnList.length === 0) {
       setAlert({ show: true, message: 'กรุณาเลือกรายการที่ต้องการคืน' });
@@ -105,6 +83,7 @@ const ReturnOf = () => {
       });
       setAlert({ show: true, message: 'คืนอุปกรณ์สำเร็จแล้ว' });
       setReturnList([]);
+      // รีเฟรชข้อมูลหลังการคืน
       await fetchBorrowedItems();
     } catch (error) {
       console.error('Error returning equipment:', error);
