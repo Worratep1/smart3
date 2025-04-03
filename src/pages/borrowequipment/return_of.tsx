@@ -23,7 +23,7 @@ const ReturnOf = () => {
   const [alert, setAlert] = useState({ show: false, message: '' });
 
   // ดึง user id ของผู้ใช้ที่เข้าสู่ระบบจาก localStorage
-  const currentUserId = Number(localStorage.getItem('userId'));
+  const currentUserId = Number(localStorage.getItem('userId')); // สมมุติว่า userId ถูกเก็บใน localStorage
 
   // ดึงข้อมูลจาก API /api/borrowequipment/list
   // ปรับให้ดึงเฉพาะรายการที่ได้รับการอนุมัติ (borrow_equipment_status === 2)
