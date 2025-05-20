@@ -85,7 +85,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 							}else{
 								await replyRegistration({replyToken, userId})
 							}
-						} else if (events.message.text === "การยืม-คืนอุปกรณ์") {
+						} else if (events.message.text === "การยืม-คืนครุภัณฑ์") {
 							const responseUser = await api.getUser(userId);
 							if(responseUser){
 								await replyMenuBorrowequipment({replyToken, userData : responseUser})
