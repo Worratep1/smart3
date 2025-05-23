@@ -164,7 +164,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 				if(events.type === "postback" && events.postback?.data){
 					const postback = parseQueryString(events.postback.data)
 				
-					if(postback.type === 'safezone'){
+					if(events.postback.type === 'safezone'){
 						const replyToken = await postbackSafezone({ userLineId: postback.userLineId, takecarepersonId: Number(postback.takecarepersonId) })
 						if(replyToken){
 							await replyNotification({ replyToken, message: 'ส่งคำขอความช่วยเหลือแล้ว' })
