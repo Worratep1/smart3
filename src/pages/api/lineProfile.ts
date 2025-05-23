@@ -168,7 +168,6 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 						const replyToken = await postbackSafezone({ userLineId: postback.userLineId, takecarepersonId: Number(postback.takecarepersonId) })
 						if(replyToken){
 							await replyNotification({ replyToken, message: 'ส่งคำขอความช่วยเหลือแล้ว' })
-							return res.status(200).end()
 						}
 					}else if(postback.type === 'accept'){
 						let data = postback
@@ -177,8 +176,6 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 						const replyToken = await postbackAccept(data)
 						if(replyToken){
 							await replyNotification({ replyToken, message: 'ตอบรับเคสขอความช่วยเหลือแล้ว' })
-							return res.status(200).end()
-							
 						}
 					}else if(postback.type === 'close'){
 						let data = postback
@@ -187,22 +184,21 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 						const replyToken = await postbackClose(data)
 						if(replyToken){
 							await replyNotification({ replyToken, message: 'ปิดเคสขอความช่วยเหลือแล้ว' })
-							return res.status(200).end()
 						}
 					}
 				}
 				
 			}
-	 } catch (error) {
-				  console.error(error)
-				 const token = req.body.events?.[0]?.replyToken
-				 if (token) {
-				    await replyMessage({ replyToken: token, message: 'ระบบขัดข้อง กรุณาลองใหม่อีกครั้ง' })
-				  }
-				  return res.status(200).end()    // ← ตอบ OK ให้ LINE
 	
+		} catch (error) {
+			return await replyMessage({ replyToken: req.body.events[0].replyToken, message: 'ระบบขัดข้องกรุณาลองใหม่อีกครั้ง' })
 		}
+		return res.status(200).json({ message: 'success'})
+	}else{
+		res.setHeader('Allow', ['POST'])
+		res.status(405).json({ message: `วิธี ${req.method} ไม่อนุญาต` })
 	}
+	
 }
 
 
