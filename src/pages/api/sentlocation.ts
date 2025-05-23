@@ -113,7 +113,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
                         }
 
                         // คำนวณเงื่อนไขสำหรับสถานะ 2 (ออกจากเขต Safezone ชั้นที่ 2)
-                        if (status === 2 && (location.locat_noti_status !== status || moment().diff(moment(location.locat_noti_time), 'minutes') >= 5)) {
+                        if (status === 2 && (location.locat_noti_status !== 2 || moment().diff(moment(location.locat_noti_time), 'minutes') >= 5)) {
                             const message = `คุณ ${takecareperson.takecare_fname} ${takecareperson.takecare_sname} \nออกนอกเขต Safezone ชั้นที่ 2 แล้ว`;
 
                             const replyToken = user.users_line_id || ''; // ใช้ค่าว่างถ้าค่าเป็น null
@@ -125,7 +125,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
                                     type: 'safezone',
                                     message
                                 });
-                                noti_status = status; // แจ้งสถานะออกจากชั้นที่ 2
+                                noti_status = 3; // แจ้งสถานะออกจากชั้นที่ 2
                                 noti_time = new Date();
                             }
                         }
