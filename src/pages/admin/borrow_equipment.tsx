@@ -20,6 +20,9 @@ const defaultShowState = {
             users_sname: ''
         },
         borrow_name: '',
+        borrow_address:'',
+        borrow_tel:'',
+        borrow_objective:'',
         borrow_date: '',
         borrow_return: '',
         borrow_equipment_status: 1,
@@ -142,9 +145,9 @@ const BorrowEquipment = () => {
                                         <th className="px-2">ลำดับ</th>
                                         <th className="px-2">ชื่อ-สกุล ของผู้ดูแลผู้สูงอายุ</th>
                                         <th className="px-2">ชื่อ-สกุล ของผู้สูงอายุ</th>
-                                        <th className="px-2">แบบสอบถาม</th>
-                                        <th className="px-2">วันที่ขอ</th>
-                                        <th className="px-2">วันที่สินสุด</th>
+                                        {/* <th className="px-2">แบบสอบถาม</th> */}
+                                        <th className="px-2">วันเดือนปีที่ยื่นคำขอ</th>
+                                        {/* <th className="px-2">วันที่สิ้นสุด</th> */}
                                         <th className="px-2">สถานะ</th>
                                         <th className="px-2">เครื่องมือ</th>
                                     </tr>
@@ -157,13 +160,13 @@ const BorrowEquipment = () => {
                                                     <td className="px-2">{index + 1}</td>
                                                     <td className="px-2">{item.users_id_ref.users_fname + ' ' + item.users_id_ref.users_sname}</td>
                                                     <td className="px-2">{item.borrow_name}</td>
-                                                    <td className="px-2">
+                                                    {/* <td className="px-2">
                                                         <Button variant="link" className="p-0 btn-edit" onClick={() => setShowQuestionnaire({ isShow: true, title: item.borrow_name, body: '' })}>
                                                             <i className="fa-solid fa-file"></i>
                                                         </Button>
-                                                    </td>
+                                                    </td> */}
                                                     <td className="px-2">{moment(item.borrow_date).format('DD-MM-YYYY')}</td>
-                                                    <td className="px-2">{moment(item.borrow_return).format('DD-MM-YYYY')}</td>
+                                                    {/* <td className="px-2">{moment(item.borrow_return).format('DD-MM-YYYY')}</td> */}
                                                     <td className="px-2">{item.borrow_equipment_status === 1 ? 'รออนุมัติ' : (item.borrow_equipment_status === 2 ? <span className="alert-success">{'อนุมัติ'}</span> : <span className="alert-danger">{'ไม่อนุมัติ'}</span>)}</td>
                                                     <td className="px-2">
                                                         <Button variant="link" className="p-0 btn-edit" onClick={() => setShow({ isShow: true, title: item.borrow_name, body: item })}>
@@ -197,13 +200,25 @@ const BorrowEquipment = () => {
                                     <td className="px-2">{show.body.borrow_name}</td>
                                 </tr>
                                 <tr>
-                                    <td className="px-2">{'วันที่ขอ'}</td>
-                                    <td className="px-2">{moment(show.body.borrow_date).format('DD-MM-YYYY')}</td>
+                                    <td className="px-2">{'ที่อยู่'}</td>
+                                    <td className="px-2">{show.body.borrow_address}</td>
                                 </tr>
                                 <tr>
-                                    <td className="px-2">{'วันที่สินสุด'}</td>
-                                    <td className="px-2">{moment(show.body.borrow_return).format('DD-MM-YYYY')}</td>
+                                    <td className="px-2">{'เบอร์โทร'}</td>
+                                    <td className="px-2">{show.body.borrow_tel}</td>
                                 </tr>
+                                <tr>
+                                    <td className="px-2">{'เหตุผลในการขอยืมครุภัณฑ์'}</td>
+                                    <td className="px-2">{show.body.borrow_objective}</td>
+                                </tr>
+                                <tr>
+                                    <td className="px-2">{'วันเดือนปีที่ยื่นคำขอ'}</td>
+                                    <td className="px-2">{moment(show.body.borrow_date).format('DD-MM-YYYY')}</td>
+                                </tr>
+                                {/* <tr>
+                                    <td className="px-2">{'วันที่สิ้นสุด'}</td>
+                                    <td className="px-2">{moment(show.body.borrow_return).format('DD-MM-YYYY')}</td>
+                                </tr> */}
                                 <tr>
                                     <td className="px-2">{'สถานะ'}</td>
                                     <td className="px-2">{show.body.borrow_equipment_status === 1 ? 'รออนุมัติ' : (show.body.borrow_equipment_status === 2 ? <span className="alert-success">{'อนุมัติ'}</span> : <span className="alert-danger">{'ไม่อนุมัติ'}</span>)}</td>
@@ -310,7 +325,7 @@ const BorrowEquipment = () => {
                                 <tr>
                                     <td className="px-2">{'8.ท่านมีโรคประจําตัว'}</td>
                                     <td className="px-2">{'ไม่มี'}</td>
-                                </tr> 
+                                </tr>
                                 <tr>
                                     <td className="px-2">{'9.รับประทานยา'}</td>
                                     <td className="px-2">{'ไม่จําเป็นต้องรับประทานยา'}</td>

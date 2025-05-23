@@ -141,7 +141,7 @@ const ReturnEquipment = () => {
                                         <th className="px-2">ลำดับ</th>
                                         <th className="px-2">ชื่อ-สกุล ของผู้ดูแลผู้สูงอายุ</th>
                                         <th className="px-2">ชื่อ-สกุล ของผู้สูงอายุ</th>
-                                        <th className="px-2">วันที่สินสุด</th>
+                                        {/* <th className="px-2">วันที่สิ้นสุด</th> */}
                                         <th className="px-2">สถานะ</th>
                                         <th className="px-2">เครื่องมือ</th>
                                     </tr>
@@ -154,7 +154,7 @@ const ReturnEquipment = () => {
                                                     <td className="px-2">{index + 1}</td>
                                                     <td className="px-2">{item.users_id_ref.users_fname} {item.users_id_ref.users_sname}</td>
                                                     <td className="px-2">{item.borrow_name}</td>
-                                                    <td className="px-2">{moment(item.borrow_return).format('DD-MM-YYYY')}</td>
+                                                    {/* <td className="px-2">{moment(item.borrow_return).format('DD-MM-YYYY')}</td> */}
                                                     <td className="px-2">{item.borrow_status === 1 ? 'รอคืน' : item.borrow_status === 2 ? <span className="alert-success">{'คืนสำเร็จ'}</span> : <span className="alert-danger">{'ส่งคืนไม่สำเร็จ'}</span>}</td>
                                                     <td className="px-2">
                                                         <Button variant="link" className="p-0 btn-edit" onClick={() => setShow({ isShow: true, title: item.borrow_name, body: item })}>
@@ -187,13 +187,13 @@ const ReturnEquipment = () => {
                                     <td className="px-2">{show.body.borrow_name}</td>
                                 </tr>
                                 <tr>
-                                    <td className="px-2">{'วันที่ขอ'}</td>
+                                    <td className="px-2">{'วันเดือนปีที่ยื่นคำขอ'}</td>
                                     <td className="px-2">{moment(show.body.borrow_date).format('DD-MM-YYYY')}</td>
                                 </tr>
-                                <tr>
-                                    <td className="px-2">{'วันที่สินสุด'}</td>
+                                {/* <tr>
+                                    <td className="px-2">{'วันที่สิ้นสุด'}</td>
                                     <td className="px-2">{moment(show.body.borrow_return).format('DD-MM-YYYY')}</td>
-                                </tr>
+                                </tr> */}
                                 <tr>
                                     <td className="px-2">{'สถานะ'}</td>
                                     <td className="px-2">{show.body.borrow_equipment_status === 1 ? 'รออนุมัติ' : (show.body.borrow_equipment_status === 2 ? <span className="alert-success">{'อนุมัติ'}</span> : <span className="alert-danger">{'ไม่อนุมัติ'}</span>)}</td>
@@ -231,10 +231,10 @@ const ReturnEquipment = () => {
                                         show.body.borrowequipment_list.map((item: any, index: number) => {
                                             return (
                                                 <tr key={index}>
-                                                    <td className="px-2">{index + 1}</td>
-                                                    <td className="px-2">{item.borrow_equipment}</td>
-                                                    <td className="px-2">{item.borrow_equipment_number}</td>
-                                                </tr>
+                <td className="px-2">{index + 1}</td>
+                <td className="px-2">{item.equipment?.equipment_name || '-'}</td> {/* ✅ ดึงชื่ออุปกรณ์ */}
+                <td className="px-2">{item.equipment?.equipment_code || '-'}</td> {/* ✅ ดึง ID อุปกรณ์ */}
+            </tr>
                                             )
                                         })
                                     }
