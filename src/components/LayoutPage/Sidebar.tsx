@@ -35,7 +35,7 @@ const Sidebar: React.FC<LayoutProps> = ({routes}) => {
         >
             <Container>
                 <Navbar.Brand className="pt-0">
-                    <Image src={'/images/Logo.png'} width={200} height={200} alt="Logo" />
+                    <Image src={'/images/sepaw2.jpg'} width={200} height={200} alt="Logo" />
                 </Navbar.Brand>
                 <Navbar.Toggle aria-controls="responsive-navbar-nav" />
                 <Navbar.Collapse id="responsive-navbar-nav">
