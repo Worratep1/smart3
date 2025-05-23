@@ -209,13 +209,12 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 					const postback = parseQueryString(events.postback.data)
 					console.log("Received postback data:", postback);
 
-					if(postback.type === 'safezone' && events.source.type === 'user') {
+					if(postback.type === 'safezone'){
 						console.log("Handling safezone postback data.");
 						const replyToken = await postbackSafezone({ userLineId: postback.userLineId, takecarepersonId: Number(postback.takecarepersonId) })
 						if(replyToken){
 							console.log("Safezone request sent, replying with notification.");
 							await replyNotification({ replyToken, message: 'ส่งคำขอความช่วยเหลือแล้ว' })
-							return res.status(200).end();
 						}
 					}else if(postback.type === 'accept'){
 						console.log("Handling accept postback data.");
@@ -250,9 +249,9 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 		res.setHeader('Allow', ['POST'])
 		res.status(405).json({ message: `วิธี ${req.method} ไม่อนุญาต` })
 	}
-		return res.status(200).end();
 }
 
+
 //git add .
-//git commit -m "mail50"
+//git commit -m "mail49"
 //git push origin main
