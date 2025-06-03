@@ -44,7 +44,7 @@ const Setting = () => {
     if (responseUser.data?.data) {
       const userData = responseUser.data.data
       console.log("ข้อมูล userData:", userData)
-      const responseTakecareperson = await axios.get(`${process.env.WEB_DOMAIN}/api/user/getUserTakecareperson`, {
+      const responseTakecareperson = await axios.get(`${process.env.WEB_DOMAIN}/pages/api/user/getUserTakecareperson/[id].ts`, {
         params: {
       id: encrypt(userData.users_id.toString())
      }
