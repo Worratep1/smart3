@@ -599,81 +599,134 @@ export const replyLocation = async ({
     }
 }
 export const replySetting = async ({
-    replyToken,
-    userData,
-    userTakecarepersonData,
-    safezoneData
+  replyToken,
+  userData,
+  userTakecarepersonData,
+  safezoneData
 }: ReplySettingData) => {
-    try {
-        // const profile = await getUserProfile(userData.users_line_id);
-        let r1 = 0
-        let r2 = 0
-        let idsafezone = 0
-        if(safezoneData){
-            r1 = safezoneData.safez_radiuslv1
-            r2 = safezoneData.safez_radiuslv2
-            idsafezone = safezoneData.safezone_id
-        }
-        const requestData = {
-            replyToken,
-            messages: [
-                {
-                    type    : "flex",
-                    altText : "ตั้งค่าเขตปลอดภัย",
-                    contents: {
-                        type: "bubble",
-                        body: {
-                            type    : "box",
-                            layout  : "vertical",
-                            contents: [
-                                {
-                                    type  : "text",
-                                    text  : "ตั้งค่าเขตปลอดภัย",
-                                    color : "#FFB400",
-                                    size  : "xl",
-                                    weight: "bold",
-                                    wrap  : true
-                                },
-                                {
-                                    type  : "separator",
-                                    margin: "xxl"
-                                },
-                                {
-                                    type: "box",
-                                    layout: "vertical",
-                                    margin: "xxl",
-                                    spacing: "sm",
-                                    contents: [
-                                        layoutBoxBaseline("ชื่อ", `${userTakecarepersonData.takecare_fname} ${userTakecarepersonData.takecare_sname}`),
-                                        layoutBoxBaseline("รัศมี ชั้นที่ 1", `${r1} ม.`),
-                                        layoutBoxBaseline("รัศมี ชั้นที่ 2", `${r2} ม.`),
-                                    ]
-
-                                },
-                                {
-                                    type  : "button",
-                                    style : "primary",
-                                    height: "sm",
-                                    margin: "xxl",
-                                    action: {
-                                        type : "uri",
-                                        label: "ตั้งค่าเขตปลอดภัย",
-                                        uri  : `${WEB_API}/setting?auToken=${userData.users_line_id}&idsafezone=${idsafezone}`
-                                    }
-                                },
-                            ]
-                        }
-                    }
-                }
-            ],
-        };
-       await axios.post(LINE_MESSAGING_API, requestData, { headers:LINE_HEADER });
-    } catch (error) {
-        if (error instanceof Error) {
-            console.log(error.message);
-        }
+  try {
+    let r1 = 0;
+    let r2 = 0;
+    let idsafezone = 0;
+    if (safezoneData) {
+      r1 = safezoneData.safez_radiuslv1;
+      r2 = safezoneData.safez_radiuslv2;
+      idsafezone = safezoneData.safezone_id;
     }
-}
+
+    // กล่องแรก
+    const bubble1 = {
+      type: "flex",
+      altText: "ตั้งค่าเขตปลอดภัย - กล่อง 1",
+      contents: {
+        type: "bubble",
+        body: {
+          type: "box",
+          layout: "vertical",
+          contents: [
+            {
+              type: "text",
+              text: "ตั้งค่าเขตปลอดภัย",
+              color: "#FFB400",
+              size: "xl",
+              weight: "bold",
+              wrap: true
+            },
+            {
+              type: "separator",
+              margin: "xxl"
+            },
+            {
+              type: "box",
+              layout: "vertical",
+              margin: "xxl",
+              spacing: "sm",
+              contents: [
+                layoutBoxBaseline("ชื่อ", `${userTakecarepersonData.takecare_fname} ${userTakecarepersonData.takecare_sname}`),
+                layoutBoxBaseline("รัศมี ชั้นที่ 1", `${r1} ม.`),
+                layoutBoxBaseline("รัศมี ชั้นที่ 2", `${r2} ม.`),
+              ]
+            },
+            {
+              type: "button",
+              style: "primary",
+              height: "sm",
+              margin: "xxl",
+              action: {
+                type: "uri",
+                label: "ตั้งค่าเขตปลอดภัย",
+                uri: `${WEB_API}/setting?auToken=${userData.users_line_id}&idsafezone=${idsafezone}`
+              }
+            }
+          ]
+        }
+      }
+    };
+
+    // กล่องที่สอง — โครงสร้างเหมือนกล่องแรกเป๊ะ
+    const bubble2 = {
+      type: "flex",
+      altText: "ตั้งค่าเขตปลอดภัย - กล่อง 2",
+      contents: {
+        type: "bubble",
+        body: {
+          type: "box",
+          layout: "vertical",
+          contents: [
+            {
+              type: "text",
+              text: "ตั้งค่าเขตปลอดภัย",
+              color: "#FFB400",
+              size: "xl",
+              weight: "bold",
+              wrap: true
+            },
+            {
+              type: "separator",
+              margin: "xxl"
+            },
+            {
+              type: "box",
+              layout: "vertical",
+              margin: "xxl",
+              spacing: "sm",
+              contents: [
+                layoutBoxBaseline("ชื่อ", `${userTakecarepersonData.takecare_fname} ${userTakecarepersonData.takecare_sname}`),
+                layoutBoxBaseline("รัศมี ชั้นที่ 1", `${r1} ม.`),
+                layoutBoxBaseline("รัศมี ชั้นที่ 2", `${r2} ม.`),
+              ]
+            },
+            {
+              type: "button",
+              style: "primary",
+              height: "sm",
+              margin: "xxl",
+              action: {
+                type: "uri",
+                label: "ตั้งค่าเขตปลอดภัย",
+                uri: `${WEB_API}/setting?auToken=${userData.users_line_id}&idsafezone=${idsafezone}`
+              }
+            }
+          ]
+        }
+      }
+    };
+
+    // ส่ง 2 bubble ใน request เดียวกัน
+    const requestData = {
+      replyToken,
+      messages: [bubble1, bubble2]
+    };
+
+    await axios.post(LINE_MESSAGING_API, requestData, { headers: LINE_HEADER });
+
+  } catch (error) {
+    if (error instanceof Error) {
+      console.log(error.message);
+    }
+  }
+};
+
 export const replyUserInfo = async ({
     replyToken,
     userData,
