@@ -20,43 +20,20 @@ interface DataUserState {
   takecareData: any | null
 }
 
-interface SafezoneStage {
-  takecare_id: number
-  users_id: number
-  safezone_id?: number
-  safez_radiuslv1: number
-}
-
 const Setting = () => {
   const router = useRouter()
 
   const [alert, setAlert] = useState({ show: false, message: '' })
   const [isLoading, setLoading] = useState(false)
-  const [range, setRange] = useState(10)  // เหลือแค่ range เดียว
+  const [temperature, setTemperature] = useState(37.0)
   const [dataUser, setDataUser] = useState<DataUserState>({ isLogin: false, userData: null, takecareData: null })
-  const [idSafezoneStage, setIdSafezoneStage] = useState(0)
 
   useEffect(() => {
     const auToken = router.query.auToken
     if (auToken) {
       onGetUserData(auToken as string)
     }
-  }, [router.query.auToken])
-
-  const onGetSafezone = async (idSafezone: string, takecareData: any, userData: any) => {
-    try {
-      const resSafezone = await axios.get(`${process.env.WEB_DOMAIN}/api/setting/getSafezone?takecare_id=${takecareData.takecare_id}&users_id=${userData.users_id}&id=${idSafezone}`)
-      if (resSafezone.data?.data) {
-        const data = resSafezone.data?.data
-        setRange(data.safez_radiuslv1)
-        setIdSafezoneStage(Number(idSafezone))
-      }
-    } catch (error) {
-      console.log('Error onGetSafezone:', error)
-      setDataUser({ isLogin: false, userData: null, takecareData: null })
-      setAlert({ show: true, message: 'ระบบไม่สามารถดึงข้อมูลของท่านได้ กรุณาลองใหม่อีกครั้ง' })
-    }
-  }
+  }, [router.isReady, router.query.auToken])
 
   const onGetUserData = async (auToken: string) => {
     try {
@@ -66,9 +43,9 @@ const Setting = () => {
         const data = responseTakecareperson.data?.data
         if (data) {
           setDataUser({ isLogin: true, userData: responseUser.data.data, takecareData: data })
-          const idSafezone = router.query.idsafezone
-          if (Number(idSafezone) > 0) {
-            onGetSafezone(idSafezone as string, data, responseUser.data.data)
+          // ดึงค่าอุณหภูมิถ้ามี
+          if (data.temperature_threshold) {
+            setTemperature(data.temperature_threshold)
           }
         } else {
           alertModal()
@@ -91,17 +68,13 @@ const Setting = () => {
     try {
       setLoading(true)
       if (dataUser.takecareData && dataUser.userData) {
-        let data: SafezoneStage = {
+        const data = {
           takecare_id: dataUser.takecareData.takecare_id,
           users_id: dataUser.userData.users_id,
-          safez_radiuslv1: range,
+          temperature_threshold: temperature,
         }
-        if (idSafezoneStage > 0) {
-          data['safezone_id'] = idSafezoneStage
-        }
-        const res = await axios.post(`${process.env.WEB_DOMAIN}/api/setting/saveSafezone`, data)
-        if (res.data?.id) {
-          router.push(`/setting?auToken=${router.query.auToken}&idsafezone=${res.data.id}`)
+        const res = await axios.post(`${process.env.WEB_DOMAIN}/api/setting_temperature/save`, data)
+        if (res.data?.success) {
           setAlert({ show: true, message: 'บันทึกข้อมูลสำเร็จ' })
         } else {
           setAlert({ show: true, message: 'ไม่สามารถบันทึกข้อมูลได้ กรุณาลองใหม่' })
@@ -110,7 +83,7 @@ const Setting = () => {
       setLoading(false)
     } catch (error) {
       setLoading(false)
-      setAlert({ show: true, message: 'ไม่สามารถบันทึกข้อมูลได้ กรุณาลองใหม่' })
+      setAlert({ show: true, message: 'เกิดข้อผิดพลาดในการบันทึกข้อมูล' })
     }
   }
 
@@ -124,32 +97,28 @@ const Setting = () => {
         <Container className="py-3" style={{ maxWidth: 400 }}>
           <Row>
             <Col sm={12}>
-              <p>กรุณาตั้งค่าอุณหภูมิร่างกายสูงสุดที่ต้องการใช้เป็นเกณฑ์เตือน</p>
+              <p>กรุณาตั้งค่าอุณหภูมิร่างกายสูงสุดที่ต้องการใช้เป็นเกณฑ์เเจ้ง</p>
             </Col>
           </Row>
           <Row className="py-3">
             <Col sm={12}>
               <p>
-                อุณหภูมิสูงสุด(°C) :{' '}
-                <span style={{ fontSize: 20, color: '#000' }}>{range}</span> ()
+                อุณหภูมิสูงสุด (°C):{' '}
+                <span style={{ fontWeight: 'bold', fontSize: 20 }}>{temperature.toFixed(1)}</span>
               </p>
-              <RangeSlider max={10000} value={range} onChange={(e) => setRange(e)} />
             </Col>
           </Row>
-          {dataUser.takecareData && dataUser.userData ? (
-            <Row>
-              <Col sm={12}>
-                <ButtonState
-                  className={styles.button}
-                  text={'บันทึก'}
-                  icon="fas fa-save"
-                  isLoading={isLoading}
-                  onClick={handleSave}
-                />
-              </Col>
-            </Row>
-          ) : null}
-
+          <Row>
+            <Col sm={12}>
+              <ButtonState
+                className={styles.button}
+                text={'บันทึก'}
+                icon="fas fa-save"
+                isLoading={isLoading}
+                onClick={handleSave}
+              />
+            </Col>
+          </Row>
           <ModalAlert show={alert.show} message={alert.message} handleClose={() => setAlert({ show: false, message: '' })} />
         </Container>
       )}
