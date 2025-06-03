@@ -23,11 +23,13 @@ const Setting = () => {
   const router = useRouter()
 
   const [alert, setAlert] = useState({ show: false, message: '' })
-  const [isLoading, setLoading] = useState(true)
+  const [isLoading, setLoading] = useState(false)
   const [temperature, setTemperature] = useState(37.0)
   const [dataUser, setDataUser] = useState<DataUserState>({ isLogin: false, userData: null, takecareData: null })
 
   useEffect(() => {
+    if (!router.isReady) return
+
     const auToken = router.query.auToken
     if (auToken) {
       onGetUserData(auToken as string)
@@ -54,6 +56,8 @@ const Setting = () => {
 
           if (resTemp.data?.success && resTemp.data.data?.max_temperature) {
             setTemperature(resTemp.data.data.max_temperature)
+          } else {
+            console.log('ไม่พบข้อมูลอุณหภูมิ หรือ API response ไม่สำเร็จ', resTemp.data)
           }
         } else {
           alertModal()
@@ -62,10 +66,8 @@ const Setting = () => {
         alertModal()
       }
     } catch (error) {
-      console.error(error)
+      console.error('onGetUserData error:', error)
       alertModal()
-    } finally {
-      setLoading(false)
     }
   }
 
@@ -88,9 +90,11 @@ const Setting = () => {
           setAlert({ show: true, message: 'บันทึกข้อมูลสำเร็จ' })
         } else {
           setAlert({ show: true, message: 'ไม่สามารถบันทึกข้อมูลได้ กรุณาลองใหม่' })
+          console.log('API saveTemperature response error:', res.data)
         }
       }
     } catch (error) {
+      console.error('handleSave error:', error)
       setAlert({ show: true, message: 'เกิดข้อผิดพลาดในการบันทึกข้อมูล' })
     } finally {
       setLoading(false)
