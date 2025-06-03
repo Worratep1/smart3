@@ -276,7 +276,7 @@ export const replyNotRegistration = async ({
                                 },
                                 {
                                     type  : "text",
-                                    text  : `คุณ ${profile.displayName} ยังไม่ได้ลงทะเบียน กรูณาลงทะเบียนก่อนเข้าใช้งาน`,
+                                    text  : `คุณ ${profile.displayName} ยังไม่ได้ลงทะเบียน กรุณาลงทะเบียนก่อนเข้าใช้งาน`,
                                     size  : "sm",
                                     color : "#555555",
                                     wrap  : true,
@@ -644,7 +644,7 @@ export const replySetting = async ({
                                     margin: "xxl",
                                     spacing: "sm",
                                     contents: [
-                                        layoutBoxBaseline("ชื่อ", `${userTakecarepersonData.takecare_fname} ${userTakecarepersonData.takecare_sname}`),
+                                        layoutBoxBaseline("ชื่อ",`${userTakecarepersonData.takecare_fname} ${userTakecarepersonData.takecare_sname}`),
                                         layoutBoxBaseline("รัศมี ชั้นที่ 1", `${r1} ม.`),
                                         layoutBoxBaseline("รัศมี ชั้นที่ 2", `${r2} ม.`),
                                     ]
@@ -670,7 +670,7 @@ export const replySetting = async ({
                                     action: {
                                         type : "uri",
                                         label: "ตั้งค่าอุณหภูมิร่างกาย",
-                                        uri  : `${WEB_API}/setting?auToken=${userData.users_line_id}&idsafezone=${idsafezone}`
+                                        uri  : `${WEB_API}/setting_temperature?auToken=${userData.users_line_id}`
                                     }
                                 },
                             ]
