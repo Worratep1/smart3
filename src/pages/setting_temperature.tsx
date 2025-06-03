@@ -37,41 +37,47 @@ const Setting = () => {
   }, [router.isReady, router.query.auToken])
 
   const onGetUserData = async (auToken: string) => {
-    try {
-      const responseUser = await axios.get(`${process.env.WEB_DOMAIN}/api/user/getUser/${auToken}`)
-      if (responseUser.data?.data) {
-        const userData = responseUser.data.data
-        const responseTakecareperson = await axios.get(`${process.env.WEB_DOMAIN}/api/user/getUserTakecareperson/${userData.users_id}`)
-        const takecareData = responseTakecareperson.data?.data
-        if (takecareData) {
-          setDataUser({ isLogin: true, userData, takecareData })
+  try {
+    console.log("เรียก API getUser with auToken:", auToken)
+    const responseUser = await axios.get(`${process.env.WEB_DOMAIN}/api/user/getUser/${auToken}`)
+    if (responseUser.data?.data) {
+      const userData = responseUser.data.data
+      console.log("ข้อมูล userData:", userData)
+      const responseTakecareperson = await axios.get(`${process.env.WEB_DOMAIN}/api/user/getUserTakecareperson/${userData.users_id}`)
+      const takecareData = responseTakecareperson.data?.data
+      console.log("ข้อมูล takecareData:", takecareData)
+      if (takecareData) {
+        setDataUser({ isLogin: true, userData, takecareData })
 
-          // ดึงข้อมูลอุณหภูมิจาก backend
-          const resTemp = await axios.get(`${process.env.WEB_DOMAIN}/api/setting_temperature/getTemperature`, {
-            params: {
-              takecare_id: takecareData.takecare_id,
-              users_id: userData.users_id
-            }
-          })
-
-          if (resTemp.data?.success && resTemp.data.data?.max_temperature) {
-            setTemperature(resTemp.data.data.max_temperature)
-          } else {
-            console.log('ไม่พบข้อมูลอุณหภูมิ หรือ API response ไม่สำเร็จ', resTemp.data)
+        const resTemp = await axios.get(`${process.env.WEB_DOMAIN}/api/setting_temperature/getTemperature`, {
+          params: {
+            takecare_id: takecareData.takecare_id,
+            users_id: userData.users_id
           }
+        })
+        console.log("ข้อมูล temperature:", resTemp.data)
+
+        if (resTemp.data?.success && resTemp.data.data?.max_temperature) {
+          setTemperature(resTemp.data.data.max_temperature)
         } else {
-          alertModal()
+          console.log('ไม่พบข้อมูลอุณหภูมิ หรือ API response ไม่สำเร็จ', resTemp.data)
         }
       } else {
         alertModal()
       }
-    } catch (error) {
-      console.error('onGetUserData error:', error)
+    } else {
       alertModal()
     }
+  } catch (error) {
+    console.error('onGetUserData error:', error)
+    alertModal()
+  } finally {
+    setLoading(false)
   }
+}
 
   const alertModal = () => {
+    console.log("🚀 ~ file: registration.tsx:66 ~ onGetUserData ~ error:",)
     setAlert({ show: true, message: 'ระบบไม่สามารถดึงข้อมูลของท่านได้ กรุณาลองใหม่อีกครั้ง' })
     setDataUser({ isLogin: false, userData: null, takecareData: null })
   }
