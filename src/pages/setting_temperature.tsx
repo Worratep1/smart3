@@ -12,6 +12,7 @@ import ButtonState from '@/components/Button/ButtonState'
 import ModalAlert from '@/components/Modals/ModalAlert'
 
 import styles from '@/styles/page.module.css'
+import { encrypt } from '@/utils/helpers'
 
 interface DataUserState {
   isLogin: boolean
@@ -43,7 +44,8 @@ const Setting = () => {
     if (responseUser.data?.data) {
       const userData = responseUser.data.data
       console.log("ข้อมูล userData:", userData)
-      const responseTakecareperson = await axios.get(`${process.env.WEB_DOMAIN}/api/user/getUserTakecareperson/${userData.users_id}`)
+      const responseTakecareperson = await axios.get(`${process.env.WEB_DOMAIN}/api/user/getUserTakecareperson/${encrypt(userData.users_id.toString())}`)
+    console.log("เรียก API getUserTakecareperson with userData.users_id:", userData.users_id)
       const takecareData = responseTakecareperson.data?.data
       console.log("ข้อมูล takecareData:", takecareData)
       if (takecareData) {
