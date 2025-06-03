@@ -38,53 +38,55 @@ const Setting = () => {
   }, [router.isReady, router.query.auToken])
 
   const onGetUserData = async (auToken: string) => {
-  try {
-    console.log("เรียก API getUser with auToken:", auToken)
-    const responseUser = await axios.get(`${process.env.WEB_DOMAIN}/api/user/getUser/${auToken}`)
-    if (responseUser.data?.data) {
-      const userData = responseUser.data.data
-      console.log("ข้อมูล userData:", userData)
-      const responseTakecareperson = await axios.get(`${process.env.WEB_DOMAIN}/pages/api/user/getUserTakecareperson/[id].ts`, {
-        params: {
-      id: encrypt(userData.users_id.toString())
-     }
-    });
-
+    try {
+      console.log("เรียก API getUser with auToken:", auToken)
+      const responseUser = await axios.get(`${process.env.WEB_DOMAIN}/api/user/getUser/${auToken}`)
+      if (responseUser.data?.data) {
+        const userData = responseUser.data.data
+        console.log("ข้อมูล userData:", userData)
+        
+        // เรียก API getUserTakecareperson โดยใช้ path param ตามที่แก้ไข
+        const responseTakecareperson = await axios.get(
+          `${process.env.WEB_DOMAIN}/api/user/getUserTakecareperson/${encrypt(userData.users_id.toString())}`
+        )
         console.log("เรียก API getUserTakecareperson with userData.users_id:", userData.users_id)
-      const takecareData = responseTakecareperson.data?.data
-      console.log("ข้อมูล takecareData:", takecareData)
-      if (takecareData) {
-        setDataUser({ isLogin: true, userData, takecareData })
 
-        const resTemp = await axios.get(`${process.env.WEB_DOMAIN}/api/setting_temperature/getTemperature`, {
-          params: {
-            takecare_id: takecareData.takecare_id,
-            users_id: userData.users_id
+        const takecareData = responseTakecareperson.data?.data
+        console.log("ข้อมูล takecareData:", takecareData)
+
+        if (takecareData) {
+          setDataUser({ isLogin: true, userData, takecareData })
+
+          // ดึงข้อมูลอุณหภูมิจาก backend
+          const resTemp = await axios.get(`${process.env.WEB_DOMAIN}/api/setting_temperature/getTemperature`, {
+            params: {
+              takecare_id: takecareData.takecare_id,
+              users_id: userData.users_id
+            }
+          })
+          console.log("ข้อมูล temperature:", resTemp.data)
+
+          if (resTemp.data?.success && resTemp.data.data?.max_temperature) {
+            setTemperature(resTemp.data.data.max_temperature)
+          } else {
+            console.log('ไม่พบข้อมูลอุณหภูมิ หรือ API response ไม่สำเร็จ', resTemp.data)
           }
-        })
-        console.log("ข้อมูล temperature:", resTemp.data)
-
-        if (resTemp.data?.success && resTemp.data.data?.max_temperature) {
-          setTemperature(resTemp.data.data.max_temperature)
         } else {
-          console.log('ไม่พบข้อมูลอุณหภูมิ หรือ API response ไม่สำเร็จ', resTemp.data)
+          alertModal()
         }
       } else {
         alertModal()
       }
-    } else {
+    } catch (error) {
+      console.error('onGetUserData error:', error)
       alertModal()
+    } finally {
+      setLoading(false)
     }
-  } catch (error) {
-    console.error('onGetUserData error:', error)
-    alertModal()
-  } finally {
-    setLoading(false)
   }
-}
 
   const alertModal = () => {
-    console.log("🚀 ~ file: registration.tsx:66 ~ onGetUserData ~ error:",)
+    console.log("🚀 ~ file: registration.tsx:66 ~ onGetUserData ~ error:")
     setAlert({ show: true, message: 'ระบบไม่สามารถดึงข้อมูลของท่านได้ กรุณาลองใหม่อีกครั้ง' })
     setDataUser({ isLogin: false, userData: null, takecareData: null })
   }
