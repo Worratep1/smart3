@@ -11,6 +11,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     const { takecare_id, users_id } = req.query
+    console.log('Query params:', req.query);
 
     if (!takecare_id || !users_id) {
       return res.status(400).json({ message: 'Missing takecare_id or users_id' })
