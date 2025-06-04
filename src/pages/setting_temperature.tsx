@@ -128,12 +128,12 @@ const Setting = () => {
    <Container className="py-3" style={{ maxWidth: 400 }}>
   <Row>
     <Col sm={12}>
-      <p>กรุณาตั้งค่าอุณหภูมิร่างกายสูงสุดที่ต้องการใช้เป็นเกณฑ์แจ้ง</p>
+      <p>กรุณาตั้งค่าอุณหภูมิร่างกายที่ต้องการใช้เป็นเกณฑ์แจ้ง</p>
       <div className="d-flex align-items-center justify-content-between">
         {/* ส่วนแสดงค่าอุณหภูมิด้านซ้าย */}
         <div className="text-start">
-          <p className="mb-1">อุณหภูมิสูงสุด (°C)</p>
-          <span style={{ fontWeight: 'bold', fontSize: 24 }}>
+          <p className="mb-1">อุณหภูมิ (°C)</p>
+          <span style={{ fontWeight: 'bold', fontSize: 30 }}>
             {temperature.toFixed(1)}
           </span>
         </div>
