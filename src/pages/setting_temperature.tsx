@@ -128,25 +128,31 @@ const Setting = () => {
     <Container className="py-3" style={{ maxWidth: 400 }}>
       <Row>
         <Col sm={12}>
-          <p>กรุณาตั้งค่าอุณหภูมิร่างกายสูงสุดที่ต้องการใช้เป็นเกณฑ์แจ้ง</p>
-        </Col>
-      </Row>
-      <Row className="py-3">
-        <Col sm={12}>
-          <p>
-            อุณหภูมิสูงสุด (°C):{' '}
-            <span style={{ fontWeight: 'bold', fontSize: 20 }}>{temperature.toFixed(1)}</span>
-          </p>
-          <input
-            type="range"
-            min={35}
-            max={42}
-            step={0.1}
-            value={temperature}
-            onChange={(e) => setTemperature(parseFloat(e.target.value))}
-            style={{ width: '100%' }}
-          />
-        </Col>
+    <div className="d-flex align-items-center justify-content-center gap-3">
+      <button 
+        className="btn btn-outline-primary" 
+        onClick={() => setTemperature(prev => Math.min(42, prev + 0.1))}
+        style={{ width: '40px', height: '40px' }}
+      >
+        <i className="fas fa-plus"></i>
+      </button>
+      
+      <div className="text-center">
+        <p>อุณหภูมิสูงสุด (°C)</p>
+        <span style={{ fontWeight: 'bold', fontSize: 24 }}>
+          {temperature.toFixed(1)}
+        </span>
+      </div>
+
+      <button 
+        className="btn btn-outline-primary"
+        onClick={() => setTemperature(prev => Math.max(35, prev - 0.1))}
+        style={{ width: '40px', height: '40px' }}
+      >
+        <i className="fas fa-minus"></i>
+      </button>
+    </div>
+  </Col>
       </Row>
       <Row>
         <Col sm={12}>
