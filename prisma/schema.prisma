@@ -205,6 +205,9 @@ model temperature_records {
   temperature_value Float
   timestamp         DateTime?      @default(now()) @db.Timestamp(6)
   status            Int
+  noti_time         DateTime?      @db.Timestamp(6)
+  noti_status       Int?
+  record_date       DateTime?      @default(dbgenerated("CURRENT_DATE")) @db.Date
   takecareperson    takecareperson @relation(fields: [takecare_id], references: [takecare_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_takecareperson")
   users             users          @relation(fields: [users_id], references: [users_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_users")
 }
@@ -213,8 +216,8 @@ model temperature_settings {
   id              Int            @id @default(autoincrement())
   users_id        Int
   takecare_id     Int
-  min_temperature Float
   max_temperature Float
   takecareperson  takecareperson @relation(fields: [takecare_id], references: [takecare_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_takecareperson")
   users           users          @relation(fields: [users_id], references: [users_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_users")
 }
+ 

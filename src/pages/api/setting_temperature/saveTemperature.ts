@@ -37,7 +37,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           takecare_id: Number(takecare_id),
           users_id: Number(users_id),
           max_temperature: Number(max_temperature),
-          min_temperature: 0,
         }
       })
       return res.status(201).json({ success: true, data: created })
