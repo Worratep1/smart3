@@ -126,7 +126,7 @@ const Setting = () => {
 
   return (
    <Container className="py-3" style={{ maxWidth: 400 }}>
-  <Row>
+  <Row className="mb-5">
     <Col sm={12}>
       <p>กรุณาตั้งค่าอุณหภูมิร่างกายที่ต้องการใช้เป็นเกณฑ์แจ้ง</p>
       <div className="d-flex align-items-center justify-content-between">
