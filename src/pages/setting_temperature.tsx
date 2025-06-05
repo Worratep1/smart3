@@ -25,7 +25,7 @@ const Setting = () => {
 
   const [alert, setAlert] = useState({ show: false, message: '' })
   const [isLoading, setLoading] = useState(false)
-  const [temperature, setTemperature] = useState(37.0)
+  const [temperature, setTemperature] = useState(36.0) // ค่าเริ่มต้นอุณหภูมิ
   const [dataUser, setDataUser] = useState<DataUserState>({ isLogin: false, userData: null, takecareData: null })
 
   useEffect(() => {
@@ -126,7 +126,7 @@ const Setting = () => {
 
   return (
    <Container className="py-3" style={{ maxWidth: 400 }}>
-  <Row className="mb-5">
+  <Row className="mb-4">
     <Col sm={12}>
       <p>กรุณาตั้งค่าอุณหภูมิร่างกายที่ต้องการใช้เป็นเกณฑ์แจ้ง</p>
       <div className="d-flex align-items-center justify-content-between">
