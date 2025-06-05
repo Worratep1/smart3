@@ -132,7 +132,7 @@ const Setting = () => {
       <div className="d-flex align-items-center justify-content-between">
         {/* ส่วนแสดงค่าอุณหภูมิด้านซ้าย */}
         <div className="text-start">
-          <p className="mb-1">อุณหภูมิ (°C)</p>
+          <p className="mb-1">อุณหภูมิ(°C)</p>
           <span style={{ fontWeight: 'bold', fontSize: 30 }}>
             {temperature.toFixed(1)}
           </span>
