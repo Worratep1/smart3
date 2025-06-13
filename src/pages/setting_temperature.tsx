@@ -7,11 +7,9 @@ import Spinner from 'react-bootstrap/Spinner'
 import Container from 'react-bootstrap/Container'
 import Row from 'react-bootstrap/Row'
 import Col from 'react-bootstrap/Col'
-
 import ButtonState from '@/components/Button/ButtonState'
 import ModalAlert from '@/components/Modals/ModalAlert'
-
-import styles from '@/styles/page.module.css'
+import RangeSlider from '@/components/RangeSlider/RangeSlider'
 import { encrypt } from '@/utils/helpers'
 
 interface DataUserState {
@@ -20,163 +18,144 @@ interface DataUserState {
   takecareData: any | null
 }
 
-const Setting = () => {
+const TemperatureSetting = () => {
   const router = useRouter()
 
+  // State สำหรับ modal แจ้งเตือน
   const [alert, setAlert] = useState({ show: false, message: '' })
+  // State สำหรับ loading ขณะดึงข้อมูลหรือบันทึก
   const [isLoading, setLoading] = useState(false)
-  const [temperature, setTemperature] = useState(30) // ค่าเริ่มต้นอุณหภูมิ
-  const [dataUser, setDataUser] = useState<DataUserState>({ isLogin: false, userData: null, takecareData: null })
+  // ข้อมูลผู้ใช้และผู้ดูแล
+  const [dataUser, setDataUser] = useState<DataUserState>({
+    isLogin: false,
+    userData: null,
+    takecareData: null,
+  })
+  // รหัส setting ที่ดึงหรือสร้างใหม่
+  const [idSetting, setIdSetting] = useState<number | null>(null)
+  // ค่าอุณหภูมิสูงสุดที่ตั้งไว้
+  const [maxTemperature, setMaxTemperature] = useState<number>(37)
 
+  // เมื่อ auToken ใน query เปลี่ยน จะดึงข้อมูลผู้ใช้
   useEffect(() => {
-    if (!router.isReady) return
-
     const auToken = router.query.auToken
     if (auToken) {
-      onGetUserData(auToken as string)
+      fetchUserData(auToken as string)
     }
-  }, [router.isReady, router.query.auToken])
+  }, [router.query.auToken])
 
-  const onGetUserData = async (auToken: string) => {
+  // ฟังก์ชันดึงข้อมูลผู้ใช้และผู้ดูแล
+  const fetchUserData = async (auToken: string) => {
     try {
-      console.log("เรียก API getUser with auToken:", auToken)
       const responseUser = await axios.get(`${process.env.WEB_DOMAIN}/api/user/getUser/${auToken}`)
       if (responseUser.data?.data) {
-        const userData = responseUser.data.data
-        console.log("ข้อมูล userData:", userData)
-        
-        // เรียก API getUserTakecareperson โดยใช้ path param ตามที่แก้ไข
-        const responseTakecareperson = await axios.get(
-          `${process.env.WEB_DOMAIN}/api/user/getUserTakecareperson/${encrypt(userData.users_id.toString())}`
+        const encodedUsersId = encrypt(responseUser.data.data.users_id.toString())
+        const responseTakecare = await axios.get(
+          `${process.env.WEB_DOMAIN}/api/user/getUserTakecareperson/${encodedUsersId}`
         )
-        console.log("เรียก API getUserTakecareperson with userData.users_id:", userData.users_id)
-
-        const takecareData = responseTakecareperson.data?.data
-        console.log("ข้อมูล takecareData:", takecareData)
-
+        const takecareData = responseTakecare.data?.data
         if (takecareData) {
-          setDataUser({ isLogin: true, userData, takecareData })
-
-          // ดึงข้อมูลอุณหภูมิจาก backend
-          const resTemp = await axios.get(`${process.env.WEB_DOMAIN}/api/setting_temperature/getTemperature`, {
-            params: {
-              takecare_id: takecareData.takecare_id,
-              users_id: userData.users_id
-            }
-          })
-          console.log("ข้อมูล temperature:", resTemp.data)
-
-          if (resTemp.data?.success && resTemp.data.data?.max_temperature) {
-            setTemperature(resTemp.data.data.max_temperature)
-          } else {
-            console.log('ไม่พบข้อมูลอุณหภูมิ หรือ API response ไม่สำเร็จ', resTemp.data)
+          setDataUser({ isLogin: true, userData: responseUser.data.data, takecareData: takecareData })
+          const settingIdParam = router.query.idsetting
+          if (settingIdParam && Number(settingIdParam) > 0) {
+            fetchTemperatureSetting(Number(settingIdParam))
           }
         } else {
-          alertModal()
+          showAlert('ไม่พบข้อมูลผู้ดูแล')
         }
       } else {
-        alertModal()
+        showAlert('ไม่พบข้อมูลผู้ใช้')
       }
     } catch (error) {
-      console.error('onGetUserData error:', error)
-      alertModal()
-    } finally {
-      setLoading(false)
+      showAlert('ระบบไม่สามารถดึงข้อมูลของท่านได้ กรุณาลองใหม่อีกครั้ง')
     }
   }
 
-  const alertModal = () => {
-    console.log("🚀 ~ file: registration.tsx:66 ~ onGetUserData ~ error:")
-    setAlert({ show: true, message: 'ระบบไม่สามารถดึงข้อมูลของท่านได้ กรุณาลองใหม่อีกครั้ง' })
-    setDataUser({ isLogin: false, userData: null, takecareData: null })
-  }
-
-  const handleSave = async () => {
+  // ฟังก์ชันดึงข้อมูลการตั้งค่าอุณหภูมิ
+  const fetchTemperatureSetting = async (settingId: number) => {
     try {
-      setLoading(true)
-      if (dataUser.takecareData && dataUser.userData) {
-        const data = {
-          takecare_id: dataUser.takecareData.takecare_id,
-          users_id: dataUser.userData.users_id,
-          max_temperature: temperature,
-        }
-        const res = await axios.post(`${process.env.WEB_DOMAIN}/api/setting_temperature/saveTemperature`, data)
-        if (res.data?.success) {
-          setAlert({ show: true, message: 'บันทึกข้อมูลสำเร็จ' })
-        } else {
-          setAlert({ show: true, message: 'ไม่สามารถบันทึกข้อมูลได้ กรุณาลองใหม่' })
-          console.log('API saveTemperature response error:', res.data)
-        }
+      const res = await axios.get(`${process.env.WEB_DOMAIN}/api/setting_temperature/getTemperature?setting_id=${settingId}`)
+      if (res.data?.data) {
+        const data = res.data.data
+        setMaxTemperature(Number(data.max_temperature))
+        setIdSetting(settingId)
       }
     } catch (error) {
-      console.error('handleSave error:', error)
-      setAlert({ show: true, message: 'เกิดข้อผิดพลาดในการบันทึกข้อมูล' })
-    } finally {
-      setLoading(false)
+      showAlert('ไม่สามารถดึงข้อมูลการตั้งค่าได้')
     }
   }
 
-  if (isLoading) {
-    return (
-      <div className="d-flex justify-content-center align-items-center" style={{ height: '100vh' }}>
-        <Spinner animation="border" variant="primary" />
-      </div>
-    )
+  // แสดง modal แจ้งเตือน
+  const showAlert = (message: string) => {
+    setAlert({ show: true, message })
+  }
+
+  // บันทึกข้อมูลอุณหภูมิ
+  const handleSave = async () => {
+    if (!dataUser.takecareData || !dataUser.userData) {
+      showAlert('ไม่พบข้อมูลผู้ใช้งาน')
+      return
+    }
+    setLoading(true)
+    try {
+      const payload: any = {
+        takecare_id: dataUser.takecareData.takecare_id,
+        users_id: dataUser.userData.users_id,
+        max_temperature: maxTemperature,
+      }
+      if (idSetting) {
+        payload.setting_id = idSetting
+      }
+      const res = await axios.post(`${process.env.WEB_DOMAIN}/api/setting_temperature/saveTemperature`, payload)
+      if (res.data?.id) {
+        setIdSetting(res.data.id)
+        router.push(`/settingTemp?auToken=${router.query.auToken}&idsetting=${res.data.id}`)
+      }
+      showAlert('บันทึกข้อมูลสำเร็จ')
+    } catch (error) {
+      showAlert('ไม่สามารถบันทึกข้อมูลได้')
+    }
+    setLoading(false)
   }
 
   return (
-   <Container className="py-3" style={{ maxWidth: 400 }}>
-  <Row className="mb-4">
-    <Col sm={12}>
-      <p>กรุณาตั้งค่าอุณหภูมิร่างกายที่ต้องการใช้เป็นเกณฑ์แจ้ง</p>
-      <div className="d-flex align-items-center justify-content-between">
-        {/* ส่วนแสดงค่าอุณหภูมิด้านซ้าย */}
-        <div className="text-start">
-          <p className="mb-1">อุณหภูมิ(°C)</p>
-          <span style={{ fontWeight: 'bold', fontSize: 30 }}>
-            {temperature.toFixed(1)}
-          </span>
+    <>
+      {!dataUser.isLogin ? (
+        <div className="d-flex justify-content-center align-items-center" style={{ height: '80vh' }}>
+          <Spinner animation="border" variant="primary" />
         </div>
-
-        {/* ส่วนปุ่มด้านขวา */}
-        <div className="d-flex flex-column gap-2">
-          <button 
-            className="btn btn-outline-primary" 
-            onClick={() => setTemperature(prev => Math.min(42, prev + 0.1))}
-            style={{ width: '40px', height: '40px' }}
-          >
-            <i className="fas fa-plus"></i>
-          </button>
-          
-          <button 
-            className="btn btn-outline-primary"
-            onClick={() => setTemperature(prev => Math.max(35, prev - 0.1))}
-            style={{ width: '40px', height: '40px' }}
-          >
-            <i className="fas fa-minus"></i>
-          </button>
-        </div>
-      </div>
-    </Col>
-  </Row>
-      <Row>
-        <Col sm={12}>
-          <ButtonState
-            className={styles.button}
-            text={'บันทึก'}
-            icon="fas fa-save"
-            isLoading={isLoading}
-            onClick={handleSave}
-          />
-        </Col>
-      </Row>
-      <ModalAlert
-        show={alert.show}
-        message={alert.message}
-        handleClose={() => setAlert({ show: false, message: '' })}
-      />
-    </Container>
+      ) : (
+        <Container className="py-3">
+          <Row>
+            <Col>
+              <h3>ตั้งค่าการแจ้งเตือนอุณหภูมิสูงสุด</h3>
+              <p>ค่าปกติ: 37°C (คุณสามารถปรับค่าได้ตามต้องการ)</p>
+            </Col>
+          </Row>
+          <Row className="py-3">
+            <Col>
+              <p>
+                อุณหภูมิสูงสุดที่อนุญาต: <strong>{maxTemperature}°C</strong>
+              </p>
+              <RangeSlider
+                min={30}
+                max={45}
+                step={0.1}
+                value={maxTemperature}
+                onChange={(value) => setMaxTemperature(Number(value))}
+              />
+            </Col>
+          </Row>
+          <Row className="py-3">
+            <Col>
+              <ButtonState text="บันทึก" isLoading={isLoading} onClick={handleSave} className="btn btn-primary" />
+            </Col>
+          </Row>
+          <ModalAlert show={alert.show} message={alert.message} handleClose={() => setAlert({ show: false, message: '' })} />
+        </Container>
+      )}
+    </>
   )
 }
 
-export default Setting
+export default TemperatureSetting
