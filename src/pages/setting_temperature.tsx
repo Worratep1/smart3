@@ -25,7 +25,7 @@ const Setting = () => {
 
   const [alert, setAlert] = useState({ show: false, message: '' })
   const [isLoading, setLoading] = useState(false)
-  const [temperature, setTemperature] = useState(36.0) // ค่าเริ่มต้นอุณหภูมิ
+  const [temperature, setTemperature] = useState(30.0) // ค่าเริ่มต้นอุณหภูมิ
   const [dataUser, setDataUser] = useState<DataUserState>({ isLogin: false, userData: null, takecareData: null })
 
   useEffect(() => {
