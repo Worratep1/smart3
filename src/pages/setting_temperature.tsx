@@ -21,30 +21,30 @@ interface DataUserState {
 const TemperatureSetting = () => {
   const router = useRouter()
 
+  // State สำหรับ modal แจ้งเตือน
   const [alert, setAlert] = useState({ show: false, message: '' })
+  // State สำหรับ loading ขณะดึงข้อมูลหรือบันทึก
   const [isLoading, setLoading] = useState(false)
+  // ข้อมูลผู้ใช้และผู้ดูแล
   const [dataUser, setDataUser] = useState<DataUserState>({
     isLogin: false,
     userData: null,
     takecareData: null,
   })
+  // รหัส setting ที่ดึงหรือสร้างใหม่
   const [idSetting, setIdSetting] = useState<number | null>(null)
+  // ค่าอุณหภูมิสูงสุดที่ตั้งไว้
   const [maxTemperature, setMaxTemperature] = useState<number>(37)
 
-  // โหลดข้อมูลเมื่อ query พร้อม
+  // เมื่อ auToken ใน query เปลี่ยน จะดึงข้อมูลผู้ใช้
   useEffect(() => {
     const auToken = router.query.auToken
-    const idSettingParam = router.query.idsetting
-
     if (auToken) {
       fetchUserData(auToken as string)
-
-      if (idSettingParam && Number(idSettingParam) > 0) {
-        fetchTemperatureSetting(Number(idSettingParam))
-      }
     }
-  }, [router.query.auToken, router.query.idsetting])
+  }, [router.query.auToken])
 
+  // ฟังก์ชันดึงข้อมูลผู้ใช้และผู้ดูแล
   const fetchUserData = async (auToken: string) => {
     try {
       const responseUser = await axios.get(`${process.env.WEB_DOMAIN}/api/user/getUser/${auToken}`)
@@ -55,7 +55,11 @@ const TemperatureSetting = () => {
         )
         const takecareData = responseTakecare.data?.data
         if (takecareData) {
-          setDataUser({ isLogin: true, userData: responseUser.data.data, takecareData })
+          setDataUser({ isLogin: true, userData: responseUser.data.data, takecareData: takecareData })
+          const settingIdParam = router.query.idsetting
+          if (settingIdParam && Number(settingIdParam) > 0) {
+            fetchTemperatureSetting(Number(settingIdParam))
+          }
         } else {
           showAlert('ไม่พบข้อมูลผู้ดูแล')
         }
@@ -63,11 +67,11 @@ const TemperatureSetting = () => {
         showAlert('ไม่พบข้อมูลผู้ใช้')
       }
     } catch (error) {
-      console.error('fetchUserData error:', error)
       showAlert('ระบบไม่สามารถดึงข้อมูลของท่านได้ กรุณาลองใหม่อีกครั้ง')
     }
   }
 
+  // ฟังก์ชันดึงข้อมูลการตั้งค่าอุณหภูมิ
   const fetchTemperatureSetting = async (settingId: number) => {
     try {
       const res = await axios.get(`${process.env.WEB_DOMAIN}/api/setting_temperature/getTemperature?setting_id=${settingId}`)
@@ -75,31 +79,24 @@ const TemperatureSetting = () => {
         const data = res.data.data
         setMaxTemperature(Number(data.max_temperature))
         setIdSetting(settingId)
-        console.log('โหลดอุณหภูมิ:', data.max_temperature)
       }
     } catch (error) {
-      console.error('fetchTemperatureSetting error:', error)
       showAlert('ไม่สามารถดึงข้อมูลการตั้งค่าได้')
     }
   }
 
+  // แสดง modal แจ้งเตือน
   const showAlert = (message: string) => {
     setAlert({ show: true, message })
   }
 
+  // บันทึกข้อมูลอุณหภูมิ
   const handleSave = async () => {
     if (!dataUser.takecareData || !dataUser.userData) {
       showAlert('ไม่พบข้อมูลผู้ใช้งาน')
       return
     }
-
-    if (isNaN(maxTemperature)) {
-      showAlert('อุณหภูมิไม่ถูกต้อง')
-      return
-    }
-
     setLoading(true)
-
     try {
       const payload: any = {
         takecare_id: dataUser.takecareData.takecare_id,
@@ -109,27 +106,15 @@ const TemperatureSetting = () => {
       if (idSetting) {
         payload.setting_id = idSetting
       }
-
-      console.log('📤 กำลังส่งข้อมูล:', payload)
-
       const res = await axios.post(`${process.env.WEB_DOMAIN}/api/setting_temperature/saveTemperature`, payload)
-
-      console.log('✅ ตอบกลับจาก API:', res.data)
-
       if (res.data?.id) {
         setIdSetting(res.data.id)
-        showAlert('บันทึกข้อมูลสำเร็จ')
-
-        // ดึงข้อมูลใหม่เพื่อโชว์ค่าอัปเดต
-        await fetchTemperatureSetting(res.data.id)
-      } else {
-        showAlert('ไม่สามารถบันทึกข้อมูลได้')
+        router.push(`/setting_temperature?auToken=${router.query.auToken}&idsetting=${res.data.id}`)
       }
+      showAlert('บันทึกข้อมูลสำเร็จ')
     } catch (error) {
-      console.error('❌ handleSave error:', error)
       showAlert('ไม่สามารถบันทึกข้อมูลได้')
     }
-
     setLoading(false)
   }
 
@@ -163,20 +148,10 @@ const TemperatureSetting = () => {
           </Row>
           <Row className="py-3">
             <Col>
-              <ButtonState
-                text="บันทึก"
-                isLoading={isLoading}
-                onClick={handleSave}
-                className="btn btn-primary"
-                disabled={!dataUser.isLogin}
-              />
+              <ButtonState text="บันทึก" isLoading={isLoading} onClick={handleSave} className="btn btn-primary" />
             </Col>
           </Row>
-          <ModalAlert
-            show={alert.show}
-            message={alert.message}
-            handleClose={() => setAlert({ show: false, message: '' })}
-          />
+          <ModalAlert show={alert.show} message={alert.message} handleClose={() => setAlert({ show: false, message: '' })} />
         </Container>
       )}
     </>
