@@ -61,7 +61,7 @@ export const postbackTemp = async ({ userLineId, takecarepersonId }: PostbackSaf
 
     return null;
   } catch (error) {
-    console.log(" ~ postbackTemp error:", error);
+    console.log("🚨 ~ postbackTemp error:", error);
     return error;
   }
 };
