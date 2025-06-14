@@ -38,13 +38,11 @@ const TemperatureSetting = () => {
 
   // เมื่อ auToken ใน query เปลี่ยน จะดึงข้อมูลผู้ใช้
   useEffect(() => {
-    const auToken = router.query.auToken as string
-    const settingId = router.query.idsetting as string
-
+    const auToken = router.query.auToken
     if (auToken) {
       fetchUserData(auToken as string)
     }
-  }, [router.query.auToken, router.query.idsetting]) // เพิ่ม dependency idsetting
+  }, [router.query.auToken])
 
   // ฟังก์ชันดึงข้อมูลผู้ใช้และผู้ดูแล
   const fetchUserData = async (auToken: string) => {
@@ -76,14 +74,13 @@ const TemperatureSetting = () => {
   // ฟังก์ชันดึงข้อมูลการตั้งค่าอุณหภูมิ
   const fetchTemperatureSetting = async (settingId: number) => {
     try {
-      const res = await axios.get(`${process.env.WEB_DOMAIN}/api/setting/getTemperature/${settingId}`)
+      const res = await axios.get(`${process.env.WEB_DOMAIN}/api/setting_temperature/getTemperature?setting_id=${settingId}`)
       if (res.data?.data) {
-        // อัพเดทค่า maxTemperature จากข้อมูลที่ดึงมา
-        setMaxTemperature(res.data.data.max_temperature)
-        setIdSetting(res.data.data.setting_id)
+        const data = res.data.data
+        setMaxTemperature(Number(data.max_temperature))
+        setIdSetting(settingId)
       }
-    } catch (error: any) {
-      console.error('Fetch temperature setting error:', error)
+    } catch (error) {
       showAlert('ไม่สามารถดึงข้อมูลการตั้งค่าได้')
     }
   }
