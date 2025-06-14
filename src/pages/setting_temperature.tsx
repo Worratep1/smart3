@@ -109,7 +109,7 @@ const TemperatureSetting = () => {
       const res = await axios.post(`${process.env.WEB_DOMAIN}/api/setting_temperature/saveTemperature`, payload)
       if (res.data?.id) {
         setIdSetting(res.data.id)
-        router.push(`/setting_temperature?auToken=${router.query.auToken}&idsetting=${res.data.id}`)
+        router.push(`/settingTemp?auToken=${router.query.auToken}&idsetting=${res.data.id}`)
       }
       showAlert('บันทึกข้อมูลสำเร็จ')
     } catch (error) {
