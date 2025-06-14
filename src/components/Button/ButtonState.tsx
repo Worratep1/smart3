@@ -7,6 +7,7 @@ interface Props {
     text: string;
     icon?: string;
     className?: string;
+    disabled?: boolean;
 }
 function ButtonState({ isLoading = false, onClick = () => { }, type = 'button', text, icon, className }: Props) {
   return (
