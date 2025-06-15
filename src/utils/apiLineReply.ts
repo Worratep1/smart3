@@ -1334,19 +1334,7 @@ export const replyNotificationPostbackTemp = async ({
     replyToken,
 }: ReplyNotificationPostbackTemp ) => {
     try {
-        // สร้าง ExtendedHelp ใหม่ทันที โดยไม่ต้องเช็คของเดิม
-        const data = {
-            takecareId: takecarepersonId,
-            usersId: userId,
-            typeStatus: 'save',
-        };
-
-        const newExtendedHelpId = await saveExtendedHelp(data);
-        
-        if (!newExtendedHelpId) {
-            throw new Error('Failed to create extended help');
-        }
-
+        // ตัดการส่ง extenId ออก เพื่อให้ทำงานเหมือน replyNotificationPostback
         const requestData = {
             to: replyToken,
             messages: [
@@ -1412,8 +1400,8 @@ export const replyNotificationPostbackTemp = async ({
                                     action: {
                                         type: "postback",
                                         label: "ส่งความช่วยเหลือเพิ่มเติม",
-                                        // ต้องแน่ใจว่า newExtendedHelpId เป็น number และแปลงเป็น string
-                                        data: `type=accept&takecareId=${takecarepersonId}&userLineId=${replyToken}&extenId=${newExtendedHelpId.toString()}`
+                                        // ใช้ format เดียวกับ replyNotificationPostback
+                                        data: `userLineId=${replyToken}&takecarepersonId=${takecarepersonId}&type=${type}`
                                     }
                                 },
                                 {
