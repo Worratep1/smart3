@@ -60,31 +60,37 @@ export const saveExtendedHelp = async (data: any) => {
     try {
         const url = urlName(`/api/extendedhelp`)
         const response = await axios.post(url, data);
-        if(response.data?.id){
+        if (response.data?.id) {
             return response.data.id
-        }else{
+        } else {
+            console.error("No ID returned from saveExtendedHelp");
             return null
         }
     } catch (error) {
-        return error
+        console.error("Error in saveExtendedHelp:", error);
+        return null // เปลี่ยนจากการ return error เป็น return null
     }
 }
+
 
 export const updateExtendedHelp = async (data: any) => {
     try {
         const url = urlName(`/api/extendedhelp`)
         const response = await axios.put(url, data);
-        if(response.data?.data){
+        if (response.data?.data) {
             return response.data.data
-        }else{
+        } else {
+            console.error("No data returned from updateExtendedHelp");
             return null
         }
     } catch (error) {
-        return error
+        console.error("Error in updateExtendedHelp:", error);
+        return null // เปลี่ยนจากการ return error เป็น return null
     }
 }
-	// ทำการexport getlocation
-	export const getLocation = async (takecare_id: number, users_id: number, safezone_id: number) => {
+
+// ทำการexport getlocation
+export const getLocation = async (takecare_id: number, users_id: number, safezone_id: number) => {
     const url = urlName(`/api/location/getLocation?takecare_id=${takecare_id}&users_id=${users_id}&safezone_id=${safezone_id}`);
     const response = await axios.get(url);
     if (response.data?.data) {

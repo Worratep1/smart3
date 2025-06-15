@@ -60,10 +60,10 @@ export const postbackTemp = async ({ userLineId, takecarepersonId }: PostbackSaf
       return resUser.users_line_id;
     }
 
-     return { success: false, error: 'not_found' };
+    return null;
   } catch (error) {
     console.log(" ~ postbackTemp error:", error);
-    return { success: false, error }; // <-- return object ที่เช็คได้
+    return error;
   }
 };
 
