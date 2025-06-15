@@ -1,4 +1,4 @@
-import { getExtendedHelpById, saveExtendedHelp } from '@/lib/listAPI';
+import { getExtendedHelp, getExtendedHelpById, saveExtendedHelp, updateExtendedHelp } from '@/lib/listAPI';
 import axios from 'axios';
 import moment from 'moment';
 
@@ -1334,24 +1334,34 @@ export const replyNotificationPostbackTemp = async ({
     replyToken,
 }: ReplyNotificationPostbackTemp ) => {
     try {
-        // ดึงข้อมูล ExtendedHelp
-        const resExtendedHelp = await getExtendedHelpById(userId);
-        let extendedHelpId = 'null';
+        const resExtendedHelp = await getExtendedHelp(takecarepersonId, userId);
+        let extendedHelpId;
 
-        if (resExtendedHelp) {
-            // ถ้ามี extended help อยู่แล้ว ใช้ ID เดิม
-            extendedHelpId = resExtendedHelp.exten_id.toString();
+        if (resExtendedHelp && resExtendedHelp.exten_id) {
+            // ถ้ามี extended help อยู่แล้ว
+            extendedHelpId = resExtendedHelp.exten_id;
+            // อัพเดทสถานะ
+            await updateExtendedHelp({ 
+                extenId: extendedHelpId, 
+                typeStatus: 'sendAgain' 
+            });
         } else {
             // ถ้ายังไม่มี extended help ให้สร้างใหม่
             const data = {
-                takecarepersonId,
+                takecareId: takecarepersonId,
                 usersId: userId,
                 typeStatus: 'save',
             };
-            const resExtendedHelpId = await saveExtendedHelp(data);
-            if (resExtendedHelpId) {
-                extendedHelpId = resExtendedHelpId.toString();
+            const newExtendedHelpId = await saveExtendedHelp(data);
+            if (!newExtendedHelpId) {
+                throw new Error('Failed to create extended help');
             }
+            extendedHelpId = newExtendedHelpId;
+        }
+
+        // ตรวจสอบ extendedHelpId ก่อนใช้
+        if (!extendedHelpId) {
+            throw new Error('No valid extended help ID');
         }
 
         // สร้าง request data สำหรับส่งข้อความ
