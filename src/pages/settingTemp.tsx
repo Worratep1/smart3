@@ -74,7 +74,7 @@ const TemperatureSetting = () => {
   // ฟังก์ชันดึงข้อมูลการตั้งค่าอุณหภูมิ
   const fetchTemperatureSetting = async (settingId: number) => {
     try {
-      const res = await axios.get(`${process.env.WEB_DOMAIN}/api/setting_temperature/getTemperature?setting_id=${settingId}`)
+      const res = await axios.get(`${process.env.WEB_DOMAIN}/api/setting/getTemperature?setting_id=${settingId}`)
       if (res.data?.data) {
         const data = res.data.data
         setMaxTemperature(Number(data.max_temperature))
@@ -106,10 +106,10 @@ const TemperatureSetting = () => {
       if (idSetting) {
         payload.setting_id = idSetting
       }
-      const res = await axios.post(`${process.env.WEB_DOMAIN}/api/setting_temperature/saveTemperature`, payload)
+      const res = await axios.post(`${process.env.WEB_DOMAIN}/api/setting/saveTemperature`, payload)
       if (res.data?.id) {
         setIdSetting(res.data.id)
-        router.push(`/setting_temperature?auToken=${router.query.auToken}&idsetting=${res.data.id}`)
+        router.push(`/settingTemp?auToken=${router.query.auToken}&idsetting=${res.data.id}`)
       }
       showAlert('บันทึกข้อมูลสำเร็จ')
     } catch (error) {
