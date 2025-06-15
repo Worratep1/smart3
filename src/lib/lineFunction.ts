@@ -17,6 +17,7 @@ const getLocation = async (takecare_id: number, users_id: number, safezone_id:nu
 		return null
 	}
 }
+
 //สร้างฟังก์ชันของอุณหภูมิ 
 export const postbackTemp = async ({ userLineId, takecarepersonId }: PostbackSafezoneProps) => {
   try {
@@ -59,10 +60,10 @@ export const postbackTemp = async ({ userLineId, takecarepersonId }: PostbackSaf
       return resUser.users_line_id;
     }
 
-    return null;
+     return { success: false, error: 'not_found' };
   } catch (error) {
-    console.log("🚨 ~ postbackTemp error:", error);
-    return error;
+    console.log(" ~ postbackTemp error:", error);
+    return { success: false, error }; // <-- return object ที่เช็คได้
   }
 };
 
