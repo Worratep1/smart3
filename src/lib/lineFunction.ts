@@ -17,7 +17,6 @@ const getLocation = async (takecare_id: number, users_id: number, safezone_id:nu
 		return null
 	}
 }
-
 //สร้างฟังก์ชันของอุณหภูมิ 
 export const postbackTemp = async ({ userLineId, takecarepersonId }: PostbackSafezoneProps) => {
   try {
@@ -25,48 +24,71 @@ export const postbackTemp = async ({ userLineId, takecarepersonId }: PostbackSaf
     const resTakecareperson = await api.getTakecareperson(takecarepersonId.toString());
 
     if (resUser && resTakecareperson) {
-      // ✅ ดึงตำแหน่งล่าสุดของผู้ที่ดูแล
-      const resSafezone = await api.getSafezone(resTakecareperson.takecare_id, resUser.users_id)
-      const responeLocation = await getLocation(resTakecareperson.takecare_id, resUser.users_id,resSafezone.safezone_id);
+      const resSafezone = await api.getSafezone(resTakecareperson.takecare_id, resUser.users_id);
+      if (resSafezone) {
+        const responseLocation = await getLocation(
+          resTakecareperson.takecare_id,
+          resUser.users_id,
+          resSafezone.safezone_id
+        );
 
-      // ✅ สร้างหรืออัปเดต ExtendedHelp
-      const resExtendedHelp = await api.getExtendedHelp(resTakecareperson.takecare_id, resUser.users_id);
-      let extendedHelpId = null;
+        const resExtendedHelp = await api.getExtendedHelp(resTakecareperson.takecare_id, resUser.users_id);
+        let extendedHelpId = null;
 
-      if (resExtendedHelp) {
-        extendedHelpId = resExtendedHelp.exten_id;
-        await api.updateExtendedHelp({ extenId: extendedHelpId, typeStatus: 'sendAgain' });
-      } else {
-        const data = {
-          takecareId: resTakecareperson.takecare_id,
-          usersId: resUser.users_id,
-          typeStatus: 'save',
-          safezLatitude: responeLocation?.latitude || null,
-          safezLongitude: responeLocation?.longitude || null,
-        };
-        const resExtendedHelpId = await api.saveExtendedHelp(data);
-        extendedHelpId = resExtendedHelpId;
+        if (resExtendedHelp) {
+          // เคสเก่ายังไม่มีคนตอบรับ → ส่งอีกครั้ง
+          if (
+            resExtendedHelp.exten_received_user_id === null &&
+            resExtendedHelp.exten_received_date === null
+          ) {
+            extendedHelpId = resExtendedHelp.exten_id;
+            await api.updateExtendedHelp({
+              extenId: extendedHelpId,
+              typeStatus: 'sendAgain',
+            });
+          } else {
+            // เคสเก่าโดนรับแล้ว → สร้างเคสใหม่
+            const data = {
+              takecareId: resTakecareperson.takecare_id,
+              usersId: resUser.users_id,
+              typeStatus: 'save',
+              safezLatitude: resSafezone.safez_latitude,
+              safezLongitude: resSafezone.safez_longitude,
+            };
+            const resNewId = await api.saveExtendedHelp(data);
+            extendedHelpId = resNewId;
+          }
+        } else {
+          // ไม่เคยมีเคสมาก่อน → สร้างใหม่
+          const data = {
+            takecareId: resTakecareperson.takecare_id,
+            usersId: resUser.users_id,
+            typeStatus: 'save',
+            safezLatitude: resSafezone.safez_latitude,
+            safezLongitude: resSafezone.safez_longitude,
+          };
+          const resNewId = await api.saveExtendedHelp(data);
+          extendedHelpId = resNewId;
+        }
+
+        await replyNotification({
+          resUser,
+          resTakecareperson,
+          resSafezone,
+          extendedHelpId,
+          locationData: responseLocation,
+        });
+
+        return extendedHelpId;
       }
-
-      // ✅ ส่งข้อความแจ้งเตือน + ตำแหน่งล่าสุด
-      await replyNotification({
-        resUser,
-        resTakecareperson,
-        resSafezone, // ไม่เกี่ยวกับ safezone
-        extendedHelpId,
-        locationData: responeLocation,
-      });
-
-      return resUser.users_line_id;
     }
 
     return null;
   } catch (error) {
-    console.log(" ~ postbackTemp error:", error);
-    return error;
+    console.log("🚨 ~ postbackTemp ~ error:", error);
+    return null;
   }
 };
-
 
 
 //

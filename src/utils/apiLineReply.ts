@@ -1,4 +1,3 @@
-import { getExtendedHelp, getExtendedHelpById, saveExtendedHelp, updateExtendedHelp } from '@/lib/listAPI';
 import axios from 'axios';
 import moment from 'moment';
 
@@ -82,6 +81,7 @@ interface ReplySettingData {
     };
     userTakecarepersonData?: any;
     safezoneData?: any;
+    temperatureSettingData?: any;
 }
 interface ReplyLocationData {
     replyToken: string;
@@ -690,7 +690,7 @@ export const replySetting = async ({
                       type: "box",
                       layout: "baseline",
                       contents: [
-                        { type: "text", text: "อุณหภูมิสูงสุดที่อนุญาต", flex: 2, weight: "bold" },
+                        { type: "text", text: "อุณหภูมิสูงสุด", flex: 2, weight: "bold" },
                         { type: "text", text: `${maxTemperature} °C`, flex: 3 }
                       ]
                     },
@@ -1332,112 +1332,112 @@ export const replyNotificationPostbackTemp = async ({
     type,
     message,
     replyToken,
+    
 }: ReplyNotificationPostbackTemp ) => {
     try {
-        // ตัดการส่ง extenId ออก เพื่อให้ทำงานเหมือน replyNotificationPostback
         const requestData = {
-            to: replyToken,
+            to:replyToken,
             messages: [
                 {
-                    type: "flex",
-                    altText: "แจ้งเตือน",
+                    type    : "flex",
+                    altText : "แจ้งเตือน",
                     contents: {
                         type: "bubble",
                         body: {
-                            type: "box",
-                            layout: "vertical",
+                            type    : "box",
+                            layout  : "vertical",
                             contents: [
                                 {
-                                    type: "text",
-                                    text: " ",
+                                    type    : "text",
+                                    text    : " ",
                                     contents: [
                                         {
-                                            type: "span",
-                                            text: "แจ้งอุณหภูมิร่างกายสูง",
-                                            color: "#FC0303",
-                                            size: "xl",
-                                            weight: "bold",
+                                            type      : "span",
+                                            text      : "แจ้งอุณหภูมิร่างกายสูง",
+                                            color     : "#FC0303",
+                                            size      : "xl",
+                                            weight    : "bold",
                                             decoration: "none"
                                         },
                                         {
-                                            type: "span",
-                                            text: " ",
-                                            size: "xxl",
+                                            type      : "span",
+                                            text      : " ",
+                                            size      : "xxl",
                                             decoration: "none"
                                         }
                                     ]
                                 },
                                 {
-                                    type: "separator",
+                                    type  : "separator",
                                     margin: "md"
                                 },
                                 {
-                                    type: "text",
-                                    text: " ",
-                                    wrap: true,
+                                    type  : "text",
+                                    text  : " ",
+                                    wrap : true,
                                     lineSpacing: "5px",
                                     margin: "md",
-                                    contents: [
+                                    contents:[
                                         {
-                                            type: "span",
-                                            text: message,
-                                            color: "#555555",
-                                            size: "md"
+                                            type      : "span",
+                                            text      : message,
+                                            color     : "#555555",
+                                            size      : "md",
+                                            // decoration: "none",
+                                            // wrap      : true
                                         },
                                         {
-                                            type: "span",
-                                            text: " ",
-                                            size: "xl",
+                                            type      : "span",
+                                            text      : " ",
+                                            size      : "xl",
                                             decoration: "none"
                                         }
                                     ]
                                 },
                                 {
-                                    type: "button",
-                                    style: "primary",
+                                    type  : "button",
+                                    style : "primary",
                                     height: "sm",
                                     margin: "xxl",
                                     action: {
-                                        type: "postback",
+                                        type : "postback",
                                         label: "ส่งความช่วยเหลือเพิ่มเติม",
-                                        // ใช้ format เดียวกับ replyNotificationPostback
-                                        data: `userLineId=${replyToken}&takecarepersonId=${takecarepersonId}&type=${type}`
+                                        data : `userLineId=${replyToken}&takecarepersonId=${takecarepersonId}&type=${type}`,
                                     }
                                 },
-                                {
-                                    type: "text",
-                                    text: " ",
-                                    wrap: true,
+                                { 
+                                    type  : "text",
+                                    text  : " ",
+                                    wrap  : true,
                                     lineSpacing: "5px",
                                     margin: "md",
-                                    contents: [
+                                    contents:[
                                         {
-                                            type: "span",
-                                            text: "*หมาย: ข้าพเจ้ายินยอมเปิดเผยข้อมูลตำแหน่งปัจจุบันของผู้สูงอายุ",
-                                            color: "#FC0303",
-                                            size: "md"
+                                            type      : "span",
+                                            text      : "*หมาย: ข้าพเจ้ายินยอมเปิดเผยข้อมูลตำแหน่งปัจจุบันของผู้สูงอายุ",
+                                            color     : "#FC0303",
+                                            size      : "md",
+                                            // decoration: "none",
+                                            // wrap      : true
                                         },
                                         {
-                                            type: "span",
-                                            text: " ",
-                                            size: "xl",
+                                            type      : "span",
+                                            text      : " ",
+                                            size      : "xl",
                                             decoration: "none"
                                         }
                                     ]
-                                }
+                                },
                             ]
                         }
                     }
                 }
-            ]
+            ],
         };
-
-        await axios.post(LINE_PUSH_MESSAGING_API, requestData, { headers: LINE_HEADER });
-        
+       await axios.post(LINE_PUSH_MESSAGING_API, requestData, { headers:LINE_HEADER });
     } catch (error) {
-        console.error("🚨 replyNotificationPostbackTemp error:", error);
         if (error instanceof Error) {
             console.log(error.message);
         }
     }
-}
+} 
