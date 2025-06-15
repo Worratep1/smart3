@@ -1334,37 +1334,19 @@ export const replyNotificationPostbackTemp = async ({
     replyToken,
 }: ReplyNotificationPostbackTemp ) => {
     try {
-        const resExtendedHelp = await getExtendedHelp(takecarepersonId, userId);
-        let extendedHelpId;
+        // สร้าง ExtendedHelp ใหม่ทันที โดยไม่ต้องเช็คของเดิม
+        const data = {
+            takecareId: takecarepersonId,
+            usersId: userId,
+            typeStatus: 'save',
+        };
 
-        if (resExtendedHelp && resExtendedHelp.exten_id) {
-            // ถ้ามี extended help อยู่แล้ว
-            extendedHelpId = resExtendedHelp.exten_id;
-            // อัพเดทสถานะ
-            await updateExtendedHelp({ 
-                extenId: extendedHelpId, 
-                typeStatus: 'sendAgain' 
-            });
-        } else {
-            // ถ้ายังไม่มี extended help ให้สร้างใหม่
-            const data = {
-                takecareId: takecarepersonId,
-                usersId: userId,
-                typeStatus: 'save',
-            };
-            const newExtendedHelpId = await saveExtendedHelp(data);
-            if (!newExtendedHelpId) {
-                throw new Error('Failed to create extended help');
-            }
-            extendedHelpId = newExtendedHelpId;
+        const newExtendedHelpId = await saveExtendedHelp(data);
+        
+        if (!newExtendedHelpId) {
+            throw new Error('Failed to create extended help');
         }
 
-        // ตรวจสอบ extendedHelpId ก่อนใช้
-        if (!extendedHelpId) {
-            throw new Error('No valid extended help ID');
-        }
-
-        // สร้าง request data สำหรับส่งข้อความ
         const requestData = {
             to: replyToken,
             messages: [
@@ -1430,7 +1412,8 @@ export const replyNotificationPostbackTemp = async ({
                                     action: {
                                         type: "postback",
                                         label: "ส่งความช่วยเหลือเพิ่มเติม",
-                                        data: `userLineId=${replyToken}&takecarepersonId=${takecarepersonId}&type=${type}&extenId=${extendedHelpId}`
+                                        // ต้องแน่ใจว่า newExtendedHelpId เป็น number และแปลงเป็น string
+                                        data: `type=accept&takecareId=${takecarepersonId}&userLineId=${replyToken}&extenId=${newExtendedHelpId.toString()}`
                                     }
                                 },
                                 {
@@ -1461,7 +1444,6 @@ export const replyNotificationPostbackTemp = async ({
             ]
         };
 
-        // ส่งข้อความ
         await axios.post(LINE_PUSH_MESSAGING_API, requestData, { headers: LINE_HEADER });
         
     } catch (error) {
