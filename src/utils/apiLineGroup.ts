@@ -108,10 +108,6 @@ export const replyNotification = async ({
     locationData,
 }: ReplyNotification) => {
     try {
-          if (!extendedHelpId || isNaN(Number(extendedHelpId))) {
-            console.error(' extendedHelpId ผิด:', extendedHelpId);
-            return;
-        }
         const latitude = Number(locationData.locat_latitude);
         const longitude = Number(locationData.locat_longitude);
 
