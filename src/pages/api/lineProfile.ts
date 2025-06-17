@@ -226,15 +226,20 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 						const replyToken = await postbackSafezone({ userLineId: postback.userLineId, takecarepersonId: Number(postback.takecarepersonId) })
 						if (replyToken) {
 							console.log("Safezone request sent, replying with notification.");
+							console.log("เตรียมส่งข้อความแจ้งเตือนอุณหภูมิสูง...");
 							await replyNotification({ replyToken, message: 'ส่งคำขอความช่วยเหลือแล้ว' })
+							console.log("ส่งข้อความแจ้งเตือนสำเร็จ!");
 						}
 					}
 					else if (postback.type === 'temperature') {
 						console.log("Handling temperature postback data.");
+
 						const extendedHelpId = await postbackTemp({userLineId: postback.userLineId,takecarepersonId: Number(postback.takecarepersonId)});
 						if (extendedHelpId) {
 							console.log("Temperature request sent, replying with notification.");
-							await replyNotification({ replyToken: extendedHelpId, message: 'ส่งคำขอความช่วยเหลือกรณีอุณหภูมิสูงแล้ว' });
+							const replyToken = events.replyToken;await replyNotification({replyToken,message: 'ส่งคำขอความช่วยเหลือกรณีอุณหภูมิสูงแล้ว'
+							});
+
 							// OPTIONAL: ส่ง Flex Message ปุ่มตอบรับ/ปิดเคสที่ใช้ extendedHelpId
 							// await sendFlexCaseOptions(replyToken, extendedHelpId) // ถ้าคุณมีฟังก์ชันแบบนี้
 						}
