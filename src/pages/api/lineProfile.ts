@@ -226,24 +226,30 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 						const replyToken = await postbackSafezone({ userLineId: postback.userLineId, takecarepersonId: Number(postback.takecarepersonId) })
 						if (replyToken) {
 							console.log("Safezone request sent, replying with notification.");
-							console.log("prepare sent...");
 							await replyNotification({ replyToken, message: 'ส่งคำขอความช่วยเหลือแล้ว' })
-							console.log("send notification successfully.");
 						}
 					}
 					else if (postback.type === 'temperature') {
-						console.log("Handling temperature postback data.");
+  console.log("Handling temperature postback data.");
 
-						const extendedHelpId = await postbackTemp({userLineId: postback.userLineId,takecarepersonId: Number(postback.takecarepersonId)});
-						if (extendedHelpId) {
-							console.log("Temperature request sent, replying with notification.");
-							const replyToken = events.replyToken;await replyNotification({replyToken,message: 'ส่งคำขอความช่วยเหลือกรณีอุณหภูมิสูงแล้ว'
-							});
+  const extendedHelpId = await postbackTemp({
+    userLineId: postback.userLineId,
+    takecarepersonId: Number(postback.takecarepersonId)
+  });
 
-							// OPTIONAL: ส่ง Flex Message ปุ่มตอบรับ/ปิดเคสที่ใช้ extendedHelpId
-							// await sendFlexCaseOptions(replyToken, extendedHelpId) // ถ้าคุณมีฟังก์ชันแบบนี้
-						}
-					}
+  if (extendedHelpId) {
+    console.log("Temperature request sent, replying with notification.");
+
+    // ▪️ แทนที่จะใช้ replyToken ที่หมดอายุแล้ว ให้ใช้ push หา userLineId แทน
+    await pushMessageToUser({
+      to: postback.userLineId,       // userLineId จริง ๆ ของ user ที่กด
+      messages: [{
+        type: 'text',
+        text: 'ส่งคำขอความช่วยเหลือกรณีอุณหภูมิสูงแล้ว'
+      }]
+    });
+  }
+}
 					else if (postback.type === 'accept') {
 						console.log("Handling accept postback data.");
 						let data = postback
@@ -278,3 +284,10 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 		res.status(405).json({ message: `วิธี ${req.method} ไม่อนุญาต` })
 	}
 }
+function pushMessageToUser(arg0: {
+	to: string; // userLineId จริง ๆ ของ user ที่กด
+	messages: { type: string; text: string; }[];
+}) {
+	throw new Error('Function not implemented.');
+}
+

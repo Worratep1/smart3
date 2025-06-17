@@ -71,21 +71,15 @@ export const postbackTemp = async ({ userLineId, takecarepersonId }: PostbackSaf
           extendedHelpId = resNewId;
         }
 
-        // ✅ เพิ่มการเช็คนี้ก่อนเรียก replyNotification
-        if (extendedHelpId && !isNaN(Number(extendedHelpId))) {
-          await replyNotification({
-            resUser,
-            resTakecareperson,
-            resSafezone,
-            extendedHelpId,
-            locationData: responseLocation,
-          });
-          return extendedHelpId;
-        } else {
-          // log error เพิ่มเติมเพื่อ debug
-          console.error('❌ extendedHelpId ผิดหรือไม่ได้:', extendedHelpId);
-          return null;
-        }
+        await replyNotification({
+          resUser,
+          resTakecareperson,
+          resSafezone,
+          extendedHelpId,
+          locationData: responseLocation,
+        });
+
+        return extendedHelpId;
       }
     }
 
