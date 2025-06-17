@@ -226,9 +226,9 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 						const replyToken = await postbackSafezone({ userLineId: postback.userLineId, takecarepersonId: Number(postback.takecarepersonId) })
 						if (replyToken) {
 							console.log("Safezone request sent, replying with notification.");
-							console.log("เตรียมส่งข้อความแจ้งเตือนอุณหภูมิสูง...");
+							console.log("prepare sent...");
 							await replyNotification({ replyToken, message: 'ส่งคำขอความช่วยเหลือแล้ว' })
-							console.log("ส่งข้อความแจ้งเตือนสำเร็จ!");
+							console.log("send notification successfully.");
 						}
 					}
 					else if (postback.type === 'temperature') {
