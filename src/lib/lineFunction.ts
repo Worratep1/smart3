@@ -17,7 +17,7 @@ const getLocation = async (takecare_id: number, users_id: number, safezone_id:nu
 		return null
 	}
 }
-//สร้างฟังก์ชันของอุณหภูมิ 
+// ปรับให้ postbackTemp ทำงานเหมือน postbackSafezone
 export const postbackTemp = async ({ userLineId, takecarepersonId }: PostbackSafezoneProps) => {
   try {
     const resUser = await api.getUser(userLineId);
@@ -36,30 +36,11 @@ export const postbackTemp = async ({ userLineId, takecarepersonId }: PostbackSaf
         let extendedHelpId = null;
 
         if (resExtendedHelp) {
-          // เคสเก่ายังไม่มีคนตอบรับ → ส่งอีกครั้ง
-          if (
-            resExtendedHelp.exten_received_user_id === null &&
-            resExtendedHelp.exten_received_date === null
-          ) {
-            extendedHelpId = resExtendedHelp.exten_id;
-            await api.updateExtendedHelp({
-              extenId: extendedHelpId,
-              typeStatus: 'sendAgain',
-            });
-          } else {
-            // เคสเก่าโดนรับแล้ว → สร้างเคสใหม่
-            const data = {
-              takecareId: resTakecareperson.takecare_id,
-              usersId: resUser.users_id,
-              typeStatus: 'save',
-              safezLatitude: resSafezone.safez_latitude,
-              safezLongitude: resSafezone.safez_longitude,
-            };
-            const resNewId = await api.saveExtendedHelp(data);
-            extendedHelpId = resNewId;
-          }
+          // ถ้ามีเคสเดิม → อัปเดตเคสเดิมว่า "ส่งอีกครั้ง"
+          extendedHelpId = resExtendedHelp.exten_id;
+          await api.updateExtendedHelp({ extenId: extendedHelpId, typeStatus: 'sendAgain' });
         } else {
-          // ไม่เคยมีเคสมาก่อน → สร้างใหม่
+          // ถ้าไม่มีเคส → สร้างเคสใหม่
           const data = {
             takecareId: resTakecareperson.takecare_id,
             usersId: resUser.users_id,
@@ -71,6 +52,7 @@ export const postbackTemp = async ({ userLineId, takecarepersonId }: PostbackSaf
           extendedHelpId = resNewId;
         }
 
+        // ส่งการแจ้งเตือนกลับ
         await replyNotification({
           resUser,
           resTakecareperson,
@@ -79,7 +61,8 @@ export const postbackTemp = async ({ userLineId, takecarepersonId }: PostbackSaf
           locationData: responseLocation,
         });
 
-        return extendedHelpId;
+        // ส่ง Line ID กลับเป็นตัวบ่งชี้ว่า success (เหมือน safezone)
+        return resUser.users_line_id;
       }
     }
 

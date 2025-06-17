@@ -230,26 +230,18 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 						}
 					}
 					else if (postback.type === 'temperature') {
-  console.log("Handling temperature postback data.");
+						console.log("Handling temperature postback data.");
+						const replyToken = await postbackTemp({
+							userLineId: postback.userLineId,
+							takecarepersonId: Number(postback.takecarepersonId)
+						});
 
-  const extendedHelpId = await postbackTemp({
-    userLineId: postback.userLineId,
-    takecarepersonId: Number(postback.takecarepersonId)
-  });
+						if (replyToken) {
+							console.log("Temperature request sent, replying with notification.");
+							await replyNotification({ replyToken, message: 'ส่งคำขอความช่วยเหลือกรณีอุณหภูมิสูงแล้ว' });
 
-  if (extendedHelpId) {
-    console.log("Temperature request sent, replying with notification.");
-
-    // ▪️ แทนที่จะใช้ replyToken ที่หมดอายุแล้ว ให้ใช้ push หา userLineId แทน
-    await pushMessageToUser({
-      to: postback.userLineId,       // userLineId จริง ๆ ของ user ที่กด
-      messages: [{
-        type: 'text',
-        text: 'ส่งคำขอความช่วยเหลือกรณีอุณหภูมิสูงแล้ว'
-      }]
-    });
-  }
-}
+						}
+					}
 					else if (postback.type === 'accept') {
 						console.log("Handling accept postback data.");
 						let data = postback
@@ -284,10 +276,3 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 		res.status(405).json({ message: `วิธี ${req.method} ไม่อนุญาต` })
 	}
 }
-function pushMessageToUser(arg0: {
-	to: string; // userLineId จริง ๆ ของ user ที่กด
-	messages: { type: string; text: string; }[];
-}) {
-	throw new Error('Function not implemented.');
-}
-
