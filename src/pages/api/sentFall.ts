@@ -15,6 +15,8 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse<D
     if (req.method === 'PUT' || req.method ==='POST'){
         try{
             const body = req.body;
+            console.log("✅ uId =", body.uId);
+            console.log("✅ takecare_id =", body.takecare_id);
             console.log("📦 Body received:", body); // ✅ DEBUG
 
             if(!body.uId || !body.takecare_id || !body.x_axis || !body.y_axis || !body.z_axis){
@@ -98,7 +100,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse<D
                 x_axis: x,
                 y_axis: y,
                 z_axis: z,
-                fall_status: fall_status,
+                fall_status,
                 noti_time,
                 noti_status
             };
