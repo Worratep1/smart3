@@ -15,7 +15,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse<D
     if (req.method === 'PUT' || req.method ==='POST'){
         try{
             const body = req.body;
-
+            console.log("📦 Body received:", body); // ✅ DEBUG ตรงนี้
             if(!body.uId || !body.takecare_id || !body.x_axis || !body.y_axis || !body.z_axis){
                 return res.status(400).json({ message: 'error', data: 'ไม่พบพารามิเตอร์ uId, takecare_id, x_axis, y_axis, z_axis' });
             }
