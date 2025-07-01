@@ -15,15 +15,12 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse<D
             const fallStatus = Number(body.fall_status);
 
             // --- เช็คว่าข้อมูลครบหรือไม่ ---
-             if (
-                !body.users_id ||
-                !body.takecare_id ||
-                body.x_axis === undefined ||
-                body.y_axis === undefined ||
-                body.z_axis === undefined ||
+            if (
+                body.users_id === undefined || body.users_id === null ||
+                body.takecare_id === undefined || body.takecare_id === null ||
+                body.x_axis === undefined || body.y_axis === undefined || body.z_axis === undefined ||
                 body.fall_status === undefined ||
-                body.latitude === undefined ||
-                body.longitude === undefined
+                body.latitude === undefined || body.longitude === undefined
             ) {
                 return res.status(400).json({ message: 'error', data: 'ไม่พบพารามิเตอร์ users_id, takecare_id, x_axis, y_axis, z_axis, fall_status, latitude, longitude' });
             }
@@ -74,7 +71,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse<D
 
             // --- แจ้งเตือนเฉพาะสถานะ 2, 3 และยังไม่แจ้งซ้ำภายใน 5 นาที ---
             if ((fallStatus === 2 || fallStatus === 3) && (
-                !lastFall || lastFall.noti_status !== 1 || moment().diff(moment(lastFall.noti_time), 'minutes') >= 5
+                !lastFall || lastFall.noti_status !== 1 || !lastFall.noti_time || moment().diff(moment(lastFall.noti_time), 'minutes') >= 5
             )) {
                 const message = fallStatus === 2
                     ? `คุณ ${takecareperson.takecare_fname} ${takecareperson.takecare_sname} กด "ไม่โอเค" ขอความช่วยเหลือ`
@@ -137,7 +134,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse<D
 
 
 
-// import { NextApiRequest,NextApiResponse } from "next"; 
+// import { NextApiRequest,NextApiResponse } from "next";
 // import prisma from "@/lib/prisma";
 // import _ from "lodash";
 // import moment from "moment";
