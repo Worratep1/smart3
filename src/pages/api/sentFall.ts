@@ -1,7 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '@/lib/prisma';
-import _ from 'lodash';
-import { replyNotificationPostback, replyNotificationPostbackTemp } from '@/utils/apiLineReply';
+import { replyNotificationPostbackfall } from '@/utils/apiLineReply'; // <-- import function ที่จะใช้
 import moment from 'moment';
 
 type Data = {
@@ -14,7 +13,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse<D
         try {
             const body = req.body;
 
-            // *** เช็คแค่ undefined หรือ null ***
+            // --- เช็คว่าข้อมูลครบหรือไม่ ---
             if (
                 body.users_id === undefined || body.users_id === null ||
                 body.takecare_id === undefined || body.takecare_id === null ||
@@ -28,7 +27,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse<D
                 return res.status(400).json({ message: 'error', data: 'ไม่พบพารามิเตอร์ users_id, takecare_id, x_axis, y_axis, z_axis, fall_status, latitude, longitude' });
             }
 
-            // ตรวจสอบว่าเป็นตัวเลข (users_id, takecare_id, fall_status)
+            // --- เช็คว่าตัวเลขถูกต้องหรือไม่ ---
             if (
                 isNaN(Number(body.users_id)) ||
                 isNaN(Number(body.takecare_id)) ||
@@ -37,7 +36,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse<D
                 return res.status(400).json({ message: 'error', data: 'users_id, takecare_id, fall_status ต้องเป็นตัวเลข' });
             }
 
-            // หา user กับ takecareperson
+            // --- ดึงข้อมูล user และผู้ดูแล ---
             const user = await prisma.users.findUnique({
                 where: { users_id: Number(body.users_id) }
             });
@@ -50,7 +49,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse<D
                 return res.status(200).json({ message: 'error', data: 'ไม่พบข้อมูล user หรือ takecareperson' });
             }
 
-            // สร้าง fall_records (insert ใหม่ทุกครั้ง)
+            // --- บันทึกข้อมูลการล้ม ---
             await prisma.fall_records.create({
                 data: {
                     users_id: user.users_id,
@@ -64,10 +63,25 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse<D
                 }
             });
 
-            return res.status(200).json({ message: 'success', data: 'บันทึกข้อมูลการล้มเรียบร้อย' });
+            // --- ส่งแจ้งเตือน LINE หลังบันทึกสำเร็จ ---
+            const message = `แจ้งเตือนการล้ม\n\nตรวจพบการล้ม\nโดย ${takecareperson.takecare_fname} ${takecareperson.takecare_sname}\n\n*หมายเหตุ: ข้าพเจ้ายินยอมเปิดเผยข้อมูลตำแหน่งปัจจุบันของผู้สูงอายุ`;
+            // --- เช็คว่ามี replyToken หรือไม่ ---
+           const replyToken = user.users_line_id || '';
+            if (replyToken) {
+                await replyNotificationPostbackfall({
+                    userId: user.users_id,
+                    takecarepersonId: takecareperson.takecare_id,
+                    type: 'fall',
+                    message,
+                    replyToken,
+                });
+            }
+
+            // --- ตอบกลับ ---
+            return res.status(200).json({ message: 'success', data: 'บันทึกข้อมูลการล้มและแจ้งเตือนเรียบร้อย' });
 
         } catch (error) {
-            console.error("🚀 ~ API /fall error:", error);
+            console.error("🚀 ~ API /sentFall error:", error);
             return res.status(400).json({ message: 'error', data: error });
         }
     } else {
