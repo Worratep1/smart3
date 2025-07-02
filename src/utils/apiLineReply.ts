@@ -1064,21 +1064,21 @@ export const replyNotificationPostback = async ({
     try {
         let messages = [];
 
-        // ถ้าเป็นการล้ม ส่ง location message ก่อน
+        // ----- กรณีแจ้งเตือนการล้ม (type === 'fall') ส่ง Location ไปด้วย -----
         if (type === 'fall' && latitude && longitude) {
             messages.push({
                 type: 'location',
-                title: `ตำแหน่งปัจจุบันของผู้สูงอายุ ${resTakecareperson.takecare_fname} ${resTakecareperson.takecare_sname}`,
+                title: `ตำแหน่งปัจจุบันของผู้สูงอายุ ${resTakecareperson?.takecare_fname || ''} ${resTakecareperson?.takecare_sname || ''}`,
                 address: 'สถานที่ตั้งปัจจุบันของผู้สูงอายุ',
-                latitude: latitude,
-                longitude: longitude,
+                latitude: Number(latitude),   // ป้องกันปัญหา type
+                longitude: Number(longitude)
             });
         }
 
-        // Flex แจ้งเตือน
+        // ----- Flex Message แจ้งเตือน -----
         messages.push({
             type: "flex",
-            altText: "แจ้งเตือน",
+            altText: type === "fall" ? "แจ้งเตือนการล้ม" : "แจ้งเตือนเขตปลอดภัย",
             contents: {
                 type: "bubble",
                 body: {
@@ -1091,7 +1091,7 @@ export const replyNotificationPostback = async ({
                             contents: [
                                 {
                                     type: "span",
-                                    text: "แจ้งเตือนเขตปลอดภัย",
+                                    text: type === "fall" ? "แจ้งเตือนการล้ม" : "แจ้งเตือนเขตปลอดภัย",
                                     color: "#FC0303",
                                     size: "xl",
                                     weight: "bold",
@@ -1167,18 +1167,19 @@ export const replyNotificationPostback = async ({
             }
         });
 
-        // ส่ง message ทั้ง 2 อัน
+        // ----- ส่ง message ทั้ง 2 อัน -----
         const requestData = {
             to: replyToken,
             messages: messages
         };
         await axios.post(LINE_PUSH_MESSAGING_API, requestData, { headers: LINE_HEADER });
+
     } catch (error) {
         if (error instanceof Error) {
             console.log(error.message);
         }
     }
-}; // <<==== อันนี้คือปีกกาฟังก์ชัน
+};// <<==== อันนี้คือปีกกาฟังก์ชัน
 
 
 
