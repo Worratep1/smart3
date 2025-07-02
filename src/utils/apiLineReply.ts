@@ -29,6 +29,10 @@ interface ReplyNotificationPostback {
     type            : string;
     message         : string;
     replyToken      : string;
+    latitude       ?: number; // Optional latitude for location สำหรับ ล้ม
+    longitude      ?: number; // Optional longitude for location
+    resUser        ?: any; // Optional user data for fall
+    resTakecareperson?: any; // Optional takecareperson data for fall
 }
 interface ReplyNotificationPostbackTemp{
     userId           : number;
@@ -1053,115 +1057,130 @@ export const replyNotificationPostback = async ({
     type,
     message,
     replyToken,
-    
-}: ReplyNotificationPostback ) => {
+    latitude,
+    longitude,
+    resTakecareperson
+}: ReplyNotificationPostback) => {
     try {
-        const requestData = {
-            to:replyToken,
-            messages: [
-                {
-                    type    : "flex",
-                    altText : "แจ้งเตือน",
-                    contents: {
-                        type: "bubble",
-                        body: {
-                            type    : "box",
-                            layout  : "vertical",
+        let messages = [];
+
+        // ถ้าเป็นการล้ม ส่ง location message ก่อน
+        if (type === 'fall' && latitude && longitude) {
+            messages.push({
+                type: 'location',
+                title: `ตำแหน่งปัจจุบันของผู้สูงอายุ ${resTakecareperson.takecare_fname} ${resTakecareperson.takecare_sname}`,
+                address: 'สถานที่ตั้งปัจจุบันของผู้สูงอายุ',
+                latitude: latitude,
+                longitude: longitude,
+            });
+        }
+
+        // Flex แจ้งเตือน
+        messages.push({
+            type: "flex",
+            altText: "แจ้งเตือน",
+            contents: {
+                type: "bubble",
+                body: {
+                    type: "box",
+                    layout: "vertical",
+                    contents: [
+                        {
+                            type: "text",
+                            text: " ",
                             contents: [
                                 {
-                                    type    : "text",
-                                    text    : " ",
-                                    contents: [
-                                        {
-                                            type      : "span",
-                                            text      : "แจ้งเตือนเขตปลอดภัย",
-                                            color     : "#FC0303",
-                                            size      : "xl",
-                                            weight    : "bold",
-                                            decoration: "none"
-                                        },
-                                        {
-                                            type      : "span",
-                                            text      : " ",
-                                            size      : "xxl",
-                                            decoration: "none"
-                                        }
-                                    ]
+                                    type: "span",
+                                    text: "แจ้งเตือนเขตปลอดภัย",
+                                    color: "#FC0303",
+                                    size: "xl",
+                                    weight: "bold",
+                                    decoration: "none"
                                 },
                                 {
-                                    type  : "separator",
-                                    margin: "md"
+                                    type: "span",
+                                    text: " ",
+                                    size: "xxl",
+                                    decoration: "none"
+                                }
+                            ]
+                        },
+                        {
+                            type: "separator",
+                            margin: "md"
+                        },
+                        {
+                            type: "text",
+                            text: " ",
+                            wrap: true,
+                            lineSpacing: "5px",
+                            margin: "md",
+                            contents: [
+                                {
+                                    type: "span",
+                                    text: message,
+                                    color: "#555555",
+                                    size: "md"
                                 },
                                 {
-                                    type  : "text",
-                                    text  : " ",
-                                    wrap : true,
-                                    lineSpacing: "5px",
-                                    margin: "md",
-                                    contents:[
-                                        {
-                                            type      : "span",
-                                            text      : message,
-                                            color     : "#555555",
-                                            size      : "md",
-                                            // decoration: "none",
-                                            // wrap      : true
-                                        },
-                                        {
-                                            type      : "span",
-                                            text      : " ",
-                                            size      : "xl",
-                                            decoration: "none"
-                                        }
-                                    ]
+                                    type: "span",
+                                    text: " ",
+                                    size: "xl",
+                                    decoration: "none"
+                                }
+                            ]
+                        },
+                        {
+                            type: "button",
+                            style: "primary",
+                            height: "sm",
+                            margin: "xxl",
+                            action: {
+                                type: "postback",
+                                label: "ส่งความช่วยเหลือเพิ่มเติม",
+                                data: `userLineId=${replyToken}&takecarepersonId=${takecarepersonId}&type=${type}`,
+                            }
+                        },
+                        {
+                            type: "text",
+                            text: " ",
+                            wrap: true,
+                            lineSpacing: "5px",
+                            margin: "md",
+                            contents: [
+                                {
+                                    type: "span",
+                                    text: "*หมาย: ข้าพเจ้ายินยอมเปิดเผยข้อมูลตำแหน่งปัจจุบันของผู้สูงอายุ",
+                                    color: "#FC0303",
+                                    size: "md"
                                 },
                                 {
-                                    type  : "button",
-                                    style : "primary",
-                                    height: "sm",
-                                    margin: "xxl",
-                                    action: {
-                                        type : "postback",
-                                        label: "ส่งความช่วยเหลือเพิ่มเติม",
-                                        data : `userLineId=${replyToken}&takecarepersonId=${takecarepersonId}&type=${type}`,
-                                    }
-                                },
-                                { 
-                                    type  : "text",
-                                    text  : " ",
-                                    wrap  : true,
-                                    lineSpacing: "5px",
-                                    margin: "md",
-                                    contents:[
-                                        {
-                                            type      : "span",
-                                            text      : "*หมาย: ข้าพเจ้ายินยอมเปิดเผยข้อมูลตำแหน่งปัจจุบันของผู้สูงอายุ",
-                                            color     : "#FC0303",
-                                            size      : "md",
-                                            // decoration: "none",
-                                            // wrap      : true
-                                        },
-                                        {
-                                            type      : "span",
-                                            text      : " ",
-                                            size      : "xl",
-                                            decoration: "none"
-                                        }
-                                    ]
-                                },
+                                    type: "span",
+                                    text: " ",
+                                    size: "xl",
+                                    decoration: "none"
+                                }
                             ]
                         }
-                    }
+                    ]
                 }
-            ],
+            }
+        });
+
+        // ส่ง message ทั้ง 2 อัน
+        const requestData = {
+            to: replyToken,
+            messages: messages
         };
-       await axios.post(LINE_PUSH_MESSAGING_API, requestData, { headers:LINE_HEADER });
+        await axios.post(LINE_PUSH_MESSAGING_API, requestData, { headers: LINE_HEADER });
     } catch (error) {
         if (error instanceof Error) {
             console.log(error.message);
         }
     }
-}
+}; // <<==== อันนี้คือปีกกาฟังก์ชัน
+
+
 
 export const replyNotificationSOS = async ({
     replyToken,
