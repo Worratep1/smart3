@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '@/lib/prisma';
 import _ from 'lodash';
-import { replyNotificationPostbackfall } from '@/utils/apiLineReply';
+import { replyNotificationPostback } from '@/utils/apiLineReply';
 import moment from 'moment';
 
 
@@ -11,12 +11,11 @@ type Data = {
 };
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse<Data>) {
-    if (req.method === 'PUT' || req.method === 'POST') {
+    if (req.method === 'PUT' || req.method === 'POST') { //รับเเค่ PUT และ POST
         try {
-            const body = req.body;
-
-            if (
-                body.users_id === undefined || body.users_id === null ||
+            const body = req.body;    
+            if (     
+                body.users_id === undefined || body.users_id === null ||      //เช็ค พารามิเตอร์
                 body.takecare_id === undefined || body.takecare_id === null ||
                 body.x_axis === undefined ||
                 body.y_axis === undefined ||
@@ -71,7 +70,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse<D
 
                 const replyToken = user.users_line_id || '';
                 if (replyToken) {
-                    await replyNotificationPostbackfall({
+                    await replyNotificationPostback({
                         replyToken,
                         userId: user.users_id,
                         takecarepersonId: takecareperson.takecare_id,
