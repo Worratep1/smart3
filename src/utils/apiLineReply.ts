@@ -29,9 +29,9 @@ interface ReplyNotificationPostback {
     type            : string;
     message         : string;
     replyToken      : string;
-    locationData    : {
-        latitude  : number;
-        longitude : number;
+     locationData?: {
+        locat_latitude: number;
+        locat_longitude: number;
     }
 }
 interface ReplyNotificationPostbackTemp{
@@ -1061,10 +1061,11 @@ export const replyNotificationPostback = async ({
 }: ReplyNotificationPostback ) => {
     try {
         const messages = [];
+
         // ใส่ Location Message ก่อนถ้ามี (type === 'fall')
-        if (type === 'fall' && locationData && locationData.latitude && locationData.longitude) {
-            const latitude = Number(locationData.latitude);
-            const longitude = Number(locationData.longitude);
+        if (type === 'fall' && locationData && locationData.locat_latitude && locationData.locat_longitude) {
+            const latitude = Number(locationData.locat_latitude);
+            const longitude = Number(locationData.locat_longitude);
             if (latitude && longitude) {
                 messages.push({
                     type: 'location',
