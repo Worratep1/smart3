@@ -29,10 +29,6 @@ interface ReplyNotificationPostback {
     type            : string;
     message         : string;
     replyToken      : string;
-     locationData?: {
-        locat_latitude: number;
-        locat_longitude: number;
-    }
 }
 interface ReplyNotificationPostbackTemp{
     userId           : number;
@@ -1057,128 +1053,109 @@ export const replyNotificationPostback = async ({
     type,
     message,
     replyToken,
-    locationData   // เพิ่ม parameter นี้ (optional)
+    
 }: ReplyNotificationPostback ) => {
     try {
-        // ป้องกันกรณีไม่ได้ส่ง locationData
-        // เตรียม array สำหรับ message ทั้ง 2 อัน
-        const messages = [];
-        // ใส่ Location Message ก่อนถ้ามี (type === 'fall')
-       if (
-          type === 'fall' &&
-          locationData &&
-          typeof locationData.locat_latitude === 'number' &&
-          typeof locationData.locat_longitude === 'number' &&
-          locationData.locat_latitude !== 0 &&
-          locationData.locat_longitude !== 0
-        ) {
-                messages.push({
-                type: 'location',
-                title: 'ตำแหน่งปัจจุบันของผู้สูงอายุ',
-                address: 'สถานที่ตั้งปัจจุบันของผู้สูงอายุ',
-                latitude: locationData.locat_latitude,
-                longitude: locationData.locat_longitude,
-            });
-        }
-
-        // Flex Message แบบที่คุณใช้
-        messages.push({
-            type    : "flex",
-            altText : "แจ้งเตือน",
-            contents: {
-                type: "bubble",
-                body: {
-                    type    : "box",
-                    layout  : "vertical",
-                    contents: [
-                        {
-                            type    : "text",
-                            text    : " ",
+        const requestData = {
+            to:replyToken,
+            messages: [
+                {
+                    type    : "flex",
+                    altText : "แจ้งเตือน",
+                    contents: {
+                        type: "bubble",
+                        body: {
+                            type    : "box",
+                            layout  : "vertical",
                             contents: [
                                 {
-                                    type      : "span",
-                                    text      : type === "fall" ? "แจ้งเตือนการล้ม" : "แจ้งเตือนเขตปลอดภัย",
-                                    color     : "#FC0303",
-                                    size      : "xl",
-                                    weight    : "bold",
-                                    decoration: "none"
+                                    type    : "text",
+                                    text    : " ",
+                                    contents: [
+                                        {
+                                            type      : "span",
+                                            text      : "แจ้งเตือนเขตปลอดภัย",
+                                            color     : "#FC0303",
+                                            size      : "xl",
+                                            weight    : "bold",
+                                            decoration: "none"
+                                        },
+                                        {
+                                            type      : "span",
+                                            text      : " ",
+                                            size      : "xxl",
+                                            decoration: "none"
+                                        }
+                                    ]
                                 },
                                 {
-                                    type      : "span",
-                                    text      : " ",
-                                    size      : "xxl",
-                                    decoration: "none"
-                                }
-                            ]
-                        },
-                        {
-                            type  : "separator",
-                            margin: "md"
-                        },
-                        {
-                            type  : "text",
-                            text  : " ",
-                            wrap : true,
-                            lineSpacing: "5px",
-                            margin: "md",
-                            contents:[
-                                {
-                                    type      : "span",
-                                    text      : message,
-                                    color     : "#555555",
-                                    size      : "md",
+                                    type  : "separator",
+                                    margin: "md"
                                 },
                                 {
-                                    type      : "span",
-                                    text      : " ",
-                                    size      : "xl",
-                                    decoration: "none"
-                                }
-                            ]
-                        },
-                        {
-                            type  : "button",
-                            style : "primary",
-                            height: "sm",
-                            margin: "xxl",
-                            action: {
-                                type : "postback",
-                                label: "ส่งความช่วยเหลือเพิ่มเติม",
-                                data : `userLineId=${replyToken}&takecarepersonId=${takecarepersonId}&type=${type}`,
-                            }
-                        },
-                        { 
-                            type  : "text",
-                            text  : " ",
-                            wrap  : true,
-                            lineSpacing: "5px",
-                            margin: "md",
-                            contents:[
-                                {
-                                    type      : "span",
-                                    text      : "*หมาย: ข้าพเจ้ายินยอมเปิดเผยข้อมูลตำแหน่งปัจจุบันของผู้สูงอายุ",
-                                    color     : "#FC0303",
-                                    size      : "md",
+                                    type  : "text",
+                                    text  : " ",
+                                    wrap : true,
+                                    lineSpacing: "5px",
+                                    margin: "md",
+                                    contents:[
+                                        {
+                                            type      : "span",
+                                            text      : message,
+                                            color     : "#555555",
+                                            size      : "md",
+                                            // decoration: "none",
+                                            // wrap      : true
+                                        },
+                                        {
+                                            type      : "span",
+                                            text      : " ",
+                                            size      : "xl",
+                                            decoration: "none"
+                                        }
+                                    ]
                                 },
                                 {
-                                    type      : "span",
-                                    text      : " ",
-                                    size      : "xl",
-                                    decoration: "none"
-                                }
+                                    type  : "button",
+                                    style : "primary",
+                                    height: "sm",
+                                    margin: "xxl",
+                                    action: {
+                                        type : "postback",
+                                        label: "ส่งความช่วยเหลือเพิ่มเติม",
+                                        data : `userLineId=${replyToken}&takecarepersonId=${takecarepersonId}&type=${type}`,
+                                    }
+                                },
+                                { 
+                                    type  : "text",
+                                    text  : " ",
+                                    wrap  : true,
+                                    lineSpacing: "5px",
+                                    margin: "md",
+                                    contents:[
+                                        {
+                                            type      : "span",
+                                            text      : "*หมาย: ข้าพเจ้ายินยอมเปิดเผยข้อมูลตำแหน่งปัจจุบันของผู้สูงอายุ",
+                                            color     : "#FC0303",
+                                            size      : "md",
+                                            // decoration: "none",
+                                            // wrap      : true
+                                        },
+                                        {
+                                            type      : "span",
+                                            text      : " ",
+                                            size      : "xl",
+                                            decoration: "none"
+                                        }
+                                    ]
+                                },
                             ]
-                        },
-                    ]
+                        }
+                    }
                 }
-            }
-        });
-
-        const requestData = {
-            to: replyToken,
-            messages: messages
+            ],
         };
-
-        await axios.post(LINE_PUSH_MESSAGING_API, requestData, { headers: LINE_HEADER });
+       await axios.post(LINE_PUSH_MESSAGING_API, requestData, { headers:LINE_HEADER });
     } catch (error) {
         if (error instanceof Error) {
             console.log(error.message);
