@@ -1060,21 +1060,25 @@ export const replyNotificationPostback = async ({
     locationData   // เพิ่ม parameter นี้ (optional)
 }: ReplyNotificationPostback ) => {
     try {
+        // ป้องกันกรณีไม่ได้ส่ง locationData
+        // เตรียม array สำหรับ message ทั้ง 2 อัน
         const messages = [];
-
         // ใส่ Location Message ก่อนถ้ามี (type === 'fall')
-        if (type === 'fall' && locationData && locationData.locat_latitude && locationData.locat_longitude) {
-            const latitude = Number(locationData.locat_latitude);
-            const longitude = Number(locationData.locat_longitude);
-            if (latitude && longitude) {
+       if (
+          type === 'fall' &&
+          locationData &&
+          typeof locationData.locat_latitude === 'number' &&
+          typeof locationData.locat_longitude === 'number' &&
+          locationData.locat_latitude !== 0 &&
+          locationData.locat_longitude !== 0
+        ) {
                 messages.push({
-                    type: 'location',
-                    title: 'ตำแหน่งปัจจุบันของผู้สูงอายุ',
-                    address: 'สถานที่ตั้งปัจจุบันของผู้สูงอายุ',
-                    latitude: latitude,
-                    longitude: longitude,
-                });
-            }
+                type: 'location',
+                title: 'ตำแหน่งปัจจุบันของผู้สูงอายุ',
+                address: 'สถานที่ตั้งปัจจุบันของผู้สูงอายุ',
+                latitude: locationData.locat_latitude,
+                longitude: locationData.locat_longitude,
+            });
         }
 
         // Flex Message แบบที่คุณใช้
