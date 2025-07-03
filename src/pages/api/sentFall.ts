@@ -2,8 +2,14 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '@/lib/prisma';
 import _ from 'lodash';
 import { replyNotificationPostback } from '@/utils/apiLineReply';
+import axios from 'axios';
 import moment from 'moment';
 
+const LINE_PUSH_MESSAGING_API = 'https://api.line.me/v2/bot/message/push';
+const LINE_HEADER = {
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${process.env.CHANNEL_ACCESS_TOKEN_LINE}`,
+};
 
 type Data = {
     message: string;
@@ -11,11 +17,12 @@ type Data = {
 };
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse<Data>) {
-    if (req.method === 'PUT' || req.method === 'POST') { //รับเเค่ PUT และ POST
+    if (req.method === 'PUT' || req.method === 'POST') {
         try {
-            const body = req.body;    
-            if (     
-                body.users_id === undefined || body.users_id === null ||      //เช็ค พารามิเตอร์
+            const body = req.body;
+
+            if (
+                body.users_id === undefined || body.users_id === null ||
                 body.takecare_id === undefined || body.takecare_id === null ||
                 body.x_axis === undefined ||
                 body.y_axis === undefined ||
@@ -47,7 +54,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse<D
                 return res.status(200).json({ message: 'error', data: 'ไม่พบข้อมูล user หรือ takecareperson' });
             }
 
-            // หาเหตุการณ์ล้มล่าสุด
+         
             const lastFall = await prisma.fall_records.findFirst({
                 where: {
                     users_id: user.users_id,
@@ -60,7 +67,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse<D
             let noti_time: Date | null = null;
             let noti_status: number | null = null;
 
-            // แจ้งเตือนเฉพาะสถานะ 2, 3 เท่านั้น และกันแจ้งซ้ำใน 5 นาที
+           
             if ((fallStatus === 2 || fallStatus === 3) && (
                 !lastFall || lastFall.noti_status !== 1 || !lastFall.noti_time || moment().diff(moment(lastFall.noti_time), 'minutes') >= 5
             )) {
@@ -70,6 +77,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse<D
 
                 const replyToken = user.users_line_id || '';
                 if (replyToken) {
+          
                     await replyNotificationPostback({
                         replyToken,
                         userId: user.users_id,
@@ -77,6 +85,24 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse<D
                         type: 'fall',
                         message
                     });
+
+                   
+                    const latitude = Number(body.latitude);
+                    const longitude = Number(body.longitude);
+
+                    const locationRequest = {
+                        to: replyToken,
+                        messages: [
+                            {
+                                type: "location",
+                                title: `ตำแหน่งที่ล้มล่าสุด`,
+                                address: `ตำแหน่งที่ล้มของ ${takecareperson.takecare_fname} ${takecareperson.takecare_sname}`,
+                                latitude: latitude,
+                                longitude: longitude
+                            }
+                        ]
+                    };
+                    await axios.post(LINE_PUSH_MESSAGING_API, locationRequest, { headers: LINE_HEADER });
                 }
 
                 noti_status = 1;
@@ -87,7 +113,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse<D
                 console.log("ล้มแต่ยังไม่เข้าเงื่อนไขแจ้งเตือน LINE หรือแจ้งไปแล้วใน 5 นาที");
             }
 
-            // สร้าง record ใหม่ทุกครั้ง (insert ใหม่เสมอ)
+          
             await prisma.fall_records.create({
                 data: {
                     users_id: user.users_id,
