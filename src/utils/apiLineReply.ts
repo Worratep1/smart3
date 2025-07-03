@@ -1069,7 +1069,9 @@ export const replyNotificationPostback = async ({
             locationData &&
             locationData.locat_latitude &&
             locationData.locat_longitude
-        ) {
+
+        )
+         {
             messages = [
                 {
                     type: 'location',
