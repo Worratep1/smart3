@@ -1,4 +1,6 @@
+import HeartRateSettings from '@/pages/settingHeartrate';
 import axios from 'axios';
+import { min } from 'lodash';
 import moment from 'moment';
 
 const WEB_API = process.env.WEB_API_URL;
@@ -620,8 +622,9 @@ export const replySetting = async ({
   userData,
   userTakecarepersonData,
   safezoneData,
-  temperatureSettingData // เพิ่มข้อมูลตั้งค่าอุณหภูมิ (ถ้ามี)
-}: ReplySettingData & { temperatureSettingData?: any }) => {
+  temperatureSettingData,// เพิ่มข้อมูลตั้งค่าอุณหภูมิ (ถ้ามี)
+  heartRateSettingsData // เพิ่มข้อมูลตั้งค่าอัตราการเต้นของหัวใจ (ถ้ามี)
+}: ReplySettingData & { temperatureSettingData?: any, heartRateSettingsData?: any }) => {
   try {
     // ค่า default
     let r1 = 0;
@@ -629,6 +632,8 @@ export const replySetting = async ({
     let idsafezone = 0;
     let maxTemperature = 0; // ค่า default อุณหภูมิ
     let idSetting = 0; // รหัส setting อุณหภูมิ
+    let maxheartRate = 0; // ค่า default อัตราการเต้นของหัวใจ
+    let minheartRate = 0; // ค่า default อัตราการเต้นของหัวใจ
 
     if (safezoneData) {
       r1 = safezoneData.safez_radiuslv1 || 0;
@@ -639,6 +644,11 @@ export const replySetting = async ({
     if (temperatureSettingData) {
       maxTemperature = temperatureSettingData.max_temperature || 37;
       idSetting = temperatureSettingData.setting_id || 0;
+    }
+    if (heartRateSettingsData) {
+        maxheartRate = heartRateSettingsData.max_heart_rate || 100;
+        minheartRate = heartRateSettingsData.min_heart_rate || 60;
+        idSetting = heartRateSettingsData.setting_id || 0;
     }
 
     const requestData = {
@@ -727,6 +737,18 @@ export const replySetting = async ({
                     label: "ตั้งค่าอุณหภูมิร่างกาย",
                     uri: `${WEB_API}/settingTemp?auToken=${userData.users_line_id}&idsetting=${idSetting || ''}`
                   }
+                },
+                {
+                  type: "button",
+                  style: "primary",
+                  height: "sm",
+                  margin: "xxl",
+                  color: "#4477CE",
+                  action: {
+                    type: "uri",
+                    label: "ตั้งค่าอัตราการเต้นหัวใจ",
+                    uri: `${WEB_API}/settingHeartRate?auToken=${userData.users_line_id}&idsetting=${idSetting || ''}`
+                }
                 }
               ]
             }

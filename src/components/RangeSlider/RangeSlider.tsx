@@ -3,8 +3,8 @@ import React from 'react'
 import FormRange from 'react-bootstrap/FormRange';
 interface Props {
     defaultValue?: number;
-    typeClass?: 1 | 2;
-    value?: number | null;
+    typeClass?: 1 | 2; 
+    value?: number | null; //เพิ่ม null มาใหม่
     onChange?: ((value: number) => void | undefined) | undefined;
     min?: number;
     max?: number;
