@@ -4,11 +4,12 @@ import FormRange from 'react-bootstrap/FormRange';
 interface Props {
     defaultValue?: number;
     typeClass?: 1 | 2;
-    value?: number;
+    value?: number | null;
     onChange?: ((value: number) => void | undefined) | undefined;
     min?: number;
     max?: number;
     step?: number;
+    
 }
 
 const RangeSlider = ({
@@ -23,7 +24,7 @@ const RangeSlider = ({
     return (
         <FormRange
             className={typeClass === 1 ? 'range-slider-1' : 'range-slider-2'}
-            value={value}
+            value={value ?? 0}
             onChange={(e) => onChange && onChange(Number(e.target.value))}
             min={min}
             max={max}

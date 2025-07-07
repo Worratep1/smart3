@@ -86,7 +86,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse<D
                         message
                     });
 
-                   
+                   //ส่งตำแหน่ง+เเผนที่
                     const latitude = Number(body.latitude);
                     const longitude = Number(body.longitude);
 
