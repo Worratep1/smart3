@@ -13,7 +13,7 @@ import ButtonState from '@/components/Button/ButtonState'
 import ModalAlert from '@/components/Modals/ModalAlert'
 import RangeSlider from '@/components/RangeSlider/RangeSlider'
 import { encrypt } from '@/utils/helpers'
-import { min, set, take } from 'lodash'
+
 
 interface DataUserState {
   isLogin: boolean
