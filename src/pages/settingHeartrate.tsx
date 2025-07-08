@@ -131,7 +131,7 @@ const HeartrateSetting = () => {
         <Container className="py-3">
           <Row>
             <Col>
-              <h3>ตั้งค่าการแจ้งเตือนอุณหภูมิสูงสุด</h3>
+              <h3>ตั้งค่าการแจ้งเตือนอัตราการเต้นของหัวใจ</h3>
               <p>ค่าปกติ: 60-100 (คุณสามารถปรับค่าได้ตามต้องการ)</p>
             </Col>
           </Row>
@@ -152,7 +152,7 @@ const HeartrateSetting = () => {
            <Row className="py-3">
             <Col>
               <p>
-                อัตราการเต้นของหัวใจสูงสุดที่อนุญาต: <strong>{minHeartrate} bpm</strong>
+                อัตราการเต้นของหัวใจต่ำสุดที่อนุญาต: <strong>{minHeartrate} bpm</strong>
               </p>
               <RangeSlider
                 min={30}
