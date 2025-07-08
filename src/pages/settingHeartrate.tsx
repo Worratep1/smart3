@@ -132,7 +132,7 @@ const TemperatureSetting = () => {
           <Row>
             <Col>
               <h3>ตั้งค่าการแจ้งเตือนอุณหภูมิสูงสุด</h3>
-              <p>ค่าปกติ: 37°C (คุณสามารถปรับค่าได้ตามต้องการ)</p>
+              <p>ค่าปกติ: 60-100 (คุณสามารถปรับค่าได้ตามต้องการ)</p>
             </Col>
           </Row>
           <Row className="py-3">
@@ -146,6 +146,20 @@ const TemperatureSetting = () => {
                 step={1}
                 value={maxHeartrate}
                 onChange={(value) => setMaxHeartrate(Number(value))}
+              />
+            </Col>
+          </Row>
+           <Row className="py-3">
+            <Col>
+              <p>
+                อัตราการเต้นของหัวใจสูงสุดที่อนุญาต: <strong>{minHeartrate} bpm</strong>
+              </p>
+              <RangeSlider
+                min={30}
+                max={200}
+                step={1}
+                value={minHeartrate}
+                onChange={(value) => setMinHeartrate(Number(value))}
               />
             </Col>
           </Row>
