@@ -36,8 +36,8 @@ const HeartRateSettings = () => {
     // เก็บ ID ของการตั้งค่าเมื่อดึงหรือสร้างใหม่
     const [idSetting, setIdSetting] = useState<number | null>(null)
     // เก็บค่าต่ำสุดของ BPM  เก็บค่าสูงสุดของ BPM
-    const [minBpm, setMinBpm] = useState<number | null>(50)
-    const [maxBpm, setMaxBpm] = useState<number | null>(100)
+    const [minBpm, setMinBpm] = useState<number | null>(null)
+    const [maxBpm, setMaxBpm] = useState<number | null>(null)
 
     // เมื่อ auToken ใน query เปลี่ยน จะดึงข้อมูลผู้ใช้
     useEffect(() => {
@@ -49,9 +49,10 @@ const HeartRateSettings = () => {
 
     //ดึงข้อมูลผู้ใช้เเละดูเเล 
     const fetchUserData = async (auToken: string) => {
+        console.log('📥 เริ่ม fetchUserData ด้วย auToken:', auToken)
         try {
             const responseUser = await axios.get(`${process.env.WEB_DOMAIN}/api/user/getUser/${auToken}`)
-
+             console.log('✅ responseUser:', responseUser.data)
             if (responseUser.data?.data) {
 
                 const encodedUsersId = encrypt(responseUser.data.data.users_id.toString())
@@ -76,7 +77,9 @@ const HeartRateSettings = () => {
         showAlert('ไม่พบข้อมูลผู้ใช้')
       }
     } catch (error) {
+        console.error('❌ error fetching user:', error)
       showAlert('ระบบไม่สามารถดึงข้อมูลของท่านได้ กรุณาลองใหม่อีกครั้ง')
+      
     }
   }
   //ดึงข้อมูลการตั้งค่าหัวใจจาก server
