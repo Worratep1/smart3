@@ -54,6 +54,8 @@ const HeartrateSetting = () => {
         const responseTakecare = await axios.get(
           `${process.env.WEB_DOMAIN}/api/user/getUserTakecareperson/${encodedUsersId}`
         )
+        console.log("👤 users_id:", responseUser.data?.data?.users_id)
+console.log("👥 takecareData:", responseTakecare.data?.data)
         const takecareData = responseTakecare.data?.data
         if (takecareData) {
           setDataUser({ isLogin: true, userData: responseUser.data.data, takecareData: takecareData })
@@ -106,6 +108,7 @@ const HeartrateSetting = () => {
         max_heartrate: maxHeartrate,
         min_heartrate: minHeartrate,
       }
+      console.log("📤 payload ก่อนส่ง:", payload)
       if (idSetting) {
         payload.setting_id = idSetting
       }
