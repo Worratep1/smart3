@@ -44,14 +44,14 @@ const HeartRateSettings = () => {
   const fetchUserData = async (auToken: string) => {
     console.log('📥 เริ่ม fetchUserData ด้วย auToken:', auToken)
     try {
-      const responseUser = await axios.get(`${process.env.NEXT_PUBLIC_WEB_DOMAIN}/api/user/getUser/${auToken}`)
+      const responseUser = await axios.get(`${process.env.WEB_DOMAIN}/api/user/getUser/${auToken}`)
       console.log('✅ responseUser:', responseUser.data)
 
       if (responseUser.data?.data) {
         const usersId = responseUser.data.data.users_id
 
         // ดึงข้อมูลผู้ที่ดูแล (จาก users_id)
-        const responseTakecare = await axios.get(`${process.env.NEXT_PUBLIC_WEB_DOMAIN}/api/user/getUserTakecareperson/${usersId}`)
+        const responseTakecare = await axios.get(`${process.env.WEB_DOMAIN}/api/user/getUserTakecareperson/${usersId}`)
         const takecareData = responseTakecare.data?.data
 
         if (takecareData) {
@@ -80,7 +80,7 @@ const HeartRateSettings = () => {
   // ดึงข้อมูล setting heart rate
   const fetchHeartRateSetting = async (settingId: number) => {
     try {
-      const res = await axios.get(`${process.env.NEXT_PUBLIC_WEB_DOMAIN}/api/setting/getHeartrate?setting_id=${settingId}`)
+      const res = await axios.get(`${process.env.WEB_DOMAIN}/api/setting/getHeartrate?setting_id=${settingId}`)
       if (res.data?.data) {
         const data = res.data.data
         setMinBpm(Number(data.min_bpm))
@@ -115,7 +115,7 @@ const HeartRateSettings = () => {
         payload.setting_id = idSetting
       }
 
-      const res = await axios.post(`${process.env.NEXT_PUBLIC_WEB_DOMAIN}/api/setting/saveHeartrate`, payload)
+      const res = await axios.post(`${process.env.WEB_DOMAIN}/api/setting/saveHeartrate`, payload)
 
       if (res.data?.data?.id || res.data?.id) {
         const newId = res.data.data?.id || res.data.id
