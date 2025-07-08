@@ -18,7 +18,7 @@ interface DataUserState {
   takecareData: any | null
 }
 
-const TemperatureSetting = () => {
+const HeartrateSetting = () => {
   const router = useRouter()
 
   // State สำหรับ modal แจ้งเตือน
@@ -112,7 +112,7 @@ const TemperatureSetting = () => {
       const res = await axios.post(`${process.env.WEB_DOMAIN}/api/setting/saveHeartrate`, payload)
       if (res.data?.id) {
         setIdSetting(res.data.id)
-        router.push(`/settingTemp?auToken=${router.query.auToken}&idsetting=${res.data.id}`)
+        router.push(`/settingHeartrate?auToken=${router.query.auToken}&idsetting=${res.data.id}`)
       }
       showAlert('บันทึกข้อมูลสำเร็จ')
     } catch (error) {
@@ -175,4 +175,4 @@ const TemperatureSetting = () => {
   )
 }
 
-export default TemperatureSetting
+export default HeartrateSetting
