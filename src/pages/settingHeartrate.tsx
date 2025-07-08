@@ -3,7 +3,6 @@ import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
 import axios from 'axios'
 
-// Components
 import Spinner from 'react-bootstrap/Spinner'
 import Container from 'react-bootstrap/Container'
 import Row from 'react-bootstrap/Row'
@@ -11,6 +10,7 @@ import Col from 'react-bootstrap/Col'
 import ButtonState from '@/components/Button/ButtonState'
 import ModalAlert from '@/components/Modals/ModalAlert'
 import RangeSlider from '@/components/RangeSlider/RangeSlider'
+import { encrypt } from '@/utils/helpers'
 
 interface DataUserState {
   isLogin: boolean
@@ -18,21 +18,26 @@ interface DataUserState {
   takecareData: any | null
 }
 
-const HeartRateSettings = () => {
+const TemperatureSetting = () => {
   const router = useRouter()
 
+  // State สำหรับ modal แจ้งเตือน
   const [alert, setAlert] = useState({ show: false, message: '' })
+  // State สำหรับ loading ขณะดึงข้อมูลหรือบันทึก
   const [isLoading, setLoading] = useState(false)
+  // ข้อมูลผู้ใช้และผู้ดูแล
   const [dataUser, setDataUser] = useState<DataUserState>({
     isLogin: false,
     userData: null,
-    takecareData: null
+    takecareData: null,
   })
+  // รหัส setting ที่ดึงหรือสร้างใหม่
   const [idSetting, setIdSetting] = useState<number | null>(null)
-  const [minBpm, setMinBpm] = useState<number | null>(50)
-  const [maxBpm, setMaxBpm] = useState<number | null>(100)
+  // ค่าอัตราการเต้นของหัวใจสูงสุดที่ตั้งไว้
+  const [maxHeartrate, setMaxHeartrate] = useState<number>(100)
+  const [minHeartrate, setMinHeartrate] = useState<number>(60)
 
-  // เมื่อ query `auToken` เปลี่ยน จะดึงข้อมูลใหม่
+  // เมื่อ auToken ใน query เปลี่ยน จะดึงข้อมูลผู้ใช้
   useEffect(() => {
     const auToken = router.query.auToken
     if (auToken) {
@@ -40,30 +45,21 @@ const HeartRateSettings = () => {
     }
   }, [router.query.auToken])
 
-  // ดึงข้อมูลผู้ใช้
+  // ฟังก์ชันดึงข้อมูลผู้ใช้และผู้ดูแล
   const fetchUserData = async (auToken: string) => {
-    console.log('📥 เริ่ม fetchUserData ด้วย auToken:', auToken)
     try {
       const responseUser = await axios.get(`${process.env.WEB_DOMAIN}/api/user/getUser/${auToken}`)
-      console.log('✅ responseUser:', responseUser.data)
-
       if (responseUser.data?.data) {
-        const usersId = responseUser.data.data.users_id
-
-        // ดึงข้อมูลผู้ที่ดูแล (จาก users_id)
-        const responseTakecare = await axios.get(`${process.env.WEB_DOMAIN}/api/user/getUserTakecareperson/${usersId}`)
+        const encodedUsersId = encrypt(responseUser.data.data.users_id.toString())
+        const responseTakecare = await axios.get(
+          `${process.env.WEB_DOMAIN}/api/user/getUserTakecareperson/${encodedUsersId}`
+        )
         const takecareData = responseTakecare.data?.data
-
         if (takecareData) {
-          setDataUser({
-            isLogin: true,
-            userData: responseUser.data.data,
-            takecareData: takecareData
-          })
-
+          setDataUser({ isLogin: true, userData: responseUser.data.data, takecareData: takecareData })
           const settingIdParam = router.query.idsetting
           if (settingIdParam && Number(settingIdParam) > 0) {
-            fetchHeartRateSetting(Number(settingIdParam))
+            fetchHeartrateSetting(Number(settingIdParam))
           }
         } else {
           showAlert('ไม่พบข้อมูลผู้ดูแล')
@@ -72,57 +68,52 @@ const HeartRateSettings = () => {
         showAlert('ไม่พบข้อมูลผู้ใช้')
       }
     } catch (error) {
-      console.error('❌ error fetching user:', error)
       showAlert('ระบบไม่สามารถดึงข้อมูลของท่านได้ กรุณาลองใหม่อีกครั้ง')
     }
   }
 
-  // ดึงข้อมูล setting heart rate
-  const fetchHeartRateSetting = async (settingId: number) => {
+  // ฟังก์ชันดึงข้อมูลการตั้งค่าอัตราการเต้นของหัวใจ
+  const fetchHeartrateSetting = async (settingId: number) => {
     try {
       const res = await axios.get(`${process.env.WEB_DOMAIN}/api/setting/getHeartrate?setting_id=${settingId}`)
       if (res.data?.data) {
         const data = res.data.data
-        setMinBpm(Number(data.min_bpm))
-        setMaxBpm(Number(data.max_bpm))
+        setMaxHeartrate(Number(data.max_heartrate))
+        setMinHeartrate(Number(data.min_heartrate))
         setIdSetting(settingId)
       }
     } catch (error) {
-      showAlert('ไม่พบข้อมูลการตั้งค่า')
+      showAlert('ไม่สามารถดึงข้อมูลการตั้งค่าได้')
     }
   }
 
+  // แสดง modal แจ้งเตือน
   const showAlert = (message: string) => {
     setAlert({ show: true, message })
   }
 
+  // บันทึกข้อมูลอุณหภูมิ
   const handleSave = async () => {
     if (!dataUser.takecareData || !dataUser.userData) {
-      showAlert('ไม่พบข้อมูลผู้ดูแลหรือผู้สูงอายุ')
+      showAlert('ไม่พบข้อมูลผู้ใช้งาน')
       return
     }
-
     setLoading(true)
     try {
       const payload: any = {
         takecare_id: dataUser.takecareData.takecare_id,
         users_id: dataUser.userData.users_id,
-        min_bpm: minBpm,
-        max_bpm: maxBpm,
+        max_heartrate: maxHeartrate,
+        min_heartrate: minHeartrate,
       }
-
       if (idSetting) {
         payload.setting_id = idSetting
       }
-
       const res = await axios.post(`${process.env.WEB_DOMAIN}/api/setting/saveHeartrate`, payload)
-
-      if (res.data?.data?.id || res.data?.id) {
-        const newId = res.data.data?.id || res.data.id
-        setIdSetting(newId)
-        router.push(`/settingHeartrate?auToken=${router.query.auToken}&idsetting=${newId}`)
+      if (res.data?.id) {
+        setIdSetting(res.data.id)
+        router.push(`/settingTemp?auToken=${router.query.auToken}&idsetting=${res.data.id}`)
       }
-
       showAlert('บันทึกข้อมูลสำเร็จ')
     } catch (error) {
       showAlert('ไม่สามารถบันทึกข้อมูลได้')
@@ -130,68 +121,44 @@ const HeartRateSettings = () => {
     setLoading(false)
   }
 
-  // UI
   return (
     <>
       {!dataUser.isLogin ? (
-        <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '80vh' }}>
-          <Spinner animation="border" />
+        <div className="d-flex justify-content-center align-items-center" style={{ height: '80vh' }}>
+          <Spinner animation="border" variant="primary" />
         </div>
       ) : (
         <Container className="py-3">
           <Row>
             <Col>
-              <h3>ตั้งค่าการแจ้งเตือนอัตราการเต้นของหัวใจ</h3>
-              <p>ค่าปกติ: 60-100 BPM (คุณสามารถปรับค่าได้ตามต้องการ)</p>
+              <h3>ตั้งค่าการแจ้งเตือนอุณหภูมิสูงสุด</h3>
+              <p>ค่าปกติ: 37°C (คุณสามารถปรับค่าได้ตามต้องการ)</p>
             </Col>
           </Row>
-
-          <Row className="py-2">
-            <Col>
-              <p>ค่าต่ำสุด: <strong>{minBpm} BPM</strong></p>
-              <RangeSlider
-                min={30}
-                max={90}
-                step={1}
-                value={minBpm}
-                onChange={(value) => setMinBpm(value)}
-              />
-            </Col>
-          </Row>
-
-          <Row className="py-2">
-            <Col>
-              <p>ค่าสูงสุด: <strong>{maxBpm} BPM</strong></p>
-              <RangeSlider
-                min={30}
-                max={90}
-                step={1}
-                value={maxBpm}
-                onChange={(value) => setMaxBpm(value)}
-              />
-            </Col>
-          </Row>
-
           <Row className="py-3">
             <Col>
-              <ButtonState
-                text="บันทึก"
-                isLoading={isLoading}
-                onClick={handleSave}
-                className="btn-primary"
+              <p>
+                อัตราการเต้นของหัวใจสูงสุดที่อนุญาต: <strong>{maxHeartrate} bpm</strong>
+              </p>
+              <RangeSlider
+                min={30}
+                max={200}
+                step={1}
+                value={maxHeartrate}
+                onChange={(value) => setMaxHeartrate(Number(value))}
               />
             </Col>
           </Row>
-
-          <ModalAlert
-            show={alert.show}
-            message={alert.message}
-            handleClose={() => setAlert({ show: false, message: '' })}
-          />
+          <Row className="py-3">
+            <Col>
+              <ButtonState text="บันทึก" isLoading={isLoading} onClick={handleSave} className="btn btn-primary" />
+            </Col>
+          </Row>
+          <ModalAlert show={alert.show} message={alert.message} handleClose={() => setAlert({ show: false, message: '' })} />
         </Container>
       )}
     </>
   )
 }
 
-export default HeartRateSettings
+export default TemperatureSetting
