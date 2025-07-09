@@ -61,7 +61,7 @@ console.log("👥 takecareData:", responseTakecare.data?.data)
           setDataUser({ isLogin: true, userData: responseUser.data.data, takecareData: takecareData })
           const settingIdParam = router.query.idsetting
           if (settingIdParam && Number(settingIdParam) > 0) {
-            fetchHeartrateSetting(Number(settingIdParam))
+            fetchHeartRateSetting(Number(settingIdParam))
           }
         } else {
           showAlert('ไม่พบข้อมูลผู้ดูแล')
@@ -75,9 +75,9 @@ console.log("👥 takecareData:", responseTakecare.data?.data)
   }
 
   // ฟังก์ชันดึงข้อมูลการตั้งค่าอัตราการเต้นของหัวใจ
-  const fetchHeartrateSetting = async (settingId: number) => {
+  const fetchHeartRateSetting = async (settingId: number) => {
     try {
-      const res = await axios.get(`${process.env.WEB_DOMAIN}/api/setting/getHeartrate?setting_id=${settingId}`)
+      const res = await axios.get(`${process.env.WEB_DOMAIN}/api/setting/getHeartRate?setting_id=${settingId}`)
       if (res.data?.data) {
         const data = res.data.data
         setMaxHeartrate(Number(data.max_heartrate))
@@ -112,10 +112,10 @@ console.log("👥 takecareData:", responseTakecare.data?.data)
       if (idSetting) {
         payload.setting_id = idSetting
       }
-      const res = await axios.post(`${process.env.WEB_DOMAIN}/api/setting/saveHeartrate`, payload)
+      const res = await axios.post(`${process.env.WEB_DOMAIN}/api/setting/saveHeartRate`, payload)
       if (res.data?.id) {
         setIdSetting(res.data.id)
-        router.push(`/settingHeartrate?auToken=${router.query.auToken}&idsetting=${res.data.id}`)
+        router.push(`/settingHeartRate?auToken=${router.query.auToken}&idsetting=${res.data.id}`)
       }
       showAlert('บันทึกข้อมูลสำเร็จ')
     } catch (error) {
