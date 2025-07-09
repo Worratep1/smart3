@@ -724,14 +724,14 @@ export const replySetting = async ({
                                                 { type: "text", text: `${max_bpm} ครั้ง/นาที`, flex: 3 }
                                             ]
                                         },
-                                        {
-                                            type: "box",
-                                            layout: "baseline",
-                                            contents: [
-                                                { type: "text", text: "อัตราการเต้นของหัวใจต่ำสุุด", flex: 2, weight: "bold" },
-                                                { type: "text", text: `${min_bpm} ครั้ง/นาที`, flex: 3 }
-                                            ]
-                                        },
+                                        // {
+                                        //     type: "box",
+                                        //     layout: "baseline",
+                                        //     contents: [
+                                        //         { type: "text", text: "อัตราการเต้นของหัวใจต่ำสุุด", flex: 2, weight: "bold" },
+                                        //         { type: "text", text: `${min_bpm} ครั้ง/นาที`, flex: 3 }
+                                        //     ]
+                                        // },
                                     ]
                                 },
                                 {
