@@ -195,7 +195,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 									const responseTemp = await getTemperature(responseUserTakecareperson.takecare_id, responseUser.users_id); // เพิ่มการดึงข้อมูลการตั้งค่าอุณหภูมิ
 									const responseHeartrate = await getHeartrate(responseUserTakecareperson.takecare_id, responseUser.users_id); // เพิ่มการดึงข้อมูลการตั้งค่าอัตราการเต้นของหัวใจ
 									console.log("Replying with safezone setting information.");
-									await replySetting({ replyToken, userData: responseUser, userTakecarepersonData: responseUserTakecareperson, safezoneData: responeSafezone, temperatureSettingData: responseTemp, heartRateSettingsData: responseHeartrate })
+									await replySetting({ replyToken, userData: responseUser, userTakecarepersonData: responseUserTakecareperson, safezoneData: responeSafezone, temperatureSettingData: responseTemp, heartRateSettingData: responseHeartrate })
 									console.log("✅ responseHeartrate (จาก getHeartrate):", responseHeartrate);
 
 								} else {

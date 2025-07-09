@@ -625,7 +625,7 @@ export const replySetting = async ({
     userTakecarepersonData,
     safezoneData,
     temperatureSettingData,// เพิ่มข้อมูลตั้งค่าอุณหภูมิ (ถ้ามี)
-    heartRateSettingsData // เพิ่มข้อมูลตั้งค่าอัตราการเต้นของหัวใจ (ถ้ามี)
+    heartRateSettingData // เพิ่มข้อมูลตั้งค่าอัตราการเต้นของหัวใจ (ถ้ามี)
 }: ReplySettingData & { temperatureSettingData?: any, heartRateSettingsData?: any }) => {
     try {
         // ค่า default
@@ -648,11 +648,11 @@ export const replySetting = async ({
             maxTemperature = temperatureSettingData.max_temperature || 37;
             idSetting = temperatureSettingData.setting_id || 0;
         }
-        console.log("❤️ heartRateSettingsData:", heartRateSettingsData);
-        if (heartRateSettingsData) {
-            max_bpm = heartRateSettingsData.max_bpm || 100;
-            min_bpm = heartRateSettingsData.min_bpm || 60;
-            idSettingHeart = heartRateSettingsData.setting_id || 0;
+        console.log("❤️ heartRateSettingsData:", heartRateSettingData);
+        if (heartRateSettingData) {
+            max_bpm = heartRateSettingData.max_bpm || 100;
+            min_bpm = heartRateSettingData.min_bpm || 60;
+            idSettingHeart = heartRateSettingData.setting_id || 0;
         }
         const requestData = {
             replyToken,
