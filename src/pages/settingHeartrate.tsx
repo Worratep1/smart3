@@ -35,7 +35,7 @@ const HeartrateSetting = () => {
   const [idSetting, setIdSetting] = useState<number | null>(null)
   // ค่าอัตราการเต้นของหัวใจสูงสุดที่ตั้งไว้
   const [maxHeartrate, setMaxHeartrate] = useState<number>(100)
-  const [minHeartrate, setMinHeartrate] = useState<number>(60)
+  // const [minHeartrate, setMinHeartrate] = useState<number>(60)
 
   // เมื่อ auToken ใน query เปลี่ยน จะดึงข้อมูลผู้ใช้
   useEffect(() => {
@@ -81,7 +81,7 @@ console.log("👥 takecareData:", responseTakecare.data?.data)
       if (res.data?.data) {
         const data = res.data.data
         setMaxHeartrate(Number(data.max_heartrate))
-        setMinHeartrate(Number(data.min_heartrate))
+        // setMinHeartrate(Number(data.min_heartrate))
         setIdSetting(settingId)
       }
     } catch (error) {
@@ -106,7 +106,7 @@ console.log("👥 takecareData:", responseTakecare.data?.data)
         takecare_id: dataUser.takecareData.takecare_id,
         users_id: dataUser.userData.users_id,
         max_bpm: maxHeartrate,
-        min_bpm: minHeartrate,
+        // min_bpm: minHeartrate,
       }
       console.log("📤 payload ก่อนส่ง:", payload)
       if (idSetting) {
@@ -152,7 +152,7 @@ console.log("👥 takecareData:", responseTakecare.data?.data)
               />
             </Col>
           </Row>
-           <Row className="py-3">
+           {/* <Row className="py-3">
             <Col>
               <p>
                 อัตราการเต้นของหัวใจต่ำสุดที่อนุญาต: <strong>{minHeartrate} bpm</strong>
@@ -165,7 +165,7 @@ console.log("👥 takecareData:", responseTakecare.data?.data)
                 onChange={(value) => setMinHeartrate(Number(value))}
               />
             </Col>
-          </Row>
+          </Row> */}
           <Row className="py-3">
             <Col>
               <ButtonState text="บันทึก" isLoading={isLoading} onClick={handleSave} className="btn btn-primary" />

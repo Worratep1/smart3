@@ -12,15 +12,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const { takecare_id, users_id, min_bpm, max_bpm } = req.body
+    const { takecare_id, users_id, max_bpm } = req.body   //min_bpm, 
+    
 
-    // ✅ ตรวจสอบว่าข้อมูลครบ
-    if (
-      !takecare_id ||
-      !users_id ||
-      min_bpm === undefined ||
-      max_bpm === undefined
-    ) {
+    // ✅ ตรวจสอบว่าข้อมูลครบ// min_bpm === undefined
+    if (!takecare_id ||!users_id ||max_bpm === undefined) {
       return res.status(400).json({ message: 'Missing takecare_id, users_id, min_bpm or max_bpm' })
     }
 
@@ -37,7 +33,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const updated = await prisma.heartrate_settings.update({
         where: { id: existingRecord.id },
         data: {
-          min_bpm: Number(min_bpm),
+          // min_bpm: Number(min_bpm),
           max_bpm: Number(max_bpm),
         },
       })
@@ -48,7 +44,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         data: {
           takecare_id: Number(takecare_id),
           users_id: Number(users_id),
-          min_bpm: Number(min_bpm),
+          // min_bpm: Number(min_bpm),
           max_bpm: Number(max_bpm),
         },
       })
