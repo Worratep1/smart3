@@ -633,8 +633,8 @@ export const replySetting = async ({
     let idsafezone = 0;
     let maxTemperature = 0; // ค่า default อุณหภูมิ
     let idSetting = 0; // รหัส setting อุณหภูมิ
-    let maxheartRate = 0; // ค่า default อัตราการเต้นของหัวใจ
-    let minheartRate = 0; // ค่า default อัตราการเต้นของหัวใจ
+    let max_bpm = 0; // ค่า default อัตราการเต้นของหัวใจ
+    let min_bpm = 0; // ค่า default อัตราการเต้นของหัวใจ
     let idSettingHeart = 0; // รหัส setting อัตราการเต้นของหัวใจ
 
     if (safezoneData) {
@@ -648,8 +648,8 @@ export const replySetting = async ({
       idSetting = temperatureSettingData.setting_id || 0;
     }
     if (heartRateSettingsData) {
-        maxheartRate = heartRateSettingsData.max_heart_rate || 110;
-        minheartRate = heartRateSettingsData.min_heart_rate || 70;
+        max_bpm  = heartRateSettingsData.max_heart_rate || 110;
+        min_bpm  = heartRateSettingsData.min_heart_rate || 70;
         idSettingHeart = heartRateSettingsData.setting_id || 0;
     }
 
@@ -720,7 +720,7 @@ export const replySetting = async ({
                       layout: "baseline",
                       contents: [
                         { type: "text", text: "อัตราการเต้นของหัวใจสูงสุด", flex: 2, weight: "bold" },
-                        { type: "text", text: `${maxheartRate} ครั้ง/นาที`, flex: 3 }
+                        { type: "text", text: `${max_bpm} ครั้ง/นาที`, flex: 3 }
                       ]
                     },
                      {
@@ -728,7 +728,7 @@ export const replySetting = async ({
                       layout: "baseline",
                       contents: [
                         { type: "text", text: "อัตราการเต้นของหัวใจต่ำสุุด", flex: 2, weight: "bold" },
-                        { type: "text", text: `${minheartRate} ครั้ง/นาที`, flex: 3 }
+                        { type: "text", text: `${min_bpm} ครั้ง/นาที`, flex: 3 }
                       ]
                     },
                   ]
