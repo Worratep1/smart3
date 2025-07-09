@@ -648,8 +648,8 @@ export const replySetting = async ({
       idSetting = temperatureSettingData.setting_id || 0;
     }
     if (heartRateSettingsData) {
-        max_bpm  = heartRateSettingsData.max_heart_rate || 110;
-        min_bpm  = heartRateSettingsData.min_heart_rate || 70;
+        max_bpm  = heartRateSettingsData.max_bpm || 100;
+        min_bpm  = heartRateSettingsData.min_bpm || 60;
         idSettingHeart = heartRateSettingsData.setting_id || 0;
     }
 
