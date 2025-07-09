@@ -884,8 +884,6 @@ export const replyUserInfo = async ({
                                     ]
 
                                 },
-
-
                                 {
                                     type: "button",
                                     style: "primary",
