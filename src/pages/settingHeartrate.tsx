@@ -105,8 +105,8 @@ console.log("👥 takecareData:", responseTakecare.data?.data)
       const payload: any = {
         takecare_id: dataUser.takecareData.takecare_id,
         users_id: dataUser.userData.users_id,
-        max_heartrate: maxHeartrate,
-        min_heartrate: minHeartrate,
+        max_bpm: maxHeartrate,
+        min_bpm: minHeartrate,
       }
       console.log("📤 payload ก่อนส่ง:", payload)
       if (idSetting) {
