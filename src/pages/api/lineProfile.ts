@@ -91,7 +91,19 @@ const getTemperature = async (takecare_id: number, users_id: number) => {
 		console.log("settingtemp data not found for takecare_id:", takecare_id, "users_id:", users_id);
 		return null
 	}
-}//add
+}
+const getHeartrate = async (takecare_id: number, users_id: number) => {
+	console.log(`Fetching heartrate setting data for takecare_id: ${takecare_id}, users_id: ${users_id}`);  // ตรวจสอบการดึงข้อมูลการตั้งค่าอัตราการเต้นของหัวใจ
+	const response = await axios.get(`${process.env.WEB_DOMAIN}/api/setting/getHeartrate?takecare_id=${takecare_id}&users_id=${users_id}`);
+	if (response.data?.data) {
+		console.log("heartrate data retrieved:", response.data.data);
+		return response.data.data
+	} else {
+		console.log("heartrate data not found for takecare_id:", takecare_id, "users_id:", users_id);
+		return null
+	}
+}
+//add
 export default async function handle(req: NextApiRequest, res: NextApiResponse) {
 	if (req.method === 'POST') {
 		try {
@@ -172,15 +184,20 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 							}
 						} else if (events.message.text === "ตั้งค่าเขตปลอดภัย") {
 							console.log("User selected 'ตั้งค่าเขตปลอดภัย'");
+							
 							const responseUser = await api.getUser(userId);
 							if (responseUser) {
 								const encodedUsersId = encrypt(responseUser.users_id.toString());
 								const responseUserTakecareperson = await getUserTakecareperson(encodedUsersId);
+								
 								if (responseUserTakecareperson) {
-									const responeSafezone = await getSafezone(responseUserTakecareperson.takecare_id, responseUser.users_id);
-									const responseTemp = await getTemperature(responseUserTakecareperson.takecare_id, responseUser.users_id);
+									const responeSafezone = await getSafezone(responseUserTakecareperson.takecare_id, responseUser.users_id); // เพิ่มการดึงข้อมูลเขตปลอดภัย
+									const responseTemp = await getTemperature(responseUserTakecareperson.takecare_id, responseUser.users_id); // เพิ่มการดึงข้อมูลการตั้งค่าอุณหภูมิ
+									const responseHeartrate = await getHeartrate(responseUserTakecareperson.takecare_id, responseUser.users_id); // เพิ่มการดึงข้อมูลการตั้งค่าอัตราการเต้นของหัวใจ
 									console.log("Replying with safezone setting information.");
-									await replySetting({ replyToken, userData: responseUser, userTakecarepersonData: responseUserTakecareperson, safezoneData: responeSafezone, temperatureSettingData: responseTemp })
+									await replySetting({ replyToken, userData: responseUser, userTakecarepersonData: responseUserTakecareperson, safezoneData: responeSafezone, temperatureSettingData: responseTemp, heartRateSettingData: responseHeartrate })
+									console.log("✅ responseHeartrate (จาก getHeartrate):", responseHeartrate);
+
 								} else {
 									console.log("No takecare person added, replying with error message.");
 									await replyMessage({ replyToken: req.body.events[0].replyToken, message: 'ยังไม่ได้เพิ่มข้อมูลผู้สูงอายุไม่สามารถตั้งค่าเขตปลอดภัยได้' })

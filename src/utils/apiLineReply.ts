@@ -618,6 +618,7 @@ export const replyLocation = async ({
         }
     }
 }
+
 export const replySetting = async ({
     replyToken,
     userData,
@@ -651,7 +652,7 @@ export const replySetting = async ({
         if (heartRateSettingsData) {
             max_bpm = heartRateSettingsData.max_bpm || 100;
             min_bpm = heartRateSettingsData.min_bpm || 60;
-            idSettingHeart = heartRateSettingsData.id || 0;
+            idSettingHeart = heartRateSettingsData.setting_id || 0;
         }
         const requestData = {
             replyToken,
