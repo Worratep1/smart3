@@ -93,6 +93,7 @@ interface ReplySettingData {
     userTakecarepersonData?: any;
     safezoneData?: any;
     temperatureSettingData?: any;
+    heartRateSettingData?: any;
 }
 interface ReplyLocationData {
     replyToken: string;
@@ -634,6 +635,7 @@ export const replySetting = async ({
     let idSetting = 0; // รหัส setting อุณหภูมิ
     let maxheartRate = 0; // ค่า default อัตราการเต้นของหัวใจ
     let minheartRate = 0; // ค่า default อัตราการเต้นของหัวใจ
+    let idSettingHeart = 0; // รหัส setting อัตราการเต้นของหัวใจ
 
     if (safezoneData) {
       r1 = safezoneData.safez_radiuslv1 || 0;
@@ -646,9 +648,9 @@ export const replySetting = async ({
       idSetting = temperatureSettingData.setting_id || 0;
     }
     if (heartRateSettingsData) {
-        maxheartRate = heartRateSettingsData.max_heart_rate || 100;
-        minheartRate = heartRateSettingsData.min_heart_rate || 60;
-        idSetting = heartRateSettingsData.setting_id || 0;
+        maxheartRate = heartRateSettingsData.max_heart_rate || 110;
+        minheartRate = heartRateSettingsData.min_heart_rate || 70;
+        idSettingHeart = heartRateSettingsData.setting_id || 0;
     }
 
     const requestData = {
@@ -656,7 +658,7 @@ export const replySetting = async ({
       messages: [
         {
           type: "flex",
-          altText: "ตั้งค่าเขตปลอดภัยและอุณหภูมิ",
+          altText: "ตั้งค่าเขตปลอดภัย อุณหภูมิ และอัตราการเต้นของหัวใจ",
           contents: {
             type: "bubble",
             body: {
@@ -665,7 +667,7 @@ export const replySetting = async ({
               contents: [
                 {
                   type: "text",
-                  text: "ตั้งค่าเขตปลอดภัยและอุณหภูมิ",
+                  text: "ตั้งค่าเขตปลอดภัย อุณหภูมิ และอัตราการเต้นของหัวใจ",
                   color: "#FFB400",
                   size: "xl",
                   weight: "bold",
@@ -713,6 +715,22 @@ export const replySetting = async ({
                         { type: "text", text: `${maxTemperature} องศา`, flex: 3 }
                       ]
                     },
+                     {
+                      type: "box",
+                      layout: "baseline",
+                      contents: [
+                        { type: "text", text: "อัตราการเต้นของหัวใจสูงสุด", flex: 2, weight: "bold" },
+                        { type: "text", text: `${maxheartRate} ครั้ง/นาที`, flex: 3 }
+                      ]
+                    },
+                     {
+                      type: "box",
+                      layout: "baseline",
+                      contents: [
+                        { type: "text", text: "อัตราการเต้นของหัวใจต่ำสุุด", flex: 2, weight: "bold" },
+                        { type: "text", text: `${minheartRate} ครั้ง/นาที`, flex: 3 }
+                      ]
+                    },
                   ]
                 },
                 {
@@ -747,7 +765,7 @@ export const replySetting = async ({
                   action: {
                     type: "uri",
                     label: "ตั้งค่าอัตราการเต้นหัวใจ",
-                    uri: `${WEB_API}/settingHeartrate?auToken=${userData.users_line_id}&idsetting=${idSetting || ''}`
+                    uri: `${WEB_API}/settingHeartrate?auToken=${userData.users_line_id}&idsetting=${idSettingHeart || ''}`
                 }
                 }
               ]
