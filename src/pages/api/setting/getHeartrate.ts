@@ -1,4 +1,3 @@
-// // 📁 src/pages/api/setting/getHeartrate.ts
 import { NextApiRequest, NextApiResponse } from 'next'
 import prisma from '@/lib/prisma'
 import _ from "lodash";

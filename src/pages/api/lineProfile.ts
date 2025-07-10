@@ -192,7 +192,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 									const responseTemp = await getTemperature(responseUserTakecareperson.takecare_id, responseUser.users_id);
 									const responseHeartRate = await getHeartRate(responseUserTakecareperson.takecare_id, responseUser.users_id);
 									console.log("Replying with safezone setting information.");
-									await replySetting({ replyToken, userData: responseUser, userTakecarepersonData: responseUserTakecareperson, safezoneData: responeSafezone, temperatureSettingData: responseTemp,heartrateSettingData: responseHeartRate   })
+									await replySetting({ replyToken, userData: responseUser, userTakecarepersonData: responseUserTakecareperson, safezoneData: responeSafezone, temperatureSettingData: responseTemp, heartrateSettingData: responseHeartRate })
 								} else {
 									console.log("No takecare person added, replying with error message.");
 									await replyMessage({ replyToken: req.body.events[0].replyToken, message: 'ยังไม่ได้เพิ่มข้อมูลผู้สูงอายุไม่สามารถตั้งค่าเขตปลอดภัยได้' })
