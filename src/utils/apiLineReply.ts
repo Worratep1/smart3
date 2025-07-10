@@ -1,6 +1,5 @@
-// import HeartRateSettings from '@/pages/settingHeartrate';
+
 import axios from 'axios';
-import { min } from 'lodash';
 import moment from 'moment';
 
 const WEB_API = process.env.WEB_API_URL;
