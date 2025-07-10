@@ -67,7 +67,7 @@ const SettingHeartRate = () => {
 
   const fetchHeartRateSetting = async (settingId: number) => {
     try {
-      const res = await axios.get(`${process.env.WEB_DOMAIN}/api/setting/getHeartRate?id=${settingId}`)
+      const res = await axios.get(`${process.env.WEB_DOMAIN}/api/setting/getHeartrate?id=${settingId}`)
       if (res.data?.data) {
         const data = res.data.data
         setMaxBpm(Number(data.max_bpm))
@@ -99,10 +99,10 @@ const SettingHeartRate = () => {
       if (idSetting) {
         payload.id = idSetting
       }
-      const res = await axios.post(`${process.env.WEB_DOMAIN}/api/setting/saveHeartRate`, payload)
+      const res = await axios.post(`${process.env.WEB_DOMAIN}/api/setting/saveHeartrate`, payload)
       if (res.data?.id) {
         setIdSetting(res.data.id)
-        router.push(`/settingHeartRate?auToken=${router.query.auToken}&idsetting=${res.data.id}`)
+        router.push(`/settingHeartrate?auToken=${router.query.auToken}&idsetting=${res.data.id}`)
       }
       showAlert('บันทึกข้อมูลสำเร็จ')
     } catch (error) {

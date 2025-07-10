@@ -93,7 +93,7 @@ const getTemperature = async (takecare_id: number, users_id: number) => {
 }
 const getHeartRate = async (takecare_id: number, users_id: number) => {
 	console.log(`Fetching heart rate setting data for takecare_id: ${takecare_id}, users_id: ${users_id}`);
-	const response = await axios.get(`${process.env.WEB_DOMAIN}/api/setting/getHeartRate?takecare_id=${takecare_id}&users_id=${users_id}`);
+	const response = await axios.get(`${process.env.WEB_DOMAIN}/api/setting/getHeartrate?takecare_id=${takecare_id}&users_id=${users_id}`);
 	if (response.data?.data) {
 		console.log("Heart rate setting data retrieved", response.data.data);
 		return response.data.data
@@ -217,7 +217,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 					}
 				}
 
-				// เพิ่มการตรวจสอบกรณีที่เป็นการเข้าร่วมกลุ่ม กดฟหดด
+				// เพิ่มการตรวจสอบกรณีที่เป็นการเข้าร่วมกลุ่ม
 				if (events.source.type === "group" && events.type === "join") {
 					console.log("Joined a new group, groupId:", events.source.groupId);
 
