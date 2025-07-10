@@ -94,7 +94,7 @@ const getTemperature = async (takecare_id: number, users_id: number) => {
 }
 const getHeartrate = async (takecare_id: number, users_id: number) => {
 	console.log(`Fetching heartrate setting data for takecare_id: ${takecare_id}, users_id: ${users_id}`);  // ตรวจสอบการดึงข้อมูลการตั้งค่าอัตราการเต้นของหัวใจ
-	const response = await axios.get(`${process.env.WEB_DOMAIN}/api/setting/getHeartrate?takecare_id=${takecare_id}&users_id=${users_id}`);
+	const response = await axios.get(`${process.env.WEB_DOMAIN}/api/setting/getHeartRate?takecare_id=${takecare_id}&users_id=${users_id}`);
 	if (response.data?.data) {
 		console.log("heartrate data retrieved:", response.data.data);
 		return response.data.data

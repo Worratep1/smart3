@@ -1,4 +1,3 @@
-import HeartRateSettings from '@/pages/settingHeartRate';
 import axios from 'axios';
 import { min } from 'lodash';
 import moment from 'moment';
@@ -651,7 +650,7 @@ export const replySetting = async ({
         console.log("❤️ heartRateSettingsData:", heartRateSettingData);
         if (heartRateSettingData) {
             max_bpm = heartRateSettingData.max_bpm || 100;
-            min_bpm = heartRateSettingData.min_bpm || 60;
+            // min_bpm = heartRateSettingData.min_bpm || 60;
             idSettingHeart = heartRateSettingData.setting_id || 0;
         }
         const requestData = {
@@ -766,7 +765,7 @@ export const replySetting = async ({
                                     action: {
                                         type: "uri",
                                         label: "ตั้งค่าอัตราการเต้นหัวใจ",
-                                        uri: `${WEB_API}/settingHeartrate?auToken=${userData.users_line_id}&idsetting=${idSettingHeart || ''}`
+                                        uri: `${WEB_API}/settingHeartRate?auToken=${userData.users_line_id}&idsetting=${idSettingHeart || ''}`
                                     }
                                 }
                             ]
