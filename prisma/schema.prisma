@@ -257,12 +257,13 @@ model heartrate_records {
   takecareperson takecareperson @relation(fields: [takecare_id], references: [takecare_id], map: "fk_takecareperson_hr")
   users          users          @relation(fields: [users_id], references: [users_id], map: "fk_users_hr")
 }
-//ลบ min_bpm ออกไปจากโมเดล heartrate_settings
+
 model heartrate_settings {
   id             Int            @id @default(autoincrement())
   users_id       Int
   takecare_id    Int
   max_bpm        Int
+  min_bpm        Int?
   takecareperson takecareperson @relation(fields: [takecare_id], references: [takecare_id], map: "fk_takecareperson_hrset")
   users          users          @relation(fields: [users_id], references: [users_id], map: "fk_users_hrset")
 }

@@ -18,26 +18,20 @@ interface DataUserState {
   takecareData: any | null
 }
 
-const HeartrateSetting = () => {
+const SettingHeartRate = () => {
   const router = useRouter()
 
-  // State สำหรับ modal แจ้งเตือน
   const [alert, setAlert] = useState({ show: false, message: '' })
-  // State สำหรับ loading ขณะดึงข้อมูลหรือบันทึก
   const [isLoading, setLoading] = useState(false)
-  // ข้อมูลผู้ใช้และผู้ดูแล
   const [dataUser, setDataUser] = useState<DataUserState>({
     isLogin: false,
     userData: null,
     takecareData: null,
   })
-  // รหัส setting ที่ดึงหรือสร้างใหม่
   const [idSetting, setIdSetting] = useState<number | null>(null)
-  // ค่าอัตราการเต้นของหัวใจสูงสุดที่ตั้งไว้
-  const [maxHeartrate, setMaxHeartrate] = useState<number>(100)
-  // const [minHeartrate, setMinHeartrate] = useState<number>(60)
+  // const [minBpm, setMinBpm] = useState<number>(50) // <--- คอมเมนต์ออก
+  const [maxBpm, setMaxBpm] = useState<number>(120)
 
-  // เมื่อ auToken ใน query เปลี่ยน จะดึงข้อมูลผู้ใช้
   useEffect(() => {
     const auToken = router.query.auToken
     if (auToken) {
@@ -45,7 +39,6 @@ const HeartrateSetting = () => {
     }
   }, [router.query.auToken])
 
-  // ฟังก์ชันดึงข้อมูลผู้ใช้และผู้ดูแล
   const fetchUserData = async (auToken: string) => {
     try {
       const responseUser = await axios.get(`${process.env.WEB_DOMAIN}/api/user/getUser/${auToken}`)
@@ -54,8 +47,6 @@ const HeartrateSetting = () => {
         const responseTakecare = await axios.get(
           `${process.env.WEB_DOMAIN}/api/user/getUserTakecareperson/${encodedUsersId}`
         )
-        console.log("👤 users_id:", responseUser.data?.data?.users_id)
-console.log("👥 takecareData:", responseTakecare.data?.data)
         const takecareData = responseTakecare.data?.data
         if (takecareData) {
           setDataUser({ isLogin: true, userData: responseUser.data.data, takecareData: takecareData })
@@ -74,14 +65,13 @@ console.log("👥 takecareData:", responseTakecare.data?.data)
     }
   }
 
-  // ฟังก์ชันดึงข้อมูลการตั้งค่าอัตราการเต้นของหัวใจ
   const fetchHeartRateSetting = async (settingId: number) => {
     try {
-      const res = await axios.get(`${process.env.WEB_DOMAIN}/api/setting/getHeartRate?setting_id=${settingId}`)
+      const res = await axios.get(`${process.env.WEB_DOMAIN}/api/setting/getHeartRate?id=${settingId}`)
       if (res.data?.data) {
         const data = res.data.data
-        setMaxHeartrate(Number(data.max_heartrate))
-        // setMinHeartrate(Number(data.min_heartrate))
+        setMaxBpm(Number(data.max_bpm))
+        // setMinBpm(Number(data.min_bpm)) // <--- คอมเมนต์ออก (ไม่ต้องโหลด min_bpm)
         setIdSetting(settingId)
       }
     } catch (error) {
@@ -89,12 +79,10 @@ console.log("👥 takecareData:", responseTakecare.data?.data)
     }
   }
 
-  // แสดง modal แจ้งเตือน
   const showAlert = (message: string) => {
     setAlert({ show: true, message })
   }
 
-  // บันทึกข้อมูลอุณหภูมิ
   const handleSave = async () => {
     if (!dataUser.takecareData || !dataUser.userData) {
       showAlert('ไม่พบข้อมูลผู้ใช้งาน')
@@ -105,12 +93,11 @@ console.log("👥 takecareData:", responseTakecare.data?.data)
       const payload: any = {
         takecare_id: dataUser.takecareData.takecare_id,
         users_id: dataUser.userData.users_id,
-        max_bpm: maxHeartrate,
-        // min_bpm: minHeartrate,
+        max_bpm: maxBpm,
+        // min_bpm: minBpm, // <--- คอมเมนต์ออก (ไม่ต้องส่ง min_bpm)
       }
-      console.log("📤 payload ก่อนส่ง:", payload)
       if (idSetting) {
-        payload.setting_id = idSetting
+        payload.id = idSetting
       }
       const res = await axios.post(`${process.env.WEB_DOMAIN}/api/setting/saveHeartRate`, payload)
       if (res.data?.id) {
@@ -135,37 +122,33 @@ console.log("👥 takecareData:", responseTakecare.data?.data)
           <Row>
             <Col>
               <h3>ตั้งค่าการแจ้งเตือนอัตราการเต้นของหัวใจ</h3>
-              <p>ค่าปกติ: 60-100 (คุณสามารถปรับค่าได้ตามต้องการ)</p>
+              <p>กำหนดอัตราการเต้นของหัวใจสูงสุดที่อนุญาต (bpm)</p>
             </Col>
           </Row>
           <Row className="py-3">
             <Col>
-              <p>
-                อัตราการเต้นของหัวใจสูงสุดที่อนุญาต: <strong>{maxHeartrate} bpm</strong>
+              {/* <p>
+                อัตราการเต้นของหัวใจต่ำสุด: <strong>{minBpm} bpm</strong>
               </p>
               <RangeSlider
                 min={30}
+                max={maxBpm}
+                step={1}
+                value={minBpm}
+                onChange={(value) => setMinBpm(Number(value))}
+              /> */}
+              <p>
+                อัตราการเต้นของหัวใจสูงสุดที่อนุญาต: <strong>{maxBpm} bpm</strong>
+              </p>
+              <RangeSlider
+                min={50}
                 max={200}
                 step={1}
-                value={maxHeartrate}
-                onChange={(value) => setMaxHeartrate(Number(value))}
+                value={maxBpm}
+                onChange={(value) => setMaxBpm(Number(value))}
               />
             </Col>
           </Row>
-           {/* <Row className="py-3">
-            <Col>
-              <p>
-                อัตราการเต้นของหัวใจต่ำสุดที่อนุญาต: <strong>{minHeartrate} bpm</strong>
-              </p>
-              <RangeSlider
-                min={30}
-                max={200}
-                step={1}
-                value={minHeartrate}
-                onChange={(value) => setMinHeartrate(Number(value))}
-              />
-            </Col>
-          </Row> */}
           <Row className="py-3">
             <Col>
               <ButtonState text="บันทึก" isLoading={isLoading} onClick={handleSave} className="btn btn-primary" />
@@ -178,4 +161,4 @@ console.log("👥 takecareData:", responseTakecare.data?.data)
   )
 }
 
-export default HeartrateSetting
+export default SettingHeartRate
