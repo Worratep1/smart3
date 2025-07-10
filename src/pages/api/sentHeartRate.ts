@@ -9,7 +9,6 @@ type Data = {
     data?: any;
 };
 
-
 export default async function handle(req: NextApiRequest, res: NextApiResponse<Data>) {
     if (req.method === 'PUT' || req.method === 'POST') {
         try {
