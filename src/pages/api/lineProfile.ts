@@ -217,7 +217,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 					}
 				}
 
-				// เพิ่มการตรวจสอบกรณีที่เป็นการเข้าร่วมกลุ่ม
+				// เพิ่มการตรวจสอบกรณีที่เป็นการเข้าร่วมกลุ่ม กดฟหดด
 				if (events.source.type === "group" && events.type === "join") {
 					console.log("Joined a new group, groupId:", events.source.groupId);
 
