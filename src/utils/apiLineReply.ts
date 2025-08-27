@@ -1278,7 +1278,7 @@ export const replyNotification_HeartRate = async ({
                                     contents: [
                                         {
                                             type      : "span",
-                                            text      : "แจ้งอัตราการเต้นของหัวใจผิดปกติ",
+                                            text      : "แจ้งอัตราการเต้นชีพจรผิดปกติ",
                                             color     : "#FC0303",
                                             size      : "xl",
                                             weight    : "bold",
@@ -1881,7 +1881,7 @@ export const replyNotificationPostbackHeartRate = async ({
                                     contents: [
                                         {
                                             type      : "span",
-                                            text      : "แจ้งอัตราการเต้นของหัวใจผิดปกติ",
+                                            text      : "แจ้งอัตราการเต้นชีพจรผิดปกติ",
                                             color     : "#FC0303",
                                             size      : "xl",
                                             weight    : "bold",
