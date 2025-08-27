@@ -1255,6 +1255,84 @@ export const replyNotification_Fall = async ({
     }
 }
 
+export const replyNotification_HeartRate = async ({
+    replyToken,
+    message
+}: ReplyNotification_HeartRate) => {
+    try {
+        const requestData = {
+            to:replyToken,
+            messages: [
+                {
+                    type    : "flex",
+                    altText : "แจ้งเตือน",
+                    contents: {
+                        type: "bubble",
+                        body: {
+                            type    : "box",
+                            layout  : "vertical",
+                            contents: [
+                                {
+                                    type    : "text",
+                                    text    : " ",
+                                    contents: [
+                                        {
+                                            type      : "span",
+                                            text      : "แจ้งเตือนอัตราการเต้นของหัวใจผิดปกติ",
+                                            color     : "#FC0303",
+                                            size      : "xl",
+                                            weight    : "bold",
+                                            decoration: "none"
+                                        },
+                                        {
+                                            type      : "span",
+                                            text      : " ",
+                                            size      : "xxl",
+                                            decoration: "none"
+                                        }
+                                    ]
+                                },
+                                {
+                                    type  : "separator",
+                                    margin: "md"
+                                },
+                                {
+                                    type  : "text",
+                                    text  : " ",
+                                    wrap : true,
+                                    lineSpacing: "5px",
+                                    margin: "md",
+                                    contents:[
+                                        {
+                                            type      : "span",
+                                            text      : message,
+                                            color     : "#555555",
+                                            size      : "md",
+                                            // decoration: "none",
+                                            // wrap      : true
+                                        },
+                                        {
+                                            type      : "span",
+                                            text      : " ",
+                                            size      : "xl",
+                                            decoration: "none"
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    }
+                }
+            ],
+        };
+       await axios.post(LINE_PUSH_MESSAGING_API, requestData, { headers:LINE_HEADER });
+    } catch (error) {
+        if (error instanceof Error) {
+            console.log(error.message);
+        }
+    }
+}
+
 export const replyNotificationPostback = async ({
     userId,
     takecarepersonId,
