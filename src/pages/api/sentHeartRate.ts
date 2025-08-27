@@ -82,7 +82,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse<D
                     lastHR.noti_status !== 1 ||
                     moment().diff(moment(lastHR.noti_time), 'minutes') >= 5)
             ) {
-                const message = `คุณ ${takecareperson.takecare_fname} ${takecareperson.takecare_sname}\nอัตราการเต้นของหัวใจผิดปกติ: ${bpmValue} bpm`;
+                const message = `คุณ ${takecareperson.takecare_fname} ${takecareperson.takecare_sname}\nอัตราการเต้นชีพจรผิดปกติ: ${bpmValue} bpm`;
 
                 const replyToken = user.users_line_id || '';
                 if (replyToken) {
@@ -102,7 +102,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse<D
             if (status === 0) {
                 noti_status = 0;
                 noti_time = null;
-                console.log("อัตราการเต้นของหัวใจอยู่ในระดับปกติ");
+                console.log("อัตราการเต้นชีพจรอยู่ในระดับปกติ");
             }
 
           

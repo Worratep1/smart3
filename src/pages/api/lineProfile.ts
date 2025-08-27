@@ -275,7 +275,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
 						if (replyToken) {
 							console.log("Heart Rate request sent, replying with notification.");
-							await replyNotification_HeartRate({ replyToken, message: 'ส่งคำขอความช่วยเหลือกรณีหัวใจผิดปกติแล้ว' });
+							await replyNotification_HeartRate({ replyToken, message: 'ส่งคำขอความช่วยเหลือกรณีชีพจรผิดปกติแล้ว' });
 						}
 					}
 					

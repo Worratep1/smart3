@@ -121,8 +121,8 @@ const SettingHeartRate = () => {
         <Container className="py-3">
           <Row>
             <Col>
-              <h3>ตั้งค่าการแจ้งเตือนอัตราการเต้นของหัวใจ</h3>
-              <p>กำหนดอัตราการเต้นของหัวใจสูงสุดที่อนุญาต (bpm)</p>
+              <h3>ตั้งค่าการแจ้งเตือนอัตราการเต้นชีพจร</h3>
+              <p>กำหนดอัตราการเต้นชีพจรสูงสุดที่อนุญาต (bpm)</p>
             </Col>
           </Row>
           <Row className="py-3">
@@ -138,7 +138,7 @@ const SettingHeartRate = () => {
                 onChange={(value) => setMinBpm(Number(value))}
               /> */}
               <p>
-                อัตราการเต้นของหัวใจสูงสุดที่อนุญาต: <strong>{maxBpm} bpm</strong>
+                อัตราการเต้นชีพจรสูงสุดที่อนุญาต: <strong>{maxBpm} bpm</strong>
               </p>
               <RangeSlider
                 min={50}

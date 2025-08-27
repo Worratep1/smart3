@@ -739,7 +739,7 @@ export const replySetting = async ({
                       type: "box",
                       layout: "baseline",
                       contents: [
-                        { type: "text", text: "อัตราการเต้นของหัวใจ", flex: 2, weight: "bold" },
+                        { type: "text", text: "อัตราการเต้นชีพจร", flex: 2, weight: "bold" },
                         { type: "text", text: `${maxBpm} bpm`, flex: 3 }
                       ]
                     }
@@ -776,7 +776,7 @@ export const replySetting = async ({
                   color: "#60C4A9",
                   action: {
                     type: "uri",
-                    label: "ตั้งค่าอัตราการเต้นหัวใจ",
+                    label: "ตั้งค่าอัตราการเต้นชีพจร",
                     uri: `${WEB_API}/settingHeartrate?auToken=${userData.users_line_id}&idsetting=${idSettingHR || ''}`
                   }
                 }
