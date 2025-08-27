@@ -28,6 +28,16 @@ interface ReplyNotification_Temperature {
     message    : string;
     groupLineId   ?: string | null;
 }
+interface ReplyNotification_Fall {
+    replyToken : string;
+    message    : string;
+    groupLineId   ?: string | null;
+}
+interface ReplyNotification_HeartRate {
+    replyToken : string;
+    message    : string;
+    groupLineId   ?: string | null;
+}
 interface ReplyNotificationPostback {
     userId          : number;
     takecarepersonId: number;
@@ -1113,6 +1123,84 @@ export const replyNotification_Temperature = async ({
                                         {
                                             type      : "span",
                                             text      : "แจ้งอุณหภูมิร่างกายสูง",
+                                            color     : "#FC0303",
+                                            size      : "xl",
+                                            weight    : "bold",
+                                            decoration: "none"
+                                        },
+                                        {
+                                            type      : "span",
+                                            text      : " ",
+                                            size      : "xxl",
+                                            decoration: "none"
+                                        }
+                                    ]
+                                },
+                                {
+                                    type  : "separator",
+                                    margin: "md"
+                                },
+                                {
+                                    type  : "text",
+                                    text  : " ",
+                                    wrap : true,
+                                    lineSpacing: "5px",
+                                    margin: "md",
+                                    contents:[
+                                        {
+                                            type      : "span",
+                                            text      : message,
+                                            color     : "#555555",
+                                            size      : "md",
+                                            // decoration: "none",
+                                            // wrap      : true
+                                        },
+                                        {
+                                            type      : "span",
+                                            text      : " ",
+                                            size      : "xl",
+                                            decoration: "none"
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    }
+                }
+            ],
+        };
+       await axios.post(LINE_PUSH_MESSAGING_API, requestData, { headers:LINE_HEADER });
+    } catch (error) {
+        if (error instanceof Error) {
+            console.log(error.message);
+        }
+    }
+}
+
+export const replyNotification_Fall = async ({
+    replyToken,
+    message
+}: ReplyNotification_Fall) => {
+    try {
+        const requestData = {
+            to:replyToken,
+            messages: [
+                {
+                    type    : "flex",
+                    altText : "แจ้งเตือน",
+                    contents: {
+                        type: "bubble",
+                        body: {
+                            type    : "box",
+                            layout  : "vertical",
+                            contents: [
+                                {
+                                    type    : "text",
+                                    text    : " ",
+                                    contents: [
+                                        {
+                                            type      : "span",
+                                            text      : "แจ้งเตือนการล้ม",
                                             color     : "#FC0303",
                                             size      : "xl",
                                             weight    : "bold",

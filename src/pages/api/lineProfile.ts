@@ -2,7 +2,7 @@ import { NextApiRequest, NextApiResponse } from 'next'
 import { NextResponse } from 'next/server'
 import axios from "axios";
 import prisma from '@/lib/prisma'
-import { replyMessage, replyRegistration, replyUserData, replyNotRegistration, replyMenuBorrowequipment, replyConnection, replyLocation, replySetting, replyUserInfo, replyNotification , replyNotification_Temperature } from '@/utils/apiLineReply';
+import { replyMessage, replyRegistration, replyUserData, replyNotRegistration, replyMenuBorrowequipment, replyConnection, replyLocation, replySetting, replyUserInfo, replyNotification , replyNotification_Temperature, replyNotification_Fall } from '@/utils/apiLineReply';
 import { encrypt, parseQueryString } from '@/utils/helpers'
 import { postbackSafezone, postbackAccept, postbackClose, postbackTemp, postbackFall,postbackHeartRate } from '@/lib/lineFunction'
 import * as api from '@/lib/listAPI'
@@ -263,7 +263,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 						});
 						if (replyToken) {
 							console.log("Fall request sent, replying with notification.");
-							await replyNotification({ replyToken, message: 'ส่งคำขอความช่วยเหลือกรณีล้มแล้ว' });
+							await replyNotification_Fall({ replyToken, message: 'ส่งคำขอความช่วยเหลือกรณีล้มแล้ว' });
 						}
 					}
 					else if (postback.type === 'heartrate') {
