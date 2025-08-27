@@ -1278,7 +1278,7 @@ export const replyNotification_HeartRate = async ({
                                     contents: [
                                         {
                                             type      : "span",
-                                            text      : "แจ้งเตือนอัตราการเต้นของหัวใจผิดปกติ",
+                                            text      : "แจ้งอัตราการเต้นของหัวใจผิดปกติ",
                                             color     : "#FC0303",
                                             size      : "xl",
                                             weight    : "bold",
