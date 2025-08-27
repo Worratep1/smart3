@@ -1112,7 +1112,7 @@ export const replyNotification_Temperature = async ({
                                     contents: [
                                         {
                                             type      : "span",
-                                            text      : "แจ้งเตือนอุณหภูมิร่างกายสูง",
+                                            text      : "แจ้งอุณหภูมิร่างกายสูง",
                                             color     : "#FC0303",
                                             size      : "xl",
                                             weight    : "bold",
