@@ -1210,7 +1210,7 @@ export const replyNotification_Temperature = async ({
                                     contents: [
                                         {
                                             type      : "span",
-                                            text      : "แจ้งอุณหภูมิร่างกายสูง",
+                                            text      : "แจ้งอุณหภูมิร่างกาย",
                                             color     : "#FC0303",
                                             size      : "xl",
                                             weight    : "bold",
@@ -1366,7 +1366,7 @@ export const replyNotification_HeartRate = async ({
                                     contents: [
                                         {
                                             type      : "span",
-                                            text      : "แจ้งอัตราการเต้นชีพจรผิดปกติ",
+                                            text      : "แจ้งอัตราการเต้นชีพจร",
                                             color     : "#FC0303",
                                             size      : "xl",
                                             weight    : "bold",
@@ -1737,7 +1737,7 @@ export const replyNotificationPostbackTemp = async ({
                                     contents: [
                                         {
                                             type      : "span",
-                                            text      : "แจ้งอุณหภูมิร่างกายสูง",
+                                            text      : "แจ้งอุณหภูมิร่างกาย",
                                             color     : "#FC0303",
                                             size      : "xl",
                                             weight    : "bold",
@@ -1969,7 +1969,7 @@ export const replyNotificationPostbackHeartRate = async ({
                                     contents: [
                                         {
                                             type      : "span",
-                                            text      : "แจ้งอัตราการเต้นชีพจรผิดปกติ",
+                                            text      : "แจ้งอัตราการเต้นชีพจร",
                                             color     : "#FC0303",
                                             size      : "xl",
                                             weight    : "bold",
