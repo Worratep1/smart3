@@ -2,7 +2,7 @@ import { NextApiRequest, NextApiResponse } from 'next'
 import { NextResponse } from 'next/server'
 import axios from "axios";
 import prisma from '@/lib/prisma'
-import { replyMessage, replyRegistration, replyUserData, replyNotRegistration, replyMenuBorrowequipment, replyConnection, replyLocation, replySetting, replyUserInfo, replyNotification , replyNotification_Temperature, replyNotification_Fall, replyNotification_HeartRate } from '@/utils/apiLineReply';
+import { replyMessage, replyRegistration, replyUserData, replyNotRegistration, replyMenuBorrowequipment, replyConnection, replyLocation, replySetting, replyUserInfo, replyNotification , replyNotification_Temperature, replyNotification_Fall, replyNotification_HeartRate, replyNotification_Alert } from '@/utils/apiLineReply';
 import { encrypt, parseQueryString } from '@/utils/helpers'
 import { postbackSafezone, postbackAccept, postbackClose, postbackTemp, postbackFall,postbackHeartRate } from '@/lib/lineFunction'
 import * as api from '@/lib/listAPI'
@@ -287,7 +287,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 						const replyToken = await postbackAccept(data)
 						if (replyToken) {
 							console.log("Accept request handled, replying with notification.");
-							await replyNotification({ replyToken, message: 'ตอบรับเคสขอความช่วยเหลือแล้ว' })
+							await replyNotification_Alert({ replyToken, message: 'ตอบรับเคสขอความช่วยเหลือแล้ว' })
 						}
 					} else if (postback.type === 'close') {
 						console.log("Handling close postback data.");
@@ -297,7 +297,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 						const replyToken = await postbackClose(data)
 						if (replyToken) {
 							console.log("Close request handled, replying with notification.");
-							await replyNotification({ replyToken, message: 'ปิดเคสขอความช่วยเหลือแล้ว' })
+							await replyNotification_Alert({ replyToken, message: 'ปิดเคสขอความช่วยเหลือแล้ว' })
 						}
 					}
 				}

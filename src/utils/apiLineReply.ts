@@ -23,6 +23,13 @@ interface ReplyNotification {
     message    : string;
     groupLineId   ?: string | null;
 }
+
+interface ReplyNotification_Alert {
+    replyToken : string;
+    message    : string;
+    groupLineId   ?: string | null;
+}
+
 interface ReplyNotification_Temperature {
     replyToken : string;
     message    : string;
@@ -1021,6 +1028,85 @@ export const replyUserData = async ({
     }
 }
 
+
+export const replyNotification_Alert = async ({
+    replyToken,
+    message
+}: ReplyNotification_Alert) => {
+    try {
+        const requestData = {
+            to:replyToken,
+            messages: [
+                {
+                    type    : "flex",
+                    altText : "แจ้งเตือน",
+                    contents: {
+                        type: "bubble",
+                        body: {
+                            type    : "box",
+                            layout  : "vertical",
+                            contents: [
+                                {
+                                    type    : "text",
+                                    text    : " ",
+                                    contents: [
+                                        {
+                                            type      : "span",
+                                            text      : "แจ้งเตือน",
+                                            color     : "#FC0303",
+                                            size      : "xl",
+                                            weight    : "bold",
+                                            decoration: "none"
+                                        },
+                                        {
+                                            type      : "span",
+                                            text      : " ",
+                                            size      : "xxl",
+                                            decoration: "none"
+                                        }
+                                    ]
+                                },
+                                {
+                                    type  : "separator",
+                                    margin: "md"
+                                },
+                                {
+                                    type  : "text",
+                                    text  : " ",
+                                    wrap : true,
+                                    lineSpacing: "5px",
+                                    margin: "md",
+                                    contents:[
+                                        {
+                                            type      : "span",
+                                            text      : message,
+                                            color     : "#555555",
+                                            size      : "md",
+                                            // decoration: "none",
+                                            // wrap      : true
+                                        },
+                                        {
+                                            type      : "span",
+                                            text      : " ",
+                                            size      : "xl",
+                                            decoration: "none"
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    }
+                }
+            ],
+        };
+       await axios.post(LINE_PUSH_MESSAGING_API, requestData, { headers:LINE_HEADER });
+    } catch (error) {
+        if (error instanceof Error) {
+            console.log(error.message);
+        }
+    }
+}
+
 export const replyNotification = async ({
     replyToken,
     message
@@ -1098,6 +1184,8 @@ export const replyNotification = async ({
         }
     }
 }
+
+
 
 export const replyNotification_Temperature = async ({
     replyToken,
