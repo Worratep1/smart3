@@ -61,10 +61,6 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse<D
 
             const status = calculatedStatus;
 
-            let noti_time: Date | null = null;
-            let noti_status: number | null = null;
-
-
             const lastHR = await prisma.heartrate_records.findFirst({
                 where: {
                     users_id: user.users_id,
@@ -74,17 +70,21 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse<D
                     noti_time: 'desc'
                 }
             });
+
+            // หลัง lastHR แล้ว ใส่ตัวนับและคูลดาวน์
             const notiCount = await prisma.heartrate_records.count({
                 where: {
                     users_id: user.users_id,
                     takecare_id: takecareperson.takecare_id,
-                    noti_status: 1,      // นับเฉพาะแถวที่เคยส่งแจ้งเตือนจริง
-                    status: 1             // และสถานะเป็น 1 (ผิดปกติ)
+                    noti_status: 1, // เคยแจ้งจริง
+                    status: 1       // ตอนนั้นเป็นผิดปกติ
                 }
             });
 
-            if ( status === 1 && (!lastHR || lastHR.noti_status !== 1 || (lastHR.noti_time && moment().diff(moment(lastHR.noti_time), 'minutes') >= 5)) &&notiCount < 5
-            ) {
+            const cooldownOk = !lastHR?.noti_time ||
+                moment().diff(moment(lastHR.noti_time), 'minutes') >= 5;
+
+            if (status === 1 && cooldownOk && notiCount < 5) {
                 const message = `คุณ ${takecareperson.takecare_fname} ${takecareperson.takecare_sname}\nชีพจรเกินค่าที่กำหนด: ${bpmValue} bpm`;
 
                 const replyToken = user.users_line_id || '';
@@ -98,32 +98,20 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse<D
                     });
                 }
 
-                noti_status = 1;
-                noti_time = new Date();
-            }
-
-            if (status === 0) {
-                noti_status = 0;
-                noti_time = null;
-                console.log("อัตราการเต้นชีพจรอยู่ในระดับปกติ");
-            }
-
-
-            if (lastHR) {
-                await prisma.heartrate_records.update({
-                    where: {
-                        heartrate_id: lastHR.heartrate_id
-                    },
+                // ✅ สร้างแถวใหม่ (อย่า update) เพื่อให้ notiCount เพิ่มขึ้น
+                await prisma.heartrate_records.create({
                     data: {
+                        users_id: user.users_id,
+                        takecare_id: takecareperson.takecare_id,
                         bpm: bpmValue,
                         record_date: new Date(),
-                        status: status,
-                        noti_time: noti_time,
-                        noti_status: noti_status
-
+                        status: 1,
+                        noti_time: new Date(),
+                        noti_status: 1
                     }
                 });
             } else {
+                // กรณีไม่แจ้งเตือน (ทั้งปกติหรือผิดปกติแต่ครบโควต้า/ยังไม่พ้นคูลดาวน์)
                 await prisma.heartrate_records.create({
                     data: {
                         users_id: user.users_id,
@@ -131,12 +119,12 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse<D
                         bpm: bpmValue,
                         record_date: new Date(),
                         status: status,
-                        noti_time: noti_time,
-                        noti_status: noti_status
-
+                        noti_time: status === 0 ? null : null, // ไม่แจ้ง
+                        noti_status: status === 0 ? 0 : null   // ปกติ=0, ผิดปกติแต่ไม่แจ้ง=null
                     }
                 });
             }
+
 
             return res.status(200).json({ message: 'success', data: 'บันทึกข้อมูลเรียบร้อย' });
 
