@@ -61,6 +61,10 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse<D
 
             const status = calculatedStatus;
 
+            let noti_time: Date | null = null;
+            let noti_status: number | null = null;
+
+          
             const lastHR = await prisma.heartrate_records.findFirst({
                 where: {
                     users_id: user.users_id,
@@ -71,45 +75,13 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse<D
                 }
             });
 
-            // [REMOVE] ไม่ต้องคั่น episode ด้วยการหากลับสู่ปกติล่าสุดแล้ว
-            // const lastNormal = await prisma.heartrate_records.findFirst({
-            //   where: {
-            //     users_id: user.users_id,
-            //     takecare_id: takecareperson.takecare_id,
-            //     status: 0
-            //   },
-            //   orderBy: { timestamp: 'desc' } // ใช้ timestamp ที่ละเอียดกว่า
-            // });
-
-            // [REMOVE] ไม่ต้องใช้คูลดาวน์ 5 นาทีจากการแจ้งจริงล่าสุดแล้ว
-            // const lastNoti = await prisma.heartrate_records.findFirst({
-            //   where: {
-            //     users_id: user.users_id,
-            //     takecare_id: takecareperson.takecare_id,
-            //     noti_status: 1
-            //   },
-            //   orderBy: { noti_time: 'desc' }
-            // });
-
-            // [ADD] สร้างหน้าต่างเวลา 20 วินาทีล่าสุด (ปรับตัวเลขได้)
-            const windowStart = new Date(Date.now() - 20 * 1000);
-
-            // [CHANGE] นับจำนวนแจ้งจริงเฉพาะ "ภายใน 20 วินาทีล่าสุด"
-            const notiCount = await prisma.heartrate_records.count({
-                where: {
-                    users_id: user.users_id,
-                    takecare_id: takecareperson.takecare_id,
-                    noti_status: 1,
-                    noti_time: { gte: windowStart }   // 👈 นับเฉพาะเหตุการณ์แจ้งใน 20 วินาทีหลังสุด
-                }
-            });
-
-            // [REMOVE] คูลดาวน์ 5 นาที
-            // const cooldownOk = !lastNoti?.noti_time ||
-            //   moment().diff(moment(lastNoti.noti_time), 'minutes') >= 5;
-
-            // ====== เงื่อนไขแจ้งเตือนแบบ rolling window ======
-            if (status === 1 && notiCount < 5) {  // [CHANGE] ตัด cooldownOk ออก
+         
+            if (
+                status === 1 &&
+                (!lastHR ||
+                    lastHR.noti_status !== 1 ||
+                    moment().diff(moment(lastHR.noti_time), 'minutes') >= 5)
+            ) {
                 const message = `คุณ ${takecareperson.takecare_fname} ${takecareperson.takecare_sname}\nชีพจรเกินค่าที่กำหนด: ${bpmValue} bpm`;
 
                 const replyToken = user.users_line_id || '';
@@ -123,16 +95,29 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse<D
                     });
                 }
 
-                await prisma.heartrate_records.create({
+                noti_status = 1;
+                noti_time = new Date();
+            }
+
+            if (status === 0) {
+                noti_status = 0;
+                noti_time = null;
+                console.log("อัตราการเต้นชีพจรอยู่ในระดับปกติ");
+            }
+
+          
+            if (lastHR) {
+                await prisma.heartrate_records.update({
+                    where: {
+                        heartrate_id: lastHR.heartrate_id
+                    },
                     data: {
-                        users_id: user.users_id,
-                        takecare_id: takecareperson.takecare_id,
                         bpm: bpmValue,
                         record_date: new Date(),
-                        timestamp: new Date(),   // [ADD] ถ้ามีฟิลด์นี้ แนะนำใส่ให้สม่ำเสมอ
-                        status: 1,
-                        noti_time: new Date(),
-                        noti_status: 1
+                        status: status,
+                        noti_time: noti_time,
+                        noti_status: noti_status
+      
                     }
                 });
             } else {
@@ -142,10 +127,10 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse<D
                         takecare_id: takecareperson.takecare_id,
                         bpm: bpmValue,
                         record_date: new Date(),
-                        timestamp: new Date(),   // [ADD] เช่นเดียวกัน
                         status: status,
-                        noti_time: null,
-                        noti_status: status === 0 ? 0 : null
+                        noti_time: noti_time,
+                        noti_status: noti_status
+            
                     }
                 });
             }
