@@ -71,19 +71,42 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse<D
                 }
             });
 
-            // หลัง lastHR แล้ว ใส่ตัวนับและคูลดาวน์
+            // [ADD] หา "เวลาที่กลับสู่ปกติครั้งล่าสุด" เพื่อคั่น episode (จะได้เริ่มนับใหม่ได้เมื่อกลับปกติ)
+            const lastNormal = await prisma.heartrate_records.findFirst({
+                where: {
+                    users_id: user.users_id,
+                    takecare_id: takecareperson.takecare_id,
+                    status: 0
+                },
+                orderBy: { timestamp: 'desc' } // ใช้ timestamp ที่ละเอียดกว่า
+            });
+
+            // [ADD] หา "แถวที่เคยแจ้งจริงล่าสุด" เพื่อใช้คูลดาวน์ 5 นาที
+            const lastNoti = await prisma.heartrate_records.findFirst({
+                where: {
+                    users_id: user.users_id,
+                    takecare_id: takecareperson.takecare_id,
+                    noti_status: 1
+                },
+                orderBy: { noti_time: 'desc' }
+            });
+
+            // [CHANGE] นับจำนวนแจ้งเตือนเฉพาะ "ภายใน episode ปัจจุบัน"
             const notiCount = await prisma.heartrate_records.count({
                 where: {
                     users_id: user.users_id,
                     takecare_id: takecareperson.takecare_id,
                     noti_status: 1, // เคยแจ้งจริง
-                    status: 1       // ตอนนั้นเป็นผิดปกติ
+                    status: 1,      // ตอนนั้นผิดปกติ
+                    ...(lastNormal?.timestamp ? { timestamp: { gt: lastNormal.timestamp } } : {})
                 }
             });
 
-            const cooldownOk = !lastHR?.noti_time ||
-                moment().diff(moment(lastHR.noti_time), 'minutes') >= 5;
+            // [CHANGE] คูลดาวน์ 5 นาทีให้ดูจาก "แถวที่แจ้งจริงล่าสุด" (ไม่ใช่ lastHR ที่อาจไม่ได้แจ้ง)
+            const cooldownOk = !lastNoti?.noti_time ||
+                moment().diff(moment(lastNoti.noti_time), 'minutes') >= 5;
 
+            // ====== เงื่อนไขเดิมของคุณ คงไว้ แต่อ้างอิง cooldownOk/notiCount ใหม่ ======
             if (status === 1 && cooldownOk && notiCount < 5) {
                 const message = `คุณ ${takecareperson.takecare_fname} ${takecareperson.takecare_sname}\nชีพจรเกินค่าที่กำหนด: ${bpmValue} bpm`;
 
@@ -98,7 +121,6 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse<D
                     });
                 }
 
-                // ✅ สร้างแถวใหม่ (อย่า update) เพื่อให้ notiCount เพิ่มขึ้น
                 await prisma.heartrate_records.create({
                     data: {
                         users_id: user.users_id,
@@ -111,7 +133,6 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse<D
                     }
                 });
             } else {
-                // กรณีไม่แจ้งเตือน (ทั้งปกติหรือผิดปกติแต่ครบโควต้า/ยังไม่พ้นคูลดาวน์)
                 await prisma.heartrate_records.create({
                     data: {
                         users_id: user.users_id,
@@ -119,12 +140,11 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse<D
                         bpm: bpmValue,
                         record_date: new Date(),
                         status: status,
-                        noti_time: status === 0 ? null : null, // ไม่แจ้ง
-                        noti_status: status === 0 ? 0 : null   // ปกติ=0, ผิดปกติแต่ไม่แจ้ง=null
+                        noti_time: null,        // ไม่แจ้ง
+                        noti_status: status === 0 ? 0 : null
                     }
                 });
             }
-
 
             return res.status(200).json({ message: 'success', data: 'บันทึกข้อมูลเรียบร้อย' });
 
