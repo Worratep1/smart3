@@ -1010,7 +1010,7 @@ export const replyUserData = async ({
                                     margin: "xxl",
                                     action: {
                                         type : "uri",
-                                        label: "ลงทะเบียนผู้สูงอายุ",
+                                        label: "ลงทะเบียนผู้ที่มีภาวะพึ่งพิง",
                                         uri  : `${WEB_API}/elderly_registration?auToken=${userData.users_line_id}`
                                     }
                                 },
